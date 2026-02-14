@@ -136,6 +136,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
+.env.*.local
 .envrc
 .venv
 env/
@@ -143,6 +145,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Database files (raw SQL dumps without extension)
+database
+*.sql.backup
 
 # Spyder project settings
 .spyderproject
@@ -205,3 +211,21 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.sublime-project
+*.sublime-workspace

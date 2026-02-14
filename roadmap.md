@@ -37,13 +37,15 @@
 
 ### Hedefler
 - Temel platform altyapısının kurulması
-- FastAPI bazlı RESTful API geliştirme
-- Temel veritabanı şemasının oluşturulması
+- Python FastAPI bazlı RESTful API geliştirme
+- PostgreSQL (Docker) veritabanı şemasının oluşturulması
+- Swagger UI ile API dokümantasyonu
 
 ### Görevler
 
 #### 1.1 Veritabanı Tasarımı ve Kurulumu
-- [x] PostgreSQL kurulumu ve yapılandırması
+- [ ] Docker Compose ile PostgreSQL container kurulumu
+- [ ] PostgreSQL 15+ yapılandırması
 - [ ] PostGIS uzantısı kurulumu ve konum desteği
 - [ ] Temel tablo yapılarının oluşturulması:
   - `users` (Kullanıcılar)
@@ -51,7 +53,6 @@
   - `donations` (Bağış kayıtları)
   - `hospitals` (Hastane bilgileri)
   - `notifications` (Bildirimler)
-- [ ] Hash zinciri için `donation_chain` tablosu
 - [ ] Rol bazlı erişim kontrol (RBAC) tabloları
   - `roles` (Roller: User, Nurse, Admin)
   - `user_roles` (Kullanıcı-Rol ilişkileri)
@@ -90,49 +91,59 @@ CREATE TABLE donations (
     hospital_id INTEGER REFERENCES hospitals(hospital_id),
     verified_by INTEGER REFERENCES users(user_id), -- Hemşire ID
     qr_code VARCHAR(255),
-    previous_hash VARCHAR(64), -- Hash zinciri için
-    current_hash VARCHAR(64),
     donation_date TIMESTAMP DEFAULT NOW(),
     status VARCHAR(20) DEFAULT 'PENDING' -- PENDING, VERIFIED, NO_SHOW
 );
 ```
 
-#### 1.2 Backend API Geliştirme (Python/FastAPI)
+#### 1.2 Backend API Geliştirme (Python FastAPI)
 - [ ] FastAPI framework kurulumu ve proje yapısı
+  - Modüler mimari (routers, models, schemas, services)
+  - SQLAlchemy ORM entegrasyonu
+  - Alembic migration sistemi
 - [ ] Kullanıcı kayıt ve giriş sistemi
   - Telefon numarası ile doğrulama (SMS OTP simülasyonu)
   - Kan grubu ve konum bilgisi kaydetme
-  - JWT Authentication
+  - JWT Authentication (OAuth2 + Bearer Token)
+  - Password hashing (bcrypt)
 - [ ] RESTful API Endpoint tasarımı:
-  - `POST /auth/register` - Kullanıcı kaydı
-  - `POST /auth/login` - Giriş
-  - `GET /requests/nearby` - Yakındaki talepler
-  - `POST /requests/create` - Talep oluşturma
-  - `POST /donations/commit` - Bağış başvurusu
-  - `POST /donations/verify` - QR doğrulama
+  - `POST /api/v1/auth/register` - Kullanıcı kaydı
+  - `POST /api/v1/auth/login` - Giriş
+  - `GET /api/v1/requests/nearby` - Yakındaki talepler
+  - `POST /api/v1/requests/create` - Talep oluşturma
+  - `POST /api/v1/donations/commit` - Bağış başvurusu
+  - `POST /api/v1/donations/verify` - QR doğrulama
 - [ ] Talep oluşturma modülü
   - Geofencing kontrolü (Kullanıcı hastane sınırları içinde mi?)
   - Talep tipi seçimi (Tam Kan/Aferez Trombosit)
   - Benzersiz referans kodu üretimi (#ANT-KAN-XXX)
 - [ ] Bağışçı eşleştirme algoritması
-  - Konum bazlı filtreleme (Haversine formülü)
+  - PostGIS ile konum bazlı filtreleme (ST_DWithin)
   - Kan grubu uyumluluğu kontrolü
   - Son bağış tarihine göre eleme (3 ay kuralı)
 - [ ] Bildirim sistemi (Mock Push Notification)
-- [ ] API dokümantasyonu (Swagger UI otomatik)
+- [ ] Swagger UI otomatik dokümantasyonu (http://localhost:8000/docs)
+- [ ] ReDoc alternatif dokümantasyon (http://localhost:8000/redoc)
+- [ ] CORS middleware yapılandırması (Flutter app için)
+- [ ] Pydantic validation schemas
+- [ ] Error handling ve logging sistemi
 
 #### 1.3 Test ve Dokümantasyon
-- [ ] Postman/Insomnia ile API test koleksiyonu
+- [ ] Swagger UI ile API endpoint testleri
+- [ ] Postman/Insomnia koleksiyonu (Opsiyonel)
 - [ ] Unit testler (pytest)
+- [ ] Integration testler (pytest + TestClient)
 - [ ] API endpoint'lerinin test edilmesi
 - [ ] Swagger UI dokümantasyonu tamamlanması
 - [ ] Seed data hazırlama (Test için hastane ve kullanıcı verileri)
+- [ ] Docker Compose ile test ortamı hazırlama
 
 **Teslim Edilebilirler:**
-- Çalışan FastAPI backend servisi
-- Temel veritabanı şeması ve seed data
-- Konum bazlı eşleştirme algoritması demo
-- API dokümantasyonu (Swagger UI)
+- Çalışan FastAPI backend servisi (Docker container)
+- PostgreSQL veritabanı (Docker container) ile temel şema ve seed data
+- Konum bazlı eşleştirme algoritması demo (PostGIS)
+- Swagger UI ile interaktif API dokümantasyonu
+- Docker Compose ile tek komutla çalışan geliştirme ortamı
 
 ---
 
@@ -159,15 +170,7 @@ CREATE TABLE donations (
   - Hasta ismi ve bağışçı isminin asla aynı ekranda görünmemesi
   - Referans kodu bazlı iletişim
 
-#### 2.2 Hash Zinciri (Immutable Donation Log)
-- [ ] Hash hesaplama algoritması (SHA-256)
-  - `current_hash = SHA256(previous_hash + donation_data + timestamp)`
-- [ ] Zincir doğrulama fonksiyonu
-  - Geçmiş kayıtların değiştirilip değiştirilmediğini kontrol
-- [ ] Genesis blok oluşturma (İlk bağış kaydı)
-- [ ] Admin panelinde hash zinciri görselleştirme
-
-#### 2.3 Kötüye Kullanım Önleme
+#### 2.2 Kötüye Kullanım Önleme
 - [ ] **No-Show Koruması:**
   - "Geliyorum" butonu tıklandıktan sonra 45 dakika timer
   - Süre dolduğunda ve hemşire onayı yoksa:
@@ -183,60 +186,11 @@ CREATE TABLE donations (
 
 **Teslim Edilebilirler:**
 - QR kod doğrulama sistemi çalışır durumda
-- Hash zinciri ile manipülasyon koruması aktif
 - No-show ve sahte talep algoritmaları test edilmiş
 
 ---
 
-## 🤖 Faz 3: Yapay Zeka Entegrasyonu
-**Süre:** 2-3 hafta  
-**Durum:** 🔴 Başlamadı  
-**Öncelik:** 🟡 Orta
-
-### Hedefler
-- Google Gemini API ile KanVer AI Chatbot kurulumu
-- Kızılay kan bağışı kurallarına göre uygunluk testi
-- Kullanıcı deneyimini iyileştirme
-
-### Görevler
-
-#### 3.1 KanVer AI (LLM Chatbot) Geliştirme
-- [ ] Google Gemini API entegrasyonu
-- [ ] Kızılay kuralları veri seti hazırlama
-  - İlaç kullanımı kısıtlamaları
-  - Dövme, piercing, ameliyat geçmişi kuralları
-  - Gebelik, emzirme, hastalık durumları
-  - Yaş, kilo, diyet kısıtlamaları
-- [ ] Prompt Engineering
-  - Sistem rolü: "Sen bir kan bağışı danışmanısın..."
-  - Few-shot learning örnekleri
-- [ ] Chatbot API endpoint'i (GET/POST /ai/chat)
-- [ ] Konuşma geçmişi kaydetme (Session Management)
-- [ ] WebSocket desteği (Gerçek zamanlı chat için)
-
-**Örnek Kullanıcı Senaryosu:**
-```
-Kullanıcı: "3 gün önce aspirin içtim, kan verebilir miyim?"
-AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek yeterlidir, 
-     ancak TROMBOSİT bağışı için 7 gün beklemelisiniz. Hangi tür bağış yapmayı planlıyorsunuz?"
-```
-
-#### 3.2 Ön Eleme Mekanizması
-- [ ] AI yanıtlarına göre uygunluk skoru hesaplama
-  - 🟢 Uygun (>80 puan)
-  - 🟡 Dikkatli (50-80 puan) → "Hemşire ile görüşün"
-  - 🔴 Uygun Değil (<50 puan) → "Şu anda kan veremezsiniz"
-- [ ] Uygunluk sonucunu kullanıcı profiline kaydetme
-- [ ] Hastaneye bilgi aktarımı (varsa riskli durum notu)
-
-**Teslim Edilebilirler:**
-- Çalışan AI chatbot
-- Kızılay kuralları veri seti (JSON/CSV)
-- Ön eleme skorlama sistemi
-
----
-
-## 📱 Faz 4: Mobil Uygulama Geliştirme
+## 📱 Faz 3: Mobil Uygulama Geliştirme
 **Süre:** 6-8 hafta  
 **Durum:** 🔴 Başlamadı  
 **Öncelik:** 🔴 Kritik
@@ -248,57 +202,80 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 
 ### Görevler
 
-#### 4.1 Flutter Projesi Kurulumu
-- [ ] Flutter SDK kurulumu ve yapılandırma
+#### 3.1 Flutter Projesi Kurulumu
+- [ ] Flutter SDK 3.0+ kurulumu ve yapılandırma
 - [ ] Proje başlangıç mimarisi (Clean Architecture)
-  - `lib/core` - Temel servisler
-  - `lib/features` - Özellik modülleri
-  - `lib/shared` - Paylaşılan bileşenler
-- [ ] State Management (Riverpod/Bloc seçimi)
-- [ ] API Client kurulumu (Dio/Retrofit)
+  - `lib/core` - Temel servisler (API client, constants, utils)
+  - `lib/features` - Özellik modülleri (auth, requests, donations, profile)
+  - `lib/shared` - Paylaşılan bileşenler (widgets, themes)
+  - `lib/data` - Data layer (models, repositories)
+  - `lib/domain` - Domain layer (entities, use cases)
+  - `lib/presentation` - Presentation layer (screens, widgets, state)
+- [ ] State Management (Riverpod önerilen)
+- [ ] API Client kurulumu (Dio + Retrofit)
+- [ ] FastAPI backend ile entegrasyon
+- [ ] Environment yapılandırması (.env dosyaları)
+- [ ] Routing sistemi (go_router)
+- [ ] Dependency Injection (get_it)
 
-#### 4.2 Backend API Genişletme ve İyileştirme
+#### 3.2 Backend API Genişletme ve İyileştirme
 - [ ] Mevcut FastAPI endpointlerinin genişletilmesi
 - [ ] Ek endpoint'ler:
-  - `GET /users/profile` - Kullanıcı profili
-  - `GET /users/history` - Bağış geçmişi
-  - `PUT /users/location` - Konum güncelleme
-  - `GET /hospitals/list` - Hastane listesi
-  - `GET /notifications` - Bildirim geçmişi
+  - `GET /api/v1/users/profile` - Kullanıcı profili
+  - `GET /api/v1/users/history` - Bağış geçmişi
+  - `PUT /api/v1/users/location` - Konum güncelleme
+  - `GET /api/v1/hospitals/list` - Hastane listesi
+  - `GET /api/v1/notifications` - Bildirim geçmişi
 - [ ] WebSocket servisi (Gerçek zamanlı güncellemeler için)
 - [ ] File upload endpoint'i (Profil fotoğrafı, belgeler)
-- [ ] Rate limiting ve güvenlik iyileştirmeleri
-- [ ] CORS yapılandırması (Mobil uygulama için)
+- [ ] Rate limiting (slowapi) ve güvenlik iyileştirmeleri
+- [ ] CORS middleware yapılandırması (Flutter app için)
+- [ ] Swagger UI'da tüm endpoint'lerin dokümantasyonu
+- [ ] Request/Response validation (Pydantic)
+- [ ] Background tasks (FastAPI BackgroundTasks)
 
-#### 4.3 Mobil UI/UX Geliştirme
+#### 3.3 Mobil UI/UX Geliştirme (Flutter)
 - [ ] Splash Screen ve Onboarding
 - [ ] Kullanıcı kayıt ve giriş ekranları
-- [ ] Ana sayfa:
-  - Yakındaki talepler haritası (Google Maps API)
+  - Telefon numarası girişi
+  - OTP doğrulama
+  - Kan grubu seçimi
+  - Konum izni
+- [ ] Ana sayfa (Bottom Navigation):
+  - Yakındaki talepler haritası (Google Maps Flutter plugin)
   - Aciliyet göstergesi (🔴 Trombosit / 🟡 Tam Kan)
+  - Liste/Harita görünüm geçişi
 - [ ] Talep detay sayfası:
   - Hastane bilgileri
-  - Mesafe ve yol tarifi
+  - Mesafe ve yol tarifi (Google Maps integration)
   - "Geliyorum" butonu
+  - Countdown timer
 - [ ] Profil sayfası:
-  - Bağış geçmişi
-  - Kahramanlık puanı
-  - Ayarlar
-- [ ] KanVer AI Chat ekranı
+  - Bağış geçmişi (Timeline widget)
+  - Kahramanlık puanı (Gamification)
+  - Ayarlar (Bildirim tercihleri)
 - [ ] Hemşire paneli (QR scanner)
   - Kamera erişimi (camera plugin)
-  - QR kod okutma (qr_code_scanner)
+  - QR kod okutma (qr_code_scanner / mobile_scanner)
+  - Bağış onaylama ekranı
+- [ ] Material Design 3 / Custom theme
+- [ ] Dark mode desteği
+- [ ] Çoklu dil desteği (i18n)
 
-#### 4.4 Konum Servisleri
+#### 3.4 Konum Servisleri (Flutter)
 - [ ] Geolocator plugin entegrasyonu
+- [ ] Permission handler (Konum izinleri)
 - [ ] Arka planda konum takibi (Geofencing)
-- [ ] Google Maps/Mapbox entegrasyonu
+- [ ] Google Maps Flutter plugin entegrasyonu
+- [ ] Custom map markers ve clustering
 - [ ] Harita üzerinde işaretler:
-  - 🏥 Hastaneler
-  - 🚑 Aktif talepler
+  - 🏥 Hastaneler (Custom marker)
+  - 🚑 Aktif talepler (Animated marker)
   - 🩸 Kızılay kan bağış noktaları
+- [ ] Directions API entegrasyonu (Yol tarifi)
+- [ ] Geocoding (Adres <-> Koordinat dönüşümü)
 
-#### 4.5 Push Notification
+#### 3.5 Push Notification
 - [ ] Firebase Cloud Messaging (FCM) kurulumu
 - [ ] Backend'de notification gönderim servisi
 - [ ] Bildirim tipleri:
@@ -307,13 +284,17 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
   - ⭐ **Başarı:** "Bağışınız sayesinde bir hayat kurtardınız!"
 
 **Teslim Edilebilirler:**
-- Android ve iOS APK/IPA dosyaları
-- FastAPI backend fully operational
+- Flutter mobil uygulama (Android APK + iOS IPA)
+- FastAPI backend fully operational (Docker)
+- PostgreSQL veritabanı (Docker)
 - Google Maps entegreli mobil uygulama
+- Swagger UI ile test edilebilir API dokümantasyonu
+- Push notification sistemi (Firebase Cloud Messaging)
+- QR kod okuma ve doğrulama sistemi
 
 ---
 
-## 🧪 Faz 5: Pilot Test ve İyileştirme
+## 🧪 Faz 4: Pilot Test ve İyileştirme
 **Süre:** 4-6 hafta  
 **Durum:** 🔴 Başlamadı  
 **Öncelik:** 🟡 Orta
@@ -325,7 +306,7 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 
 ### Görevler
 
-#### 5.1 Pilot Hastane Anlaşmaları
+#### 4.1 Pilot Hastane Anlaşmaları
 - [ ] Akdeniz Üniversitesi Hastanesi ile görüşme
 - [ ] Antalya Eğitim ve Araştırma Hastanesi ile görüşme
 - [ ] Hemşire ve kan merkezi personeli eğitimi
@@ -333,7 +314,7 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
   - QR kod okutma prosedürü
   - KVKK ve veri gizliliği bilgilendirmesi
 
-#### 5.2 Beta Test Programı
+#### 4.2 Beta Test Programı
 - [ ] 50 beta kullanıcı kaydı (Üniversite öğrencileri)
 - [ ] Test senaryoları oluşturma:
   - Gerçek talep simülasyonu
@@ -343,21 +324,31 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 - [ ] Bug tracking sistemi (GitHub Issues)
 - [ ] Kullanıcı geri bildirimi formu
 
-#### 5.3 Performans İyileştirme
-- [ ] Veritabanı sorgu optimizasyonu
+#### 4.3 Performans İyileştirme
+- [ ] Veritabanı sorgu optimizasyonu (PostgreSQL)
   - Index ekleme (blood_type, location, created_at)
-  - Slow query analizi
-- [ ] API yanıt süresi iyileştirme (Hedef: <200ms)
-- [ ] Mobil uygulama boyut optimizasyonu
-- [ ] Sunucu kapasite planlaması (AWS/Azure)
+  - PostGIS spatial index (GIST)
+  - Slow query analizi (pg_stat_statements)
+  - Connection pooling (SQLAlchemy)
+- [ ] FastAPI yanıt süresi iyileştirme (Hedef: <200ms)
+  - Redis cache katmanı
+  - Async/await optimizasyonu
+  - Database query optimization
+- [ ] Flutter uygulama boyut optimizasyonu
+  - Code splitting
+  - Image optimization
+  - Unused code removal
+- [ ] Docker container optimizasyonu
+  - Multi-stage builds
+  - Image size reduction
+- [ ] Sunucu kapasite planlaması (AWS/Azure/DigitalOcean)
 
-#### 5.4 Analytics ve Monitoring
+#### 4.4 Analytics ve Monitoring
 - [ ] Google Analytics / Mixpanel entegrasyonu
 - [ ] Metrik takibi:
   - Günlük aktif kullanıcı (DAU)
   - Talep başına ortalama yanıt süresi
   - No-show oranı
-  - AI chatbot kullanım oranı
   - Başarılı eşleşme oranı
 - [ ] Sentry/Crashlytics hata takibi
 
@@ -368,7 +359,7 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 
 ---
 
-## 🚀 Faz 6: Ölçeklendirme ve Yaygınlaştırma
+## 🚀 Faz 5: Ölçeklendirme ve Yaygınlaştırma
 **Süre:** 3-6 ay  
 **Durum:** 🔴 Başlamadı  
 **Öncelik:** 🟢 Düşük (Pilot başarı sonrası)
@@ -380,12 +371,12 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 
 ### Görevler
 
-#### 6.1 Coğrafi Genişleme
+#### 5.1 Coğrafi Genişleme
 - [ ] Şehir listesi belirleme (İstanbul, Ankara, İzmir, Bursa, Adana vs.)
 - [ ] Şehir bazlı hastane veri tabanı oluşturma
 - [ ] Bölgesel koordinatör ataması
 
-#### 6.2 Kurumsal Entegrasyonlar
+#### 5.2 Kurumsal Entegrasyonlar
 - [ ] **Kızılay Entegrasyonu:**
   - Kan stoğu API'si (Gerçek zamanlı stok bilgisi)
   - Kan bağışı randevu sistemi ile senkronizasyon
@@ -396,19 +387,24 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 - [ ] **Hastane Bilgi Yönetim Sistemleri (HBYS):**
   - HL7/FHIR standardı ile veri alışverişi
 
-#### 6.3 Altyapı Ölçeklendirme
-- [ ] Cloud migrasyonu (AWS/Google Cloud)
+#### 5.3 Altyapı Ölçeklendirme
+- [ ] Cloud migrasyonu (AWS/Google Cloud/Azure)
+  - Docker container deployment
   - Auto-scaling load balancer
   - Redis cache katmanı
   - CDN entegrasyonu (CloudFlare)
-- [ ] Mikroservis mimarisi geçişi
+  - PostgreSQL managed service (RDS/Cloud SQL)
+- [ ] Mikroservis mimarisi geçişi (FastAPI)
   - User Service
   - Notification Service
   - Matching Service
-  - AI Service
+  - API Gateway
 - [ ] Kubernetes ile container orkestrasyon
+  - Docker images
+  - Helm charts
+  - CI/CD pipeline (GitHub Actions)
 
-#### 6.4 Pazarlama ve Topluluk Oluşturma
+#### 5.4 Pazarlama ve Topluluk Oluşturma
 - [ ] Sosyal medya kampanyası
 - [ ] Üniversite kulüpleri ile işbirliği
 - [ ] "Ayın Kahramanı" ödül programı
@@ -460,15 +456,10 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
    - Çalışan sağlığı raporları
    - Kurumsal sorumluluk ölçümleme
 
-8. **🧠 Gelişmiş AI Özellikleri:**
+8. **📊 Gelişmiş Analytics:**
    - Talep tahmin modeli (Mevsimsel trendler, trafik kazaları vs.)
    - Bağışçı churn prediction (Kaybolma riski analizi)
-   - Optimal bildirim zamanlaması (ML ile)
-
-9. **⛓️ Blockchain Entegrasyonu:**
-   - Hash zincirinden tam blockchain'e geçiş
-   - Tokenization (Bağış başına token ödülü)
-   - Smart contract'lar ile otomatik ödüllendirme
+   - Optimal bildirim zamanlaması
 
 ---
 
@@ -481,7 +472,6 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 | **Konum doğrulama bypass'ı** | Orta | Yüksek | GPS spoofing tespiti, wifi/BTS bazlı çift doğrulama |
 | **Sistem aşırı yüklenmesi (Ani talep artışı)** | Yüksek | Yüksek | Auto-scaling, CDN, rate limiting |
 | **Veri sızıntısı (KVKK ihlali)** | Düşük | Kritik | End-to-end encryption, KVKK denetimi, penetration test |
-| **AI yanlış bilgilendirme** | Orta | Yüksek | Kızılay médical advisory board danışmanlığı, disclaimer ekleme |
 
 ### Operasyonel Riskler
 
@@ -513,7 +503,6 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 - **Ortalama Yanıt Süresi:** Hedef <15 dakika (Acil taleplerde)
 - **Başarılı Eşleşme Oranı:** Hedef %85
 - **No-Show Oranı:** Hedef <%10
-- **AI Chatbot Doğruluk Oranı:** Hedef >90% (Kızılay kurallarıyla uyum)
 
 ### Etki Metrikleri
 - **Kurtarılan Hayat Sayısı:** Hedef 500+ (İlk yıl)
@@ -528,10 +517,9 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 |-----|------|---------------------|-----------------|----------------------|
 | Faz 1: Temel Altyapı | 6 hafta | Şubat 2026 | Mart 2026 | İlk çalışan prototip |
 | Faz 2: Güvenlik | 4 hafta | Mart 2026 | Nisan 2026 | QR doğrulama sistemi |
-| Faz 3: AI Entegrasyonu | 3 hafta | Nisan 2026 | Mayıs 2026 | KanVer AI canlıda |
-| Faz 4: Mobil Uygulama | 8 hafta | Mayıs 2026 | Temmuz 2026 | App Store/Play Store yayını |
-| Faz 5: Pilot Test | 6 hafta | Temmuz 2026 | Ağustos 2026 | 100 gerçek bağış eşleşmesi |
-| Faz 6: Ölçeklendirme | 6 ay | Eylül 2026 | Mart 2027 | 10 şehir, 10.000+ kullanıcı |
+| Faz 3: Mobil Uygulama | 8 hafta | Nisan 2026 | Haziran 2026 | App Store/Play Store yayını |
+| Faz 4: Pilot Test | 6 hafta | Haziran 2026 | Temmuz 2026 | 100 gerçek bağış eşleşmesi |
+| Faz 5: Ölçeklendirme | 6 ay | Ağustos 2026 | Şubat 2027 | 10 şehir, 10.000+ kullanıcı |
 
 ---
 
@@ -541,15 +529,15 @@ AI: "Aspirin kan sulandırıcıdır. Tam kan bağışı için 3 gün beklemek ye
 
 **Mevcut Durum (MVP Aşaması):**
 - Backend Developer (Python/FastAPI) - 1 kişi
-- Frontend Developer (Streamlit/Flutter) - 1 kişi
-- Database Admin (PostgreSQL/PostGIS) - Part-time
-- AI/ML Engineer (Gemini API) - Part-time
+- Mobile Developer (Flutter) - 1 kişi
+- Database Admin (PostgreSQL/PostGIS/Docker) - Part-time
 
 **Ölçeklendirme Aşaması:**
-- Full Stack Developer - 2 kişi
-- Mobil Developer (Flutter) - 2 kişi
-- DevOps Engineer - 1 kişi
+- Backend Developer (FastAPI) - 2 kişi
+- Mobile Developer (Flutter) - 2 kişi
+- DevOps Engineer (Docker/Kubernetes) - 1 kişi
 - UI/UX Designer - 1 kişi
+- QA Engineer - 1 kişi
 - Proje Yöneticisi - 1 kişi
 - Medikal Danışman (Kızılay/Hemşire) - Part-time
 - Hukuk Danışmanı (KVKK) - Part-time
@@ -574,12 +562,33 @@ Bu proje açık kaynak ruhuyla geliştirilmektedir. Tüm geliştiriciler, tasar�
 
 ## 📚 Referanslar ve Kaynaklar
 
+### Sağlık ve Yasal
 1. **Kızılay Kan Bağışı Kılavuzu:** https://www.kizilay.org.tr/kan-bagisi
 2. **KVKK Mevzuatı:** https://www.kvkk.gov.tr/
 3. **WHO Kan Güvenliği Standartları:** https://www.who.int/blood-safety
-4. **PostgreSQL PostGIS Dokümantasyonu:** https://postgis.net/
-5. **Google Gemini API Docs:** https://ai.google.dev/
-6. **Flutter Geolocation:** https://pub.dev/packages/geolocator
+
+### Backend (FastAPI)
+4. **FastAPI Dokümantasyonu:** https://fastapi.tiangolo.com/
+5. **SQLAlchemy ORM:** https://www.sqlalchemy.org/
+6. **Alembic Migrations:** https://alembic.sqlalchemy.org/
+7. **Pydantic Validation:** https://docs.pydantic.dev/
+
+### Database
+8. **PostgreSQL Dokümantasyonu:** https://www.postgresql.org/docs/
+9. **PostGIS Spatial Database:** https://postgis.net/
+10. **Docker PostgreSQL:** https://hub.docker.com/_/postgres
+
+### Frontend (Flutter)
+11. **Flutter Dokümantasyonu:** https://flutter.dev/docs
+12. **Riverpod State Management:** https://riverpod.dev/
+13. **Dio HTTP Client:** https://pub.dev/packages/dio
+14. **Google Maps Flutter:** https://pub.dev/packages/google_maps_flutter
+15. **Geolocator:** https://pub.dev/packages/geolocator
+16. **QR Code Scanner:** https://pub.dev/packages/mobile_scanner
+
+### DevOps
+17. **Docker Compose:** https://docs.docker.com/compose/
+18. **Firebase Cloud Messaging:** https://firebase.google.com/docs/cloud-messaging
 
 ---
 
