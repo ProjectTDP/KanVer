@@ -47,12 +47,11 @@ async def health_check():
     }
 
 
-# TODO: Import and include routers
-# from app.api.v1 import auth, requests, donations, users
-# app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
-# app.include_router(requests.router, prefix="/api/v1/requests", tags=["Blood Requests"])
-# app.include_router(donations.router, prefix="/api/v1/donations", tags=["Donations"])
-# app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+# Import routers
+from app.routers import auth
+
+# Include routers
+app.include_router(auth.router, prefix="/api")
 
 
 if __name__ == "__main__":
