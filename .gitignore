@@ -216,12 +216,25 @@ __marimo__/
 *.log
 docker-compose.override.yml
 
+# Firebase credentials (NEVER commit these!)
+firebase-credentials.json
+google-services.json
+GoogleService-Info.plist
+
+# KanVer specific
+backend/firebase-credentials.json
+frontend/android/app/google-services.json
+frontend/ios/Runner/GoogleService-Info.plist
+
 # OS specific
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
 *~
+
+# Maestro
+.maestro/
 
 # IDE
 .idea/
