@@ -126,10 +126,10 @@ def upgrade() -> None:
     # Drop commitment_id column (not in roadmap)
     op.drop_column('notifications', 'commitment_id')
     
-    # Update indexes
-    op.drop_index('idx_notifications_user', table_name='notifications')
-    op.drop_index('idx_notifications_status', table_name='notifications')
-    op.drop_index('idx_notifications_created', table_name='notifications')
+    # Update indexes (use if_exists to handle cases where indexes may not exist)
+    op.drop_index('idx_notifications_user', table_name='notifications', if_exists=True)
+    op.drop_index('idx_notifications_status', table_name='notifications', if_exists=True)
+    op.drop_index('idx_notifications_created', table_name='notifications', if_exists=True)
     
     op.create_index('idx_notifications_user_read', 'notifications', ['user_id', 'is_read'], unique=False)
     op.create_index('idx_notifications_user_unread', 'notifications', ['user_id'], 
