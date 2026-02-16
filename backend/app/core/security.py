@@ -52,14 +52,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def validate_password_strength(password: str) -> tuple[bool, str]:
     """
-    Validate password strength according to security requirements.
-    
-    Requirements:
-    - Minimum 8 characters
-    - At least one uppercase letter
-    - At least one lowercase letter
-    - At least one digit
-    - At least one special character
+    Validate password strength (minimum 8 characters).
     
     Args:
         password: The password to validate
@@ -68,45 +61,9 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
         tuple[bool, str]: (is_valid, error_message)
         
     Example:
-        >>> validate_password_strength("weak")
+        >>> validate_password_strength("pass")
         (False, "Password must be at least 8 characters long")
-        >>> validate_password_strength("StrongPass123!")
-        (True, "")
-    """
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters long"
-    
-    if not re.search(r"[A-Z]", password):
-        return False, "Password must contain at least one uppercase letter"
-    
-    if not re.search(r"[a-z]", password):
-        return False, "Password must contain at least one lowercase letter"
-    
-    if not re.search(r"\d", password):
-        return False, "Password must contain at least one digit"
-    
-    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        return False, "Password must contain at least one special character (!@#$%^&*...)"
-    
-    return True, ""
-
-
-def validate_password_strength_simple(password: str) -> tuple[bool, str]:
-    """
-    Simple password validation (minimum 8 characters only).
-    
-    Use this for less strict password requirements.
-    
-    Args:
-        password: The password to validate
-        
-    Returns:
-        tuple[bool, str]: (is_valid, error_message)
-        
-    Example:
-        >>> validate_password_strength_simple("pass")
-        (False, "Password must be at least 8 characters long")
-        >>> validate_password_strength_simple("password123")
+        >>> validate_password_strength("password123")
         (True, "")
     """
     if len(password) < 8:

@@ -20,14 +20,12 @@ from .status import (
     Priority,
     CommitmentStatus,
     DonationStatus,
-    NotificationStatus,
     NotificationType,
     ALL_REQUEST_STATUSES,
     ALL_REQUEST_TYPES,
     ALL_PRIORITIES,
     ALL_COMMITMENT_STATUSES,
     ALL_DONATION_STATUSES,
-    ALL_NOTIFICATION_STATUSES,
     ALL_NOTIFICATION_TYPES,
 )
 
@@ -48,13 +46,11 @@ __all__ = [
     "Priority",
     "CommitmentStatus",
     "DonationStatus",
-    "NotificationStatus",
     "NotificationType",
     "ALL_REQUEST_STATUSES",
     "ALL_REQUEST_TYPES",
     "ALL_PRIORITIES",
     "ALL_COMMITMENT_STATUSES",
     "ALL_DONATION_STATUSES",
-    "ALL_NOTIFICATION_STATUSES",
     "ALL_NOTIFICATION_TYPES",
 ]

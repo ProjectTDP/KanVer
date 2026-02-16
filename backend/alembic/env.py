@@ -2,7 +2,7 @@
 Alembic Environment Configuration for KanVer
 
 This file configures Alembic to work with:
-- SQLAlchemy 2.0+
+- SQLAlchemy 2.0+ (sync mode for migrations)
 - PostgreSQL with PostGIS extension
 - GeoAlchemy2 for geographic types
 - Environment-based database URL
@@ -10,12 +10,19 @@ This file configures Alembic to work with:
 
 from logging.config import fileConfig
 import os
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, create_engine
 from sqlalchemy import pool
+from sqlalchemy.ext.declarative import declarative_base
 from alembic import context
 
-# Import your models' Base
-from app.database import Base
+# Create a separate Base for Alembic (sync mode)
+Base = declarative_base()
+
+# Import all models to register them with metadata
+# This ensures Alembic can see all tables
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 from app.models import (
     User,
     Hospital,
@@ -26,6 +33,10 @@ from app.models import (
     Donation,
     Notification,
 )
+
+# Get the actual metadata from models
+from app import models
+target_metadata = models.Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -39,18 +50,15 @@ if config.config_file_name is not None:
 # Set the SQLAlchemy URL from environment variable
 database_url = os.getenv(
     "DATABASE_URL",
-    "postgresql://kanver_user:kanver_secure_pass_2024@postgres:5432/kanver_db"
+    "postgresql://kanver_user:kanver_secure_pass_2024@db:5432/kanver_db"
 )
+
+# Convert async URL to sync URL for Alembic migrations
+# Alembic uses sync operations, so we need psycopg2
+if database_url.startswith("postgresql+asyncpg://"):
+    database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+
 config.set_main_option("sqlalchemy.url", database_url)
-
-# add your model's MetaData object here
-# for 'autogenerate' support
-target_metadata = Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -87,9 +95,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    # Create sync engine for migrations
+    connectable = create_engine(
+        config.get_main_option("sqlalchemy.url"),
         poolclass=pool.NullPool,
     )
 

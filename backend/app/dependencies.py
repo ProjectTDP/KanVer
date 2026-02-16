@@ -7,12 +7,13 @@ Provides reusable dependencies for authentication, authorization, and database a
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import Optional
 import uuid
 
 from .database import get_db
-from .core.auth import decode_token, verify_token_type
+from .auth import decode_token, verify_token_type
 from .models import User
 from .constants import UserRole
 
@@ -23,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ) -> User:
     """
     Get the current authenticated user from JWT token.
@@ -71,8 +72,9 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
     
-    # Get user from database
-    user = db.query(User).filter(User.user_id == user_id).first()
+    # Get user from database (async)
+    result = await db.execute(select(User).filter(User.user_id == user_id))
+    user = result.scalar_one_or_none()
     
     if user is None:
         raise credentials_exception
@@ -150,7 +152,7 @@ require_user = require_role([UserRole.USER.value, UserRole.NURSE.value, UserRole
 
 async def get_optional_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
     """
     Get current user if token is provided, otherwise return None.

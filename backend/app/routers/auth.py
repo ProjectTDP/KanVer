@@ -5,7 +5,8 @@ Handles user registration, login, and token refresh endpoints.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from jose import JWTError
 
 from ..database import get_db
@@ -20,11 +21,11 @@ from ..schemas import (
     ErrorResponse
 )
 from ..core.security import hash_password, verify_password
-from ..core.auth import create_access_token, create_refresh_token, decode_token, verify_token_type
+from ..auth import create_access_token, create_refresh_token, decode_token, verify_token_type
 from ..constants import UserRole
 
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(tags=["Authentication"])
 
 
 @router.post(
@@ -41,7 +42,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 )
 async def register(
     user_data: UserRegisterRequest,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Register a new user account.
@@ -57,10 +58,13 @@ async def register(
     """
     
     # Check if phone number already exists (excluding soft-deleted users)
-    existing_user = db.query(User).filter(
-        User.phone_number == user_data.phone_number,
-        User.deleted_at.is_(None)
-    ).first()
+    result = await db.execute(
+        select(User).filter(
+            User.phone_number == user_data.phone_number,
+            User.deleted_at.is_(None)
+        )
+    )
+    existing_user = result.scalar_one_or_none()
     
     if existing_user:
         raise HTTPException(
@@ -70,10 +74,13 @@ async def register(
     
     # Check if email already exists (if provided)
     if user_data.email:
-        existing_email = db.query(User).filter(
-            User.email == user_data.email,
-            User.deleted_at.is_(None)
-        ).first()
+        result = await db.execute(
+            select(User).filter(
+                User.email == user_data.email,
+                User.deleted_at.is_(None)
+            )
+        )
+        existing_email = result.scalar_one_or_none()
         
         if existing_email:
             raise HTTPException(
@@ -101,8 +108,8 @@ async def register(
     )
     
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     
     # Generate tokens
     access_token = create_access_token(
@@ -136,7 +143,7 @@ async def register(
 )
 async def login(
     credentials: UserLoginRequest,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Login with phone number and password.
@@ -148,9 +155,10 @@ async def login(
     """
     
     # Find user by phone number
-    user = db.query(User).filter(
-        User.phone_number == credentials.phone_number
-    ).first()
+    result = await db.execute(
+        select(User).filter(User.phone_number == credentials.phone_number)
+    )
+    user = result.scalar_one_or_none()
     
     # Check if user exists and password is correct
     if not user or not verify_password(credentials.password, user.password_hash):
@@ -194,7 +202,7 @@ async def login(
 )
 async def refresh_token(
     token_data: RefreshTokenRequest,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Refresh access token using a valid refresh token.
@@ -227,7 +235,11 @@ async def refresh_token(
         raise credentials_exception
     
     # Get user from database
-    user = db.query(User).filter(User.user_id == user_id_str).first()
+    import uuid
+    result = await db.execute(
+        select(User).filter(User.user_id == uuid.UUID(user_id_str))
+    )
+    user = result.scalar_one_or_none()
     
     if user is None:
         raise credentials_exception

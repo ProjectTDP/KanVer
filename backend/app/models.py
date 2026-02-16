@@ -30,7 +30,6 @@ from .constants import (
     Priority,
     CommitmentStatus,
     DonationStatus,
-    NotificationStatus,
 )
 
 
@@ -458,9 +457,10 @@ class QRCode(Base):
     QR Code model - Stores QR codes for donation verification
     
     Features:
-    - Unique QR code string
+    - Unique token with HMAC-SHA256 signature
     - Expiration handling (default 15 minutes)
     - One-time use (is_used flag)
+    - Tracks who verified the donation
     """
     
     __tablename__ = "qr_codes"
@@ -472,11 +472,13 @@ class QRCode(Base):
     commitment_id = Column(UUID(as_uuid=True), ForeignKey("donation_commitments.commitment_id"), unique=True, nullable=False)
     
     # QR Code Data
-    qr_code_string = Column(String(255), unique=True, nullable=False)
+    token = Column(String(255), unique=True, nullable=False)
+    signature = Column(Text, nullable=False)
     
     # Usage Tracking
     is_used = Column(Boolean, nullable=False, default=False, server_default="false")
     used_at = Column(DateTime(timezone=True), nullable=True)
+    used_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
     
     # Timestamps
     created_at = Column(
@@ -489,12 +491,13 @@ class QRCode(Base):
     # Check Constraints and Indexes
     __table_args__ = (
         CheckConstraint("expires_at > created_at", name="chk_qr_dates_valid"),
-        Index("idx_qr_codes_string", "qr_code_string"),
-        Index("idx_qr_codes_expires", "expires_at", postgresql_where=(Column("is_used") == False)),
+        Index("idx_qr_codes_token", "token"),
+        Index("idx_qr_codes_commitment", "commitment_id", postgresql_where=(Column("is_used") == False)),
     )
     
     # Relationships
     commitment = relationship("DonationCommitment", foreign_keys=[commitment_id])
+    verified_by_user = relationship("User", foreign_keys=[used_by])
     
     def __repr__(self):
         return f"<QRCode(qr_id={self.qr_id}, commitment_id={self.commitment_id}, is_used={self.is_used})>"
@@ -516,10 +519,11 @@ class Donation(Base):
     Donation model - Records completed blood donations
     
     Features:
-    - Links to commitment and request
+    - Links to commitment, request, and QR code
     - Nurse verification tracking
-    - Hero points awarded tracking
+    - Hero points earned tracking
     - Status management
+    - Donation type tracking (WHOLE_BLOOD or APHERESIS)
     """
     
     __tablename__ = "donations"
@@ -528,43 +532,50 @@ class Donation(Base):
     donation_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Foreign Keys
-    commitment_id = Column(UUID(as_uuid=True), ForeignKey("donation_commitments.commitment_id"), unique=True, nullable=False)
-    request_id = Column(UUID(as_uuid=True), ForeignKey("blood_requests.request_id"), nullable=False)
+    request_id = Column(UUID(as_uuid=True), ForeignKey("blood_requests.request_id"), nullable=True)
+    commitment_id = Column(UUID(as_uuid=True), ForeignKey("donation_commitments.commitment_id"), nullable=True)
     donor_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
     hospital_id = Column(UUID(as_uuid=True), ForeignKey("hospitals.hospital_id"), nullable=False)
-    verified_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
+    verified_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
+    qr_id = Column(UUID(as_uuid=True), ForeignKey("qr_codes.qr_id"), nullable=False)
     
     # Donation Details
     blood_type = Column(String(10), nullable=False)
+    donation_type = Column(String(50), nullable=False)
     units_donated = Column(Integer, nullable=False, default=1, server_default="1")
     
     # Status
     status = Column(
         String(50),
         nullable=False,
-        default=DonationStatus.PENDING.value,
-        server_default=DonationStatus.PENDING.value,
+        default=DonationStatus.COMPLETED.value,
+        server_default=DonationStatus.COMPLETED.value,
     )
     
     # Gamification
-    hero_points_awarded = Column(Integer, nullable=False, default=0, server_default="0")
+    hero_points_earned = Column(Integer, nullable=False, default=50, server_default="50")
     
     # Timestamps
-    donated_at = Column(
+    donation_date = Column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.current_timestamp(),
     )
-    verified_at = Column(DateTime(timezone=True), nullable=True)
-    
-    # Notes
-    notes = Column(Text, nullable=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.current_timestamp(),
+    )
     
     # Check Constraints and Indexes
     __table_args__ = (
         CheckConstraint(
-            f"status IN ('{DonationStatus.PENDING.value}', '{DonationStatus.VERIFIED.value}', '{DonationStatus.REJECTED.value}')",
+            f"status IN ('{DonationStatus.COMPLETED.value}', '{DonationStatus.CANCELLED.value}', '{DonationStatus.REJECTED.value}')",
             name="chk_donation_status",
+        ),
+        CheckConstraint(
+            f"donation_type IN ('{RequestType.WHOLE_BLOOD.value}', '{RequestType.APHERESIS.value}')",
+            name="chk_donation_type",
         ),
         CheckConstraint("units_donated > 0", name="chk_units_donated_positive"),
         Index("idx_donations_donor", "donor_id"),
@@ -574,11 +585,12 @@ class Donation(Base):
     )
     
     # Relationships
-    commitment = relationship("DonationCommitment", foreign_keys=[commitment_id])
     request = relationship("BloodRequest", foreign_keys=[request_id])
+    commitment = relationship("DonationCommitment", foreign_keys=[commitment_id])
     donor = relationship("User", foreign_keys=[donor_id])
     hospital = relationship("Hospital", foreign_keys=[hospital_id])
     verifier = relationship("User", foreign_keys=[verified_by])
+    qr_code = relationship("QRCode", foreign_keys=[qr_id])
     
     def __repr__(self):
         return f"<Donation(donation_id={self.donation_id}, donor_id={self.donor_id}, status={self.status})>"
@@ -586,12 +598,13 @@ class Donation(Base):
 
 class Notification(Base):
     """
-    Notification model - Stores push notifications sent to users
+    Notification model - Stores in-app and push notifications sent to users
     
     Features:
     - Firebase Cloud Messaging integration
-    - Status tracking (PENDING → SENT → DELIVERED → READ)
-    - Related entity tracking (request_id, commitment_id, donation_id)
+    - Read status tracking
+    - Push notification delivery tracking
+    - Related entity tracking (request_id, donation_id)
     """
     
     __tablename__ = "notifications"
@@ -600,25 +613,21 @@ class Notification(Base):
     notification_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Foreign Key
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     
     # Notification Content
-    title = Column(String(255), nullable=False)
-    body = Column(Text, nullable=False)
     notification_type = Column(String(50), nullable=False)
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
     
     # Related Entities (nullable - not all notifications are related to these)
-    request_id = Column(UUID(as_uuid=True), ForeignKey("blood_requests.request_id"), nullable=True)
-    commitment_id = Column(UUID(as_uuid=True), ForeignKey("donation_commitments.commitment_id"), nullable=True)
-    donation_id = Column(UUID(as_uuid=True), ForeignKey("donations.donation_id"), nullable=True)
+    request_id = Column(UUID(as_uuid=True), ForeignKey("blood_requests.request_id", ondelete="SET NULL"), nullable=True)
+    donation_id = Column(UUID(as_uuid=True), ForeignKey("donations.donation_id", ondelete="SET NULL"), nullable=True)
     
-    # Status
-    status = Column(
-        String(50),
-        nullable=False,
-        default=NotificationStatus.PENDING.value,
-        server_default=NotificationStatus.PENDING.value,
-    )
+    # Status Tracking
+    is_read = Column(Boolean, nullable=False, default=False, server_default="false")
+    read_at = Column(DateTime(timezone=True), nullable=True)
+    is_push_sent = Column(Boolean, nullable=False, default=False, server_default="false")
     
     # Timestamps
     created_at = Column(
@@ -626,26 +635,17 @@ class Notification(Base):
         nullable=False,
         server_default=func.current_timestamp(),
     )
-    sent_at = Column(DateTime(timezone=True), nullable=True)
-    delivered_at = Column(DateTime(timezone=True), nullable=True)
-    read_at = Column(DateTime(timezone=True), nullable=True)
     
     # Check Constraints and Indexes
     __table_args__ = (
-        CheckConstraint(
-            f"status IN ('{NotificationStatus.PENDING.value}', '{NotificationStatus.SENT.value}', '{NotificationStatus.DELIVERED.value}', '{NotificationStatus.READ.value}', '{NotificationStatus.FAILED.value}')",
-            name="chk_notification_status",
-        ),
-        Index("idx_notifications_user", "user_id"),
-        Index("idx_notifications_status", "status"),
-        Index("idx_notifications_created", "created_at"),
+        Index("idx_notifications_user_read", "user_id", "is_read"),
+        Index("idx_notifications_user_unread", "user_id", postgresql_where=(Column("is_read") == False)),
     )
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])
-    request = relationship("BloodRequest", foreign_keys=[request_id])
-    commitment = relationship("DonationCommitment", foreign_keys=[commitment_id])
+    blood_request = relationship("BloodRequest", foreign_keys=[request_id])
     donation = relationship("Donation", foreign_keys=[donation_id])
     
     def __repr__(self):
-        return f"<Notification(notification_id={self.notification_id}, user_id={self.user_id}, type={self.notification_type}, status={self.status})>"
+        return f"<Notification(notification_id={self.notification_id}, user_id={self.user_id}, type={self.notification_type}, is_read={self.is_read})>"

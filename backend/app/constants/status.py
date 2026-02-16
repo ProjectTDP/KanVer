@@ -43,19 +43,9 @@ class CommitmentStatus(str, Enum):
 class DonationStatus(str, Enum):
     """Completed donation status enumeration"""
     
-    PENDING = "PENDING"        # Donation pending verification
-    VERIFIED = "VERIFIED"      # Donation verified by nurse
+    COMPLETED = "COMPLETED"    # Donation completed successfully
+    CANCELLED = "CANCELLED"    # Donation was cancelled
     REJECTED = "REJECTED"      # Donation was rejected (medical reasons)
-
-
-class NotificationStatus(str, Enum):
-    """Notification delivery status enumeration"""
-    
-    PENDING = "PENDING"        # Notification queued, not sent yet
-    SENT = "SENT"              # Notification sent to FCM
-    DELIVERED = "DELIVERED"    # Notification delivered to device
-    READ = "READ"              # Notification read by user
-    FAILED = "FAILED"          # Notification failed to send
 
 
 class NotificationType(str, Enum):
@@ -98,5 +88,4 @@ ALL_REQUEST_TYPES = [rtype.value for rtype in RequestType]
 ALL_PRIORITIES = [priority.value for priority in Priority]
 ALL_COMMITMENT_STATUSES = [status.value for status in CommitmentStatus]
 ALL_DONATION_STATUSES = [status.value for status in DonationStatus]
-ALL_NOTIFICATION_STATUSES = [status.value for status in NotificationStatus]
 ALL_NOTIFICATION_TYPES = [ntype.value for ntype in NotificationType]
