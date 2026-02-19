@@ -222,6 +222,7 @@ google-services.json
 GoogleService-Info.plist
 
 # KanVer specific
+backend/logs/
 backend/firebase-credentials.json
 frontend/android/app/google-services.json
 frontend/ios/Runner/GoogleService-Info.plist
