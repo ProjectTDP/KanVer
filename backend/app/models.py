@@ -91,6 +91,12 @@ class User(Base, TimestampMixin):
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    # Doğum tarihi (18 yaş kontrolü için zorunlu)
+    date_of_birth: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
     # Şifre hash'i (bcrypt)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 

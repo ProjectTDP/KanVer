@@ -565,22 +565,16 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/core/security.py` oluştur:
-  - [ ] `CryptContext` ile bcrypt setup (passlib)
-  - [ ] `hash_password(plain: str) -> str`
-  - [ ] `verify_password(plain: str, hashed: str) -> bool`
-  - [ ] Password strength validation (min 8 karakter)
-- [ ] Unit test yaz (`tests/test_password.py`):
-  - [ ] test_hash_password_returns_bcrypt_hash
-  - [ ] test_verify_password_correct
-  - [ ] test_verify_password_incorrect
-  - [ ] test_password_strength_valid (>= 8 karakter)
-  - [ ] test_password_strength_too_short (< 8 karakter)
-  - [ ] test_hash_uniqueness (aynı şifre farklı hash üretir)
-  - [ ] test_hash_not_plaintext (hash != plain password)
+- [x] `backend/app/core/security.py` oluştur:
+  - [x] Doğrudan `bcrypt` kütüphanesi ile şifreleme altyapısı (Performans ve stabilite nedeniyle `passlib` yerine tercih edildi)
+  - [x] `hash_password(plain: str) -> str`
+  - [x] `verify_password(plain: str, hashed: str) -> bool`
+  - [x] `validate_password_strength(password: str)` (min 8 karakter, büyük/küçük harf ve rakam kontrolü)
+- [x] Unit test yaz (`tests/test_password.py`)
+- [x] Bcrypt 72 byte limit koruması (truncate) eklendi
 
 ---
 
@@ -588,36 +582,36 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/auth.py` oluştur:
-  - [ ] `create_access_token(data: dict, expires_delta: timedelta) -> str`
-  - [ ] `create_refresh_token(data: dict) -> str`
-  - [ ] `decode_token(token: str) -> dict`
-  - [ ] Token payload: `{"sub": user_id, "role": role, "exp": expiry}`
-  - [ ] Access token TTL: 30 dakika (configurable)
-  - [ ] Refresh token TTL: 7 gün (configurable)
-- [ ] `backend/app/dependencies.py` güncelle:
-  - [ ] `get_current_user(token: str = Depends(oauth2_scheme)) -> User`
-  - [ ] `get_current_active_user` (deleted_at IS NULL kontrolü)
-  - [ ] `require_role(roles: list[str])` — rol bazlı yetkilendirme dependency
-- [ ] OAuth2PasswordBearer scheme tanımla
-- [ ] Token decode hata yönetimi (expired, invalid)
-- [ ] Unit test yaz (`tests/test_jwt.py`):
-  - [ ] test_create_access_token_valid
-  - [ ] test_create_refresh_token_valid
-  - [ ] test_decode_valid_token
-  - [ ] test_decode_expired_token_raises
-  - [ ] test_decode_invalid_token_raises
-  - [ ] test_token_contains_correct_claims (sub, role, exp)
-  - [ ] test_access_token_ttl_30_minutes
-  - [ ] test_refresh_token_ttl_7_days
-  - [ ] test_get_current_user_valid_token
-  - [ ] test_get_current_user_invalid_token (401)
-  - [ ] test_get_current_user_expired_token (401)
-  - [ ] test_require_role_authorized
-  - [ ] test_require_role_unauthorized (403)
+- [x] `backend/app/auth.py` oluştur:
+  - [x] `create_access_token(data: dict, expires_delta: timedelta) -> str`
+  - [x] `create_refresh_token(data: dict) -> str`
+  - [x] `decode_token(token: str) -> dict`
+  - [x] Token payload: `{"sub": user_id, "role": role, "exp": expiry}`
+  - [x] Access token TTL: 30 dakika (configurable)
+  - [x] Refresh token TTL: 7 gün (configurable)
+- [x] `backend/app/dependencies.py` güncelle:
+  - [x] `get_current_user(token: str = Depends(oauth2_scheme)) -> User`
+  - [x] `get_current_active_user` (deleted_at IS NULL kontrolü)
+  - [x] `require_role(roles: list[str])` — rol bazlı yetkilendirme dependency
+- [x] OAuth2PasswordBearer scheme tanımla
+- [x] Token decode hata yönetimi (expired, invalid)
+- [x] Unit test yaz (`tests/test_jwt.py`):
+  - [x] test_create_access_token_valid
+  - [x] test_create_refresh_token_valid
+  - [x] test_decode_valid_token
+  - [x] test_decode_expired_token_raises
+  - [x] test_decode_invalid_token_raises
+  - [x] test_token_contains_correct_claims (sub, role, exp)
+  - [x] test_access_token_ttl_30_minutes
+  - [x] test_refresh_token_ttl_7_days
+  - [x] test_get_current_user_valid_token
+  - [x] test_get_current_user_invalid_token (401)
+  - [x] test_get_current_user_expired_token (401)
+  - [x] test_require_role_authorized
+  - [x] test_require_role_unauthorized (403)
 
 ---
 
@@ -625,48 +619,48 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/schemas.py` içinde auth şemaları oluştur:
-  - [ ] `UserRegisterRequest`:
-    - [ ] phone_number (validator: Türkiye format +90...)
-    - [ ] password (min 8 karakter)
-    - [ ] full_name
-    - [ ] email (optional)
-    - [ ] date_of_birth
-    - [ ] blood_type (enum validation)
-  - [ ] `UserLoginRequest`:
-    - [ ] phone_number
-    - [ ] password
-  - [ ] `TokenResponse`:
-    - [ ] access_token
-    - [ ] refresh_token
-    - [ ] token_type: "bearer"
-  - [ ] `RefreshTokenRequest`:
-    - [ ] refresh_token
-  - [ ] `UserResponse`:
-    - [ ] user_id, phone_number, full_name, email, blood_type
-    - [ ] role, is_verified, hero_points, trust_score
-    - [ ] total_donations, created_at
-    - [ ] password_hash HARİÇ
-  - [ ] `UserUpdateRequest`:
-    - [ ] full_name (optional)
-    - [ ] email (optional)
-    - [ ] fcm_token (optional)
-- [ ] Custom validators:
-  - [ ] Telefon numarası format kontrolü
-  - [ ] Kan grubu geçerlilik kontrolü
-  - [ ] Doğum tarihi kontrolü (18 yaş üstü)
-- [ ] Unit test yaz (`tests/test_schemas.py`):
-  - [ ] test_user_register_valid_data
-  - [ ] test_user_register_invalid_phone_format
-  - [ ] test_user_register_invalid_blood_type
-  - [ ] test_user_register_underage_rejected (< 18 yaş)
-  - [ ] test_user_register_short_password (< 8 karakter)
-  - [ ] test_user_response_excludes_password_hash
-  - [ ] test_token_response_schema_fields
-  - [ ] test_user_update_request_optional_fields
+- [x] `backend/app/schemas.py` içinde auth şemaları oluştur:
+  - [x] `UserRegisterRequest`:
+    - [x] phone_number (validator: Türkiye format +90...)
+    - [x] password (min 8 karakter)
+    - [x] full_name
+    - [x] email (optional)
+    - [x] date_of_birth
+    - [x] blood_type (enum validation)
+  - [x] `UserLoginRequest`:
+    - [x] phone_number
+    - [x] password
+  - [x] `TokenResponse`:
+    - [x] access_token
+    - [x] refresh_token
+    - [x] token_type: "bearer"
+  - [x] `RefreshTokenRequest`:
+    - [x] refresh_token
+  - [x] `UserResponse`:
+    - [x] user_id, phone_number, full_name, email, blood_type
+    - [x] role, hero_points, trust_score
+    - [x] total_donations, created_at
+    - [x] password_hash HARİÇ
+  - [x] `UserUpdateRequest`:
+    - [x] full_name (optional)
+    - [x] email (optional)
+    - [x] fcm_token (optional)
+- [x] Custom validators:
+  - [x] Telefon numarası format kontrolü
+  - [x] Kan grubu geçerlilik kontrolü
+  - [x] Doğum tarihi kontrolü (18 yaş üstü)
+- [x] Unit test yaz (`tests/test_schemas.py`):
+  - [x] test_user_register_valid_data
+  - [x] test_user_register_invalid_phone_format
+  - [x] test_user_register_invalid_blood_type
+  - [x] test_user_register_underage_rejected (< 18 yaş)
+  - [x] test_user_register_short_password (< 8 karakter)
+  - [x] test_user_response_excludes_password_hash
+  - [x] test_token_response_schema_fields
+  - [x] test_user_update_request_optional_fields
 
 ---
 
@@ -674,24 +668,24 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/auth.py` oluştur
-- [ ] `POST /api/auth/register` endpoint'i:
-  - [ ] Request body: UserRegisterRequest
-  - [ ] Telefon numarası unique kontrolü (soft delete hariç)
-  - [ ] Email unique kontrolü (varsa)
-  - [ ] Password hash'le
-  - [ ] User oluştur ve kaydet
-  - [ ] Access + Refresh token üret
-  - [ ] Response: TokenResponse + UserResponse
-  - [ ] Error cases:
-    - [ ] 409 Conflict: Telefon zaten kayıtlı
-    - [ ] 409 Conflict: Email zaten kayıtlı
-    - [ ] 422 Validation Error: Geçersiz blood_type, vb.
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/auth`)
-- [ ] Swagger UI üzerinden test et
+- [x] `backend/app/routers/auth.py` oluştur
+- [x] `POST /api/auth/register` endpoint'i:
+  - [x] Request body: UserRegisterRequest
+  - [x] Telefon numarası unique kontrolü (soft delete hariç)
+  - [x] Email unique kontrolü (varsa)
+  - [x] Password hash'le
+  - [x] User oluştur ve kaydet
+  - [x] Access + Refresh token üret
+  - [x] Response: TokenResponse + UserResponse
+  - [x] Error cases:
+    - [x] 409 Conflict: Telefon zaten kayıtlı
+    - [x] 409 Conflict: Email zaten kayıtlı
+    - [x] 422 Validation Error: Geçersiz blood_type, vb.
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/auth`)
+- [x] Swagger UI üzerinden test et
 
 ---
 
@@ -699,28 +693,28 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `POST /api/auth/login` endpoint'i:
-  - [ ] Request body: UserLoginRequest
-  - [ ] Telefon numarasına göre user bul
-  - [ ] Password doğrula (verify_password)
-  - [ ] Soft deleted kontrolü
-  - [ ] Access + Refresh token üret
-  - [ ] Response: TokenResponse
-  - [ ] Error cases:
-    - [ ] 401 Unauthorized: Yanlış telefon veya şifre
-    - [ ] 403 Forbidden: Hesap silinmiş
-- [ ] `POST /api/auth/refresh` endpoint'i:
-  - [ ] Request body: RefreshTokenRequest
-  - [ ] Refresh token decode et
-  - [ ] User'ın hala aktif olduğunu doğrula
-  - [ ] Yeni access + refresh token üret
-  - [ ] Response: TokenResponse
-  - [ ] Error cases:
-    - [ ] 401 Unauthorized: Geçersiz veya expired refresh token
-- [ ] Swagger UI üzerinden login → token al → protected endpoint test akışı
+- [x] `POST /api/auth/login` endpoint'i:
+  - [x] Request body: UserLoginRequest
+  - [x] Telefon numarasına göre user bul
+  - [x] Password doğrula (verify_password)
+  - [x] Soft deleted kontrolü
+  - [x] Access + Refresh token üret
+  - [x] Response: TokenResponse
+  - [x] Error cases:
+    - [x] 401 Unauthorized: Yanlış telefon veya şifre
+    - [x] 403 Forbidden: Hesap silinmiş
+- [x] `POST /api/auth/refresh` endpoint'i:
+  - [x] Request body: RefreshTokenRequest
+  - [x] Refresh token decode et
+  - [x] User'ın hala aktif olduğunu doğrula (is_active + deleted_at kontrolü)
+  - [x] Yeni access + refresh token üret
+  - [x] Response: TokenResponse
+  - [x] Error cases:
+    - [x] 401 Unauthorized: Geçersiz veya expired refresh token, hesap aktif değil
+- [x] Swagger UI üzerinden login → token al → protected endpoint test akışı
 
 ---
 

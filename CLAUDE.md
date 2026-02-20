@@ -499,9 +499,36 @@ GET /api/admin/users              # Kullanıcı listesi
   - 2 örnek blood_request (ACTIVE durumunda)
   - Idempotent tasarım (tekrar çalıştırılabilir)
   - Integration test'ler yazıldı
+- ✅ **Phase 2 - Task 3.1:** Password Hashing & Security Utilities
+  - `validate_password_strength()` fonksiyonu eklendi
+  - 12 password test'i geçiyor (hash + strength validation)
+- ✅ **Phase 2 - Task 3.2:** JWT Token Service
+  - `app/auth.py` oluşturuldu (create_access_token, create_refresh_token, decode_token)
+  - `app/dependencies.py` güncellendi (get_current_user, get_current_active_user, require_role)
+  - OAuth2PasswordBearer scheme tanımlandı
+  - 18 JWT test'i geçiyor (token + dependency tests)
+- ✅ **Phase 2 - Task 3.3:** Pydantic Schemas - Auth
+  - `app/schemas.py` oluşturuldu
+  - UserRegisterRequest (phone, password, full_name, email, date_of_birth, blood_type)
+  - UserLoginRequest, RefreshTokenRequest, UserUpdateRequest
+  - TokenResponse, UserResponse, RegisterResponse
+  - Custom validators (phone format, blood type, age 18+, email format)
+  - 32 schema test'i geçiyor
+- ✅ **Phase 2 - Task 3.4:** Auth Router - Register
+  - `app/routers/auth.py` oluşturuldu
+  - POST /api/auth/register endpoint'i
+  - Phone/email unique kontrolü, password hash'leme, phone normalization
+  - Token üretimi (access + refresh)
+  - main.py'e auth router eklendi (prefix: /api/auth)
+- ✅ **Phase 2 - Task 3.5:** Auth Router - Login & Refresh
+  - POST /api/auth/login endpoint'i (wrong password, deleted user handling)
+  - POST /api/auth/refresh endpoint'i (token validation, new token generation, is_active + deleted_at kontrolü)
+  - 18 auth endpoint test'i geçiyor
+  - User modeline date_of_birth alanı eklendi (migration 442f47db67bf)
+  - **Toplam:** 173 test geçiyor
 
 ### Sırada
-- ⏳ **Phase 2 - Week 3:** Auth System (JWT)
+- ⏳ **Phase 2 - Task 3.6-3.x:** User Endpoints & Profile
 
 ---
 

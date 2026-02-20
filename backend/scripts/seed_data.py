@@ -2,22 +2,13 @@
 """
 KanVer Seed Data Script
 
-Bu script, test ve geliştirme için örnek veriler oluşturur:
-- 5 Antalya hastanesi (gerçek koordinatlarla)
-- 10 test kullanıcı (her kan grubundan)
-- 1 NURSE, 1 ADMIN kullanıcısı
-- Hospital staff atamaları
-- 2 örnek blood_request (ACTIVE durumunda)
-
-Idempotent: Tekrar çalıştırılabilir, veri çoğaltmaz.
-
-Kullanım:
-    python -m scripts.seed_data
+Bu script, test ve geliştirme için örnek veriler oluşturur.
+Refactored to be callable from tests without creating a new event loop.
 """
 import asyncio
 import sys
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -31,11 +22,13 @@ from app.constants import BloodType, UserRole, RequestStatus, RequestType, Prior
 from app.core.security import hash_password
 
 
+# Common date of birth for seed users
+SEED_USER_DOB = datetime(1990, 1, 1, tzinfo=timezone.utc)
+
 # =============================================================================
 # SEED DATA
 # =============================================================================
 
-# Antalya Hastaneleri (gerçek koordinatlar)
 HOSPITALS_DATA = [
     {
         "hospital_code": "AKDENIZ001",
@@ -43,7 +36,7 @@ HOSPITALS_DATA = [
         "address": "Dumlupınar Bulvarı, 07058 Antalya",
         "district": "Kepez",
         "city": "Antalya",
-        "location": "POINT(30.6425 36.8941)",  # lng, lat (PostGIS format)
+        "location": "POINT(30.6425 36.8941)",
         "geofence_radius_meters": 5000,
         "phone_number": "+902422274400",
         "email": "info@akdenizhastane.gov.tr",
@@ -94,343 +87,96 @@ HOSPITALS_DATA = [
     },
 ]
 
-
-# Test Kullanıcıları (her kan grubundan)
 USERS_DATA = [
-    # Regular users (donors) - Her kan grubundan birer
-    {
-        "phone_number": "+905301000001",
-        "email": "test.o-negative@kanver.local",
-        "full_name": "Ahmet Yılmaz",
-        "blood_type": "O-",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000002",
-        "email": "test.o-positive@kanver.local",
-        "full_name": "Ayşe Demir",
-        "blood_type": "O+",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000003",
-        "email": "test.a-negative@kanver.local",
-        "full_name": "Mehmet Kaya",
-        "blood_type": "A-",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000004",
-        "email": "test.a-positive@kanver.local",
-        "full_name": "Fatma Şahin",
-        "blood_type": "A+",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000005",
-        "email": "test.b-negative@kanver.local",
-        "full_name": "Ali Çelik",
-        "blood_type": "B-",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000006",
-        "email": "test.b-positive@kanver.local",
-        "full_name": "Zeynep Arslan",
-        "blood_type": "B+",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000007",
-        "email": "test.ab-negative@kanver.local",
-        "full_name": "Hasan Yıldız",
-        "blood_type": "AB-",
-        "role": "USER",
-    },
-    {
-        "phone_number": "+905301000008",
-        "email": "test.ab-positive@kanver.local",
-        "full_name": "Elif Öztürk",
-        "blood_type": "AB+",
-        "role": "USER",
-    },
-    # Staff users
-    {
-        "phone_number": "+905301000010",
-        "email": "nurse.kanver@kanver.local",
-        "full_name": "Hemşire Aylin",
-        "blood_type": "A+",
-        "role": "NURSE",
-    },
-    {
-        "phone_number": "+905301000011",
-        "email": "admin.kanver@kanver.local",
-        "full_name": "Admin KanVer",
-        "blood_type": "O+",
-        "role": "ADMIN",
-    },
+    {"phone_number": "+905301000001", "email": "test.o-neg@kanver.local", "full_name": "Ahmet Y.", "blood_type": "O-", "role": "USER"},
+    {"phone_number": "+905301000002", "email": "test.o-pos@kanver.local", "full_name": "Ayşe D.", "blood_type": "O+", "role": "USER"},
+    {"phone_number": "+905301000003", "email": "test.a-neg@kanver.local", "full_name": "Mehmet K.", "blood_type": "A-", "role": "USER"},
+    {"phone_number": "+905301000004", "email": "test.a-pos@kanver.local", "full_name": "Fatma Ş.", "blood_type": "A+", "role": "USER"},
+    {"phone_number": "+905301000005", "email": "test.b-neg@kanver.local", "full_name": "Ali Ç.", "blood_type": "B-", "role": "USER"},
+    {"phone_number": "+905301000006", "email": "test.b-pos@kanver.local", "full_name": "Zeynep A.", "blood_type": "B+", "role": "USER"},
+    {"phone_number": "+905301000007", "email": "test.ab-neg@kanver.local", "full_name": "Hasan Y.", "blood_type": "AB-", "role": "USER"},
+    {"phone_number": "+905301000008", "email": "test.ab-pos@kanver.local", "full_name": "Elif Ö.", "blood_type": "AB+", "role": "USER"},
+    {"phone_number": "+905301000010", "email": "nurse@kanver.local", "full_name": "Hemşire Aylin", "blood_type": "A+", "role": "NURSE"},
+    {"phone_number": "+905301000011", "email": "admin@kanver.local", "full_name": "Admin KanVer", "blood_type": "O+", "role": "ADMIN"},
 ]
 
-
-# Blood Request'ler
-REQUESTS_DATA = [
-    {
-        "blood_type": "A+",
-        "request_type": "WHOLE_BLOOD",
-        "priority": "URGENT",
-        "units_needed": 2,
-        "patient_name": "Mehmet Kaya",
-        "notes": "Acil kan ihtiyacı, ameliyat öncesi",
-    },
-    {
-        "blood_type": "O-",
-        "request_type": "APHERESIS",
-        "priority": "CRITICAL",
-        "units_needed": 1,
-        "patient_name": "Fatma Şahin",
-        "notes": "Aferez (trombosit) ihtiyacı, kemoterapi nedeniyle",
-    },
-]
-
-
-# Hospital Staff atamaları (user_phone -> hospital_code)
 STAFF_ASSIGNMENTS = [
-    {"user_phone": "+905301000010", "hospital_code": "AKDENIZ001"},  # NURSE → Akdeniz Üniversitesi
-    {"user_phone": "+905301000011", "hospital_code": "ANTALIA001"},  # ADMIN → Antalya Eğitim
+    {"user_phone": "+905301000010", "hospital_code": "AKDENIZ001"},
+    {"user_phone": "+905301000011", "hospital_code": "ANTALIA001"},
 ]
 
-
 # =============================================================================
-# SEED FUNCTIONS
+# SEED LOGIC
 # =============================================================================
 
-async def seed_hospitals(session: AsyncSession) -> dict[str, str]:
+async def seed_database(session: AsyncSession, quiet: bool = False):
     """
-    Hastaneleri oluştur (hospital_code unique kontrolü ile).
-
-    Returns:
-        {hospital_code: hospital_id} mapping - BloodRequest oluştururken kullanılacak
+    Main seeding logic. Can be called from CLI or from tests.
     """
+    if not quiet: print("🏥 Seeding Hospitals...")
     hospital_ids = {}
-
     for data in HOSPITALS_DATA:
-        result = await session.execute(
-            select(Hospital).where(Hospital.hospital_code == data["hospital_code"])
-        )
-        existing = result.scalar_one_or_none()
-
-        if existing is None:
-            hospital = Hospital(**data)
-            session.add(hospital)
-            await session.flush()  # ID'nin atanması için flush
-            hospital_ids[data["hospital_code"]] = hospital.id
-            print(f"  ✅ Created: {data['name']}")
+        res = await session.execute(select(Hospital).where(Hospital.hospital_code == data["hospital_code"]))
+        existing = res.scalar_one_or_none()
+        if not existing:
+            h = Hospital(**data)
+            session.add(h)
+            await session.flush()
+            hospital_ids[data["hospital_code"]] = h.id
         else:
             hospital_ids[data["hospital_code"]] = existing.id
-            print(f"  ℹ️  Existing: {data['name']}")
 
-    return hospital_ids
-
-
-async def seed_users(session: AsyncSession) -> dict[str, str]:
-    """
-    Kullanıcıları oluştur (phone_number unique kontrolü ile).
-
-    Returns:
-        {phone_number: user_id} mapping - HospitalStaff ve BloodRequest için kullanılacak
-    """
+    if not quiet: print("👥 Seeding Users...")
     user_ids = {}
-
     for data in USERS_DATA:
-        result = await session.execute(
-            select(User).where(User.phone_number == data["phone_number"])
-        )
-        existing = result.scalar_one_or_none()
-
-        if existing is None:
-            # Password hash ekle (72 byte limiti var)
-            data_copy = data.copy()
-            data_copy["password_hash"] = hash_password("Test1234!")
-
-            user = User(**data_copy)
-            session.add(user)
-            await session.flush()  # ID'nin atanması için flush
-            user_ids[data["phone_number"]] = user.id
-            print(f"  ✅ Created: {data['full_name']} ({data['role']}) - {data['phone_number']}")
+        res = await session.execute(select(User).where(User.phone_number == data["phone_number"]))
+        existing = res.scalar_one_or_none()
+        if not existing:
+            d = data.copy()
+            d["password_hash"] = hash_password("Test1234!")
+            d["date_of_birth"] = SEED_USER_DOB
+            u = User(**d)
+            session.add(u)
+            await session.flush()
+            user_ids[data["phone_number"]] = u.id
         else:
             user_ids[data["phone_number"]] = existing.id
-            print(f"  ℹ️  Existing: {data['full_name']} ({data['role']})")
 
-    return user_ids
-
-
-async def seed_hospital_staff(
-    session: AsyncSession,
-    user_ids: dict[str, str],
-    hospital_ids: dict[str, str]
-) -> int:
-    """
-    NURSE ve ADMIN kullanıcılarını hastanelere at.
-
-    Args:
-        user_ids: seed_users'den dönen mapping
-        hospital_ids: seed_hospitals'den dönen mapping
-
-    Returns:
-        Oluşturulan atama sayısı
-    """
-    count = 0
-
+    if not quiet: print("👨‍⚕️ Seeding Staff...")
     for assignment in STAFF_ASSIGNMENTS:
-        user_id = user_ids.get(assignment["user_phone"])
-        hospital_id = hospital_ids.get(assignment["hospital_code"])
+        u_id = user_ids.get(assignment["user_phone"])
+        h_id = hospital_ids.get(assignment["hospital_code"])
+        if u_id and h_id:
+            res = await session.execute(select(HospitalStaff).where(HospitalStaff.user_id == u_id, HospitalStaff.hospital_id == h_id))
+            if not res.scalar_one_or_none():
+                session.add(HospitalStaff(user_id=u_id, hospital_id=h_id, is_active=True))
 
-        if user_id and hospital_id:
-            # Zaten atanmış mı kontrol et
-            result = await session.execute(
-                select(HospitalStaff).where(
-                    HospitalStaff.user_id == user_id,
-                    HospitalStaff.hospital_id == hospital_id
-                )
-            )
-            existing = result.scalar_one_or_none()
-
-            if existing is None:
-                staff = HospitalStaff(
-                    user_id=user_id,
-                    hospital_id=hospital_id,
-                    is_active=True
-                )
-                session.add(staff)
-                await session.flush()
-                count += 1
-                print(f"  ✅ Created staff assignment: {assignment['user_phone']} → {assignment['hospital_code']}")
-            else:
-                print(f"  ℹ️  Existing staff assignment: {assignment['user_phone']} → {assignment['hospital_code']}")
-        else:
-            print(f"  ⚠️  Skipped staff assignment: User or hospital not found")
-
-    return count
-
-
-async def seed_blood_requests(
-    session: AsyncSession,
-    user_ids: dict[str, str],
-    hospital_ids: dict[str, str]
-) -> int:
-    """
-    Örnek blood request'leri oluştur.
-
-    Args:
-        user_ids: seed_users'den dönen mapping (requester için)
-        hospital_ids: seed_hospitals'den dönen mapping
-
-    Returns:
-        Oluşturulan talep sayısı
-    """
-    count = 0
-
-    # İlk kullanıcıyı requester olarak kullan
-    requester_id = next(iter(user_ids.values()))
-
-    for i, data in enumerate(REQUESTS_DATA):
-        # Her talebi farklı bir hastaneye oluştur
-        hospital_code = list(hospital_ids.keys())[i % len(hospital_ids)]
-        hospital_id = hospital_ids.get(hospital_code)
-
-        if hospital_id and requester_id:
-            # Request code oluştur (#KAN-XXX formatında)
-            request_code = f"#KAN-{100 + i}"
-
-            # Aynı kodla var mı kontrol et
-            result = await session.execute(
-                select(BloodRequest).where(BloodRequest.request_code == request_code)
-            )
-            existing = result.scalar_one_or_none()
-
-            if existing is None:
-                # Hastanenin konumunu string olarak kullan
-                result = await session.execute(
-                    select(Hospital).where(Hospital.id == hospital_id)
-                )
-                hospital = result.scalar_one_or_none()
-
-                # Hospital location string olarak al (WKT format)
-                # Hastane verilerinden koordinatı kullan
-                hospital_data = next((h for h in HOSPITALS_DATA if h["hospital_code"] == hospital_code), None)
-                location = hospital_data["location"] if hospital_data else "POINT(30.6425 36.8941)"
-
-                # Expiry date: 24 saat sonra
-                expires_at = datetime.now() + timedelta(hours=24)
-
-                request = BloodRequest(
-                    request_code=request_code,
-                    requester_id=requester_id,
-                    hospital_id=hospital_id,
-                    blood_type=data["blood_type"],
-                    request_type=data["request_type"],
-                    priority=data["priority"],
-                    units_needed=data["units_needed"],
-                    units_collected=0,
-                    status=RequestStatus.ACTIVE.value,
-                    location=location,
-                    expires_at=expires_at,
-                    patient_name=data["patient_name"],
-                    notes=data["notes"],
-                )
-                session.add(request)
-                await session.flush()
-                count += 1
-                print(f"  ✅ Created blood request: {request_code} ({data['blood_type']}, {data['priority']})")
-            else:
-                print(f"  ℹ️  Existing blood request: {request_code}")
-
-    return count
-
+    if not quiet: print("🩸 Seeding Requests...")
+    h_id = hospital_ids.get("AKDENIZ001")
+    r_id = list(user_ids.values())[0]
+    if h_id and r_id:
+        res = await session.execute(select(BloodRequest).where(BloodRequest.request_code == "#KAN-100"))
+        if not res.scalar_one_or_none():
+            session.add(BloodRequest(
+                request_code="#KAN-100", requester_id=r_id, hospital_id=h_id,
+                blood_type="A+", request_type="WHOLE_BLOOD", priority="URGENT",
+                units_needed=2, status="ACTIVE", location="POINT(30.6425 36.8941)",
+                expires_at=datetime.now(timezone.utc) + timedelta(hours=24)
+            ))
+    
+    await session.flush()
+    if not quiet: print("✅ Seeding Complete!")
 
 async def main():
-    """Ana seed fonksiyonu."""
-    print("🌱 KanVer Seed Data Script")
-    print("=" * 50)
-
     async with AsyncSessionLocal() as session:
         try:
-            # 1. Hastaneleri oluştur ve ID'lerini al
-            print("\n🏥 Hastaneler:")
-            hospital_ids = await seed_hospitals(session)
-            print(f"   Toplam: {len(hospital_ids)} hastane")
-
-            # 2. Kullanıcıları oluştur ve ID'lerini al
-            print("\n👥 Kullanıcılar:")
-            user_ids = await seed_users(session)
-            print(f"   Toplam: {len(user_ids)} kullanıcı")
-
-            # 3. Personel atamalarını yap
-            print("\n👨‍⚕️ Hastane Personeli:")
-            staff_count = await seed_hospital_staff(session, user_ids, hospital_ids)
-            print(f"   Toplam: {staff_count} atama")
-
-            # 4. Blood request'leri oluştur
-            print("\n🩸 Kan Talepleri:")
-            request_count = await seed_blood_requests(session, user_ids, hospital_ids)
-            print(f"   Toplam: {request_count} talep")
-
+            await seed_database(session)
             await session.commit()
-            print("\n" + "=" * 50)
-            print("🎉 Seed data başarıyla tamamlandı!")
-            print("\n📝 Test Credentials:")
-            print("   Password: Test1234!")
-            print(f"   Total Users: {len(user_ids)}")
-            print(f"   Total Hospitals: {len(hospital_ids)}")
-            print(f"   Active Requests: {request_count}")
-
         except Exception as e:
             await session.rollback()
-            print(f"\n❌ Hata: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"❌ Error: {e}")
             sys.exit(1)
 
-
 if __name__ == "__main__":
+    print("🌱 KanVer Seed Data CLI")
     asyncio.run(main())

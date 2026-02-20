@@ -7,6 +7,7 @@ from app.database import test_db_connection, verify_postgis_extension, engine
 from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import KanVerException
 from app.middleware.logging_middleware import LoggingMiddleware
+from app.routers import auth
 import logging
 
 # Setup application logging
@@ -115,3 +116,7 @@ async def detailed_health_check():
             "postgis_enabled": postgis_status
         },
     }
+
+
+# Auth router - /api/auth/*
+app.include_router(auth.router, prefix="/api/auth")

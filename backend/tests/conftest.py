@@ -1,53 +1,17 @@
 import pytest
 import pytest_asyncio
 import asyncio
+import os
 from httpx import AsyncClient, ASGITransport
-from unittest.mock import AsyncMock, patch
+from unittest.mock import MagicMock, patch
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy import text
 from sqlalchemy.pool import NullPool
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """
-    Tüm test session'ı boyunca tek bir event loop kullan.
-
-    Bu, SQLAlchemy async engine'inin birden fazla event loop'a
-    maruz kalmamasını sağlar ve 'Event loop is closed' hatasını önler.
-    """
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    # Session sonunda açık kalan task'ları temizle
-    pending = asyncio.all_tasks(loop)
-    for task in pending:
-        task.cancel()
-    # Loop'u kapat ama hataları yut
-    try:
-        loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-    except Exception:
-        pass
-    finally:
-        loop.close()
+from sqlalchemy import text, event
 
 
 @pytest.fixture(scope="session", autouse=True)
 def mock_settings():
-    """
-    Mock environment settings to avoid ValidationError.
-
-    This fixture allows tests to run without requiring actual .env file,
-    making unit tests truly isolated and fast.
-
-    CRITICAL: This fixture must set environment variables BEFORE any app
-    module is imported, because Settings() reads from os.environ at import time.
-    """
-    import os
-    from unittest.mock import MagicMock
-
-    # Set environment variables BEFORE any app imports
-    # Use 'db' hostname for tests running inside Docker network
+    """Environment ayarlarını mock'lar."""
     os.environ["DATABASE_URL"] = "postgresql+asyncpg://kanver_user:kanver_pass_2024@db:5432/kanver_db"
     os.environ["SECRET_KEY"] = "test-secret-key-min-32-chars-for-testing-purposes-only"
     os.environ["ALGORITHM"] = "HS256"
@@ -66,91 +30,77 @@ def mock_settings():
     os.environ["LOG_LEVEL"] = "WARNING"
     os.environ["FIREBASE_CREDENTIALS"] = "/app/firebase-credentials.json"
 
-    # Now that env vars are set, we can safely import and patch
-    # Create a mock object that will replace settings
     mock_settings_obj = MagicMock()
-    mock_settings_obj.DATABASE_URL = os.environ["DATABASE_URL"]
-    mock_settings_obj.SECRET_KEY = os.environ["SECRET_KEY"]
-    mock_settings_obj.ALGORITHM = os.environ["ALGORITHM"]
-    mock_settings_obj.ACCESS_TOKEN_EXPIRE_MINUTES = 30
-    mock_settings_obj.REFRESH_TOKEN_EXPIRE_DAYS = 7
-    mock_settings_obj.DEBUG = False
-    mock_settings_obj.ALLOWED_ORIGINS = os.environ["ALLOWED_ORIGINS"]
-    mock_settings_obj.MAX_SEARCH_RADIUS_KM = 10
-    mock_settings_obj.DEFAULT_SEARCH_RADIUS_KM = 5
-    mock_settings_obj.WHOLE_BLOOD_COOLDOWN_DAYS = 90
-    mock_settings_obj.APHERESIS_COOLDOWN_HOURS = 48
-    mock_settings_obj.COMMITMENT_TIMEOUT_MINUTES = 60
-    mock_settings_obj.HERO_POINTS_WHOLE_BLOOD = 50
-    mock_settings_obj.HERO_POINTS_APHERESIS = 100
-    mock_settings_obj.NO_SHOW_PENALTY = -10
-    mock_settings_obj.LOG_LEVEL = "WARNING"
-    mock_settings_obj.TEST_DATABASE_URL = ""
-    mock_settings_obj.FIREBASE_CREDENTIALS = os.environ["FIREBASE_CREDENTIALS"]
-
-    # Create test engine with NullPool to avoid connection reuse issues
-    test_engine = create_async_engine(
-        mock_settings_obj.DATABASE_URL,
-        echo=False,
-        poolclass=NullPool,
-        pool_pre_ping=False,
-    )
-    test_session_factory = async_sessionmaker(
-        test_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-
-    # Monkey patch the database module to use test engine
-    import app.database
-    app.database.engine = test_engine
-    app.database.AsyncSessionLocal = test_session_factory
-
-    # Also patch config.settings
-    with patch("app.config.settings", mock_settings_obj):
-        yield mock_settings_obj
-
-    # Cleanup after all tests
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(test_engine.dispose())
-    except Exception:
-        pass
-
-    # Clean up environment variables
-    for key in os.environ.copy():
+    for key, value in os.environ.items():
         if key in ["DATABASE_URL", "SECRET_KEY", "ALGORITHM", "ACCESS_TOKEN_EXPIRE_MINUTES",
                    "REFRESH_TOKEN_EXPIRE_DAYS", "DEBUG", "ALLOWED_ORIGINS", "MAX_SEARCH_RADIUS_KM",
                    "DEFAULT_SEARCH_RADIUS_KM", "WHOLE_BLOOD_COOLDOWN_DAYS", "APHERESIS_COOLDOWN_HOURS",
                    "COMMITMENT_TIMEOUT_MINUTES", "HERO_POINTS_WHOLE_BLOOD", "HERO_POINTS_APHERESIS",
                    "NO_SHOW_PENALTY", "LOG_LEVEL", "FIREBASE_CREDENTIALS"]:
-            os.environ.pop(key, None)
+            if value.lower() == "true": setattr(mock_settings_obj, key, True)
+            elif value.lower() == "false": setattr(mock_settings_obj, key, False)
+            elif value.isdigit(): setattr(mock_settings_obj, key, int(value))
+            else: setattr(mock_settings_obj, key, value)
+
+    with patch("app.config.settings", mock_settings_obj):
+        yield mock_settings_obj
+
+
+@pytest_asyncio.fixture(scope="session")
+async def test_engine():
+    """Tüm session için tek bir engine."""
+    from app.config import settings
+    engine = create_async_engine(
+        settings.DATABASE_URL,
+        echo=False,
+        poolclass=NullPool,
+    )
+    yield engine
+    await engine.dispose()
 
 
 @pytest_asyncio.fixture
-async def client():
-    """Async test client for FastAPI app."""
-    # Import here after settings are mocked
+async def db_session(test_engine):
+    """
+    Transaction-based isolated session.
+    Her test sonunda rollback yaparak DB'yi tertemiz bırakır.
+    """
+    async with test_engine.connect() as connection:
+        # Manuel transaction yönetimi (rollback başarılı olsa bile zorlanacak)
+        trans = await connection.begin()
+        
+        session_factory = async_sessionmaker(
+            connection,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            join_transaction_mode="create_savepoint"
+        )
+        
+        async with session_factory() as session:
+            # Commit çağrıldığında yeni savepoint açan senior listener
+            @event.listens_for(session.sync_session, "after_transaction_end")
+            def restart_savepoint(sync_session, transaction):
+                if transaction.nested and not transaction._parent.nested:
+                    sync_session.begin_nested()
+
+            # İlk savepoint'i başlat
+            await session.begin_nested()
+            yield session
+
+        # Her durumda rollback (veriyi DB'ye asla mühürlemez)
+        await trans.rollback()
+
+
+@pytest_asyncio.fixture
+async def client(db_session):
+    """FastAPI test client with dependency override."""
     from app.main import app
+    from app.dependencies import get_db
+
+    async def _get_db_override():
+        yield db_session
+
+    app.dependency_overrides[get_db] = _get_db_override
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
-
-
-@pytest_asyncio.fixture
-async def db_session():
-    """
-    Async database session for tests.
-
-    Uses function-scoped session with automatic rollback.
-    The context manager handles cleanup, manual rollback is not needed.
-    """
-    from app.database import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as session:
-        yield session
-        # Rollback'i güvenli şekilde yap - session zaten kapanmış olabilir
-        try:
-            await session.rollback()
-        except Exception:
-            # Session kapanmışsa, hata yut (context manager zaten cleanup yapmış)
-            pass
+    app.dependency_overrides.clear()
