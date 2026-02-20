@@ -3,12 +3,13 @@ Database unit tests for KanVer API.
 
 Tests database connection, session lifecycle, PostGIS extension,
 and connection pool settings.
+
+IMPORTANT: All app imports are done inside test methods to ensure
+environment variables are set by conftest.mock_settings fixture first.
 """
 import pytest
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from app.database import engine, AsyncSessionLocal, verify_postgis_extension
-from app.database import test_db_connection as db_connection_check
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestDatabaseConnection:
@@ -17,12 +18,15 @@ class TestDatabaseConnection:
     @pytest.mark.asyncio
     async def test_db_connection_success(self):
         """Database bağlantısı başarılı olmalı."""
+        from app.database import test_db_connection as db_connection_check
         result = await db_connection_check()
         assert result is True
 
     @pytest.mark.asyncio
     async def test_db_session_lifecycle(self):
         """Session doğru şekilde kapatılmalı."""
+        from app.database import AsyncSessionLocal
+
         async with AsyncSessionLocal() as session:
             # Basit bir sorgu çalıştır
             result = await session.execute(text("SELECT 1"))
@@ -32,12 +36,16 @@ class TestDatabaseConnection:
     @pytest.mark.asyncio
     async def test_postgis_extension_active(self):
         """PostGIS extension aktif olmalı."""
+        from app.database import verify_postgis_extension
+
         result = await verify_postgis_extension()
         assert result is True, "PostGIS extension must be active for spatial queries"
 
     @pytest.mark.asyncio
     async def test_connection_pool_settings(self):
         """Connection pool ayarları doğru olmalı."""
+        from app.database import engine
+
         # Note: NullPool is used in tests, so pool size is not applicable
         # In production, pool size would be 5 with max_overflow 10
         assert engine is not None, "Engine should be initialized"
@@ -45,27 +53,12 @@ class TestDatabaseConnection:
     @pytest.mark.asyncio
     async def test_database_ping(self):
         """Database ping testi başarılı olmalı."""
-        # Create a fresh session for this test
-        from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-        from app.config import settings
+        from app.database import AsyncSessionLocal
 
-        fresh_engine = create_async_engine(
-            settings.DATABASE_URL,
-            echo=False,
-            poolclass=None,  # NullPool equivalent
-            pool_pre_ping=False,
-        )
-        try:
-            fresh_session_factory = async_sessionmaker(
-                fresh_engine,
-                class_=AsyncSession,
-                expire_on_commit=False,
-            )
-            async with fresh_session_factory() as session:
-                result = await session.execute(text("SELECT 1"))
-                assert result.scalar() == 1
-        finally:
-            await fresh_engine.dispose()
+        # Global test engine'i kullan (conftest'te tanımlı)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT 1"))
+            assert result.scalar() == 1
 
     @pytest.mark.asyncio
     async def test_get_db_dependency_lifecycle(self):
@@ -106,79 +99,37 @@ class TestDatabaseQueries:
     @pytest.mark.asyncio
     async def test_current_database(self):
         """Mevcut veritabanı adı doğrulanmalı."""
-        # Create a fresh engine to avoid event loop issues
-        from app.config import settings
+        from app.database import AsyncSessionLocal
 
-        fresh_engine = create_async_engine(
-            settings.DATABASE_URL,
-            echo=False,
-            poolclass=None,  # NullPool equivalent
-            pool_pre_ping=False,
-        )
-        try:
-            fresh_session_factory = async_sessionmaker(
-                fresh_engine,
-                class_=AsyncSession,
-                expire_on_commit=False,
-            )
-            async with fresh_session_factory() as session:
-                result = await session.execute(text("SELECT current_database()"))
-                db_name = result.scalar()
-                assert db_name is not None
-                assert "kanver" in db_name.lower()
-        finally:
-            await fresh_engine.dispose()
+        # Global test engine'i kullan (conftest'te tanımlı)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT current_database()"))
+            db_name = result.scalar()
+            assert db_name is not None
+            assert "kanver" in db_name.lower()
 
     @pytest.mark.asyncio
     async def test_postgis_version(self):
         """PostGIS versiyonu sorgulanabilmeli."""
-        # Create a fresh engine to avoid event loop issues
-        from app.config import settings
+        from app.database import AsyncSessionLocal
 
-        fresh_engine = create_async_engine(
-            settings.DATABASE_URL,
-            echo=False,
-            poolclass=None,  # NullPool equivalent
-            pool_pre_ping=False,
-        )
-        try:
-            fresh_session_factory = async_sessionmaker(
-                fresh_engine,
-                class_=AsyncSession,
-                expire_on_commit=False,
-            )
-            async with fresh_session_factory() as session:
-                result = await session.execute(text("""
-                    SELECT PostGIS_Version()
-                """))
-                version = result.scalar()
-                assert version is not None
-                # Versiyon string'i "3.x.x" formatında olmalı
-                assert isinstance(version, str)
-        finally:
-            await fresh_engine.dispose()
+        # Global test engine'i kullan (conftest'te tanımlı)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("""
+                SELECT PostGIS_Version()
+            """))
+            version = result.scalar()
+            assert version is not None
+            # Versiyon string'i "3.x.x" formatında olmalı
+            assert isinstance(version, str)
 
     @pytest.mark.asyncio
     async def test_database_timezone(self):
         """Veritabanı timezone ayarı kontrol edilmeli."""
-        # Create a fresh engine to avoid event loop issues
-        from app.config import settings
+        from app.database import AsyncSessionLocal
 
-        fresh_engine = create_async_engine(
-            settings.DATABASE_URL,
-            echo=False,
-            poolclass=None,  # NullPool equivalent
-            pool_pre_ping=False,
-        )
-        try:
-            fresh_session_factory = async_sessionmaker(
-                fresh_engine,
-                class_=AsyncSession,
-                expire_on_commit=False,
-            )
-            async with fresh_session_factory() as session:
-                result = await session.execute(text("SHOW timezone"))
-                timezone = result.scalar()
-                assert timezone is not None
-        finally:
-            await fresh_engine.dispose()
+        # Global test engine'i kullan (conftest'te tanımlı)
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SHOW timezone"))
+            timezone = result.scalar()
+            assert timezone is not None

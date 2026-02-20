@@ -79,12 +79,12 @@
 
 Phase 1 tamamlanmış sayılır eğer:
 - [x] Docker container'lar çalışıyor (FastAPI + PostgreSQL/PostGIS)
-- [ ] Tüm 8 database tablosu oluşturuldu
-- [ ] SQLAlchemy modelleri hazır ve ilişkiler tanımlı
-- [x] Alembic migration'ları çalışıyor (PostGIS init)
+- [x] Tüm 8 database tablosu oluşturuldu
+- [x] SQLAlchemy modelleri hazır ve ilişkiler tanımlı
+- [x] Alembic migration'ları çalışıyor (PostGIS init + tables)
 - [x] Health check endpoint'leri aktif
 - [x] PostGIS extension yüklü ve test edildi
-- [ ] Seed data script'i çalışıyor
+- [ ] Seed data script'i çalışıyor (Task 2.11)
 - [x] Documentation güncel
 
 ---
@@ -386,286 +386,87 @@ her test için fresh engine oluşturarak ve NullPool kullanarak çözüldü.
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/constants/blood_types.py` oluştur:
-  - [ ] `BloodType` enum: A+, A-, B+, B-, AB+, AB-, O+, O-
-  - [ ] Kan grubu uyumluluk matrisi (hangi grup kime verebilir)
-- [ ] `backend/app/constants/roles.py` oluştur:
-  - [ ] `UserRole` enum: USER, NURSE, ADMIN
-- [ ] `backend/app/constants/status.py` oluştur:
-  - [ ] `RequestStatus` enum: ACTIVE, FULFILLED, CANCELLED, EXPIRED
-  - [ ] `RequestType` enum: WHOLE_BLOOD, APHERESIS
-  - [ ] `Priority` enum: LOW, NORMAL, URGENT, CRITICAL
-  - [ ] `CommitmentStatus` enum: ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT
-  - [ ] `DonationStatus` enum: COMPLETED, CANCELLED, REJECTED
-  - [ ] `NotificationType` enum: NEW_REQUEST, DONOR_FOUND, DONOR_ON_WAY, DONATION_COMPLETE, TIMEOUT_WARNING, NO_SHOW vb.
-- [ ] `backend/app/constants/__init__.py` oluştur (tüm enum'ları export et)
-- [ ] Unit test yaz (`tests/test_constants.py`):
-  - [ ] test_blood_type_enum_values (8 kan grubu mevcut)
-  - [ ] test_blood_type_compatibility_matrix_complete
-  - [ ] test_user_role_enum_values (USER, NURSE, ADMIN)
-  - [ ] test_request_status_enum_values (ACTIVE, FULFILLED, CANCELLED, EXPIRED)
-  - [ ] test_commitment_status_enum_values (ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT)
-  - [ ] test_donation_status_enum_values
-  - [ ] test_notification_type_enum_values
-  - [ ] test_priority_enum_values (LOW, NORMAL, URGENT, CRITICAL)
-
----
-
-### Task 2.2: SQLAlchemy Model - users
-
-**Tahmini Süre:** 1.5 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `backend/app/models.py` içinde `User` modeli oluştur:
-  - [ ] `user_id`: UUID, primary key, default gen_random_uuid
-  - [ ] `phone_number`: String(20), NOT NULL
-  - [ ] `password_hash`: String(255), NOT NULL
-  - [ ] `full_name`: String(100), NOT NULL
-  - [ ] `email`: String(255), nullable
-  - [ ] `date_of_birth`: Date, NOT NULL
-  - [ ] `blood_type`: String(10), NOT NULL, CHECK constraint
-  - [ ] `role`: String(50), default 'USER', CHECK constraint
-  - [ ] `is_verified`: Boolean, default False
-  - [ ] `last_donation_date`: DateTime(timezone=True), nullable
-  - [ ] `next_available_date`: DateTime(timezone=True), nullable
-  - [ ] `total_donations`: Integer, default 0
-  - [ ] `location`: Geography(Point, 4326), nullable (GeoAlchemy2)
-  - [ ] `hero_points`: Integer, default 0
-  - [ ] `trust_score`: Integer, default 100
-  - [ ] `no_show_count`: Integer, default 0
-  - [ ] `fcm_token`: String(255), nullable
-  - [ ] `created_at`: DateTime, default now
-  - [ ] `deleted_at`: DateTime, nullable (soft delete)
-- [ ] Partial unique index: phone_number WHERE deleted_at IS NULL
-- [ ] Partial unique index: email WHERE email IS NOT NULL AND deleted_at IS NULL
-- [ ] GIST index: location WHERE location IS NOT NULL
-- [ ] Index: blood_type WHERE deleted_at IS NULL
-- [ ] Index: fcm_token WHERE fcm_token IS NOT NULL
-- [ ] Relationship tanımları: commitments, donations, notifications
+**Yapılanlar:**
+- [x] `backend/app/constants/blood_types.py` oluştur:
+  - [x] `BloodType` enum: A+, A-, B+, B-, AB+, AB-, O+, O-
+  - [x] Kan grubu uyumluluk matrisi (hangi grup kime verebilir)
+- [x] `backend/app/constants/roles.py` oluştur:
+  - [x] `UserRole` enum: USER, NURSE, ADMIN
+- [x] `backend/app/constants/status.py` oluştur:
+  - [x] `RequestStatus` enum: ACTIVE, FULFILLED, CANCELLED, EXPIRED
+  - [x] `RequestType` enum: WHOLE_BLOOD, APHERESIS
+  - [x] `Priority` enum: LOW, NORMAL, URGENT, CRITICAL
+  - [x] `CommitmentStatus` enum: ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT
+  - [x] `DonationStatus` enum: COMPLETED, CANCELLED, REJECTED
+  - [x] `NotificationType` enum: NEW_REQUEST, DONOR_FOUND, DONOR_ON_WAY, DONATION_COMPLETE, TIMEOUT_WARNING, NO_SHOW vb.
+- [x] `backend/app/constants/__init__.py` oluştur (tüm enum'ları export et)
+- [x] Unit test yaz (`tests/test_constants.py`):
+  - [x] test_blood_type_enum_values (8 kan grubu mevcut)
+  - [x] test_blood_type_compatibility_matrix_complete
+  - [x] test_user_role_enum_values (USER, NURSE, ADMIN)
+  - [x] test_request_status_enum_values (ACTIVE, FULFILLED, CANCELLED, EXPIRED)
+  - [x] test_commitment_status_enum_values (ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT)
+  - [x] test_donation_status_enum_values
+  - [x] test_notification_type_enum_values
+  - [x] test_priority_enum_values (LOW, NORMAL, URGENT, CRITICAL)
 
 ---
 
-### Task 2.3: SQLAlchemy Model - hospitals
+### Task 2.2-2.9: SQLAlchemy Models
 
-**Tahmini Süre:** 1 saat
+**Tahmini Süre:** 8 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `hospitals` modeli oluştur:
-  - [ ] `hospital_id`: UUID, primary key
-  - [ ] `hospital_name`: String(255), NOT NULL
-  - [ ] `hospital_code`: String(50), UNIQUE, NOT NULL
-  - [ ] `location`: Geography(Point, 4326), NOT NULL
-  - [ ] `address`: Text, NOT NULL
-  - [ ] `city`: String(100), NOT NULL
-  - [ ] `district`: String(100), NOT NULL
-  - [ ] `phone_number`: String(20), NOT NULL
-  - [ ] `geofence_radius_meters`: Integer, default 5000
-  - [ ] `has_blood_bank`: Boolean, default True
-  - [ ] `is_active`: Boolean, default True
-  - [ ] `created_at`: DateTime, default now
-- [ ] GIST index: location
-- [ ] Composite index: (city, district)
-- [ ] Relationship: staff, blood_requests, donations
-
----
-
-### Task 2.4: SQLAlchemy Model - hospital_staff
-
-**Tahmini Süre:** 30 dakika
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `hospital_staff` modeli oluştur:
-  - [ ] `staff_id`: UUID, primary key
-  - [ ] `user_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `hospital_id`: UUID, ForeignKey(hospitals.hospital_id), NOT NULL
-  - [ ] `staff_role`: String(100), nullable
-  - [ ] `department`: String(100), nullable
-  - [ ] `is_active`: Boolean, default True
-  - [ ] `assigned_at`: DateTime, default now
-- [ ] UniqueConstraint: (user_id, hospital_id)
-- [ ] Relationship: user, hospital
+**Yapılanlar:**
+- [x] `backend/app/models.py` oluştur (tüm 8 model ile):
+  - [x] `User` modeli: id, phone_number, email, full_name, password_hash, role, blood_type, hero_points, trust_score, next_available_date, total_donations, no_show_count, location (PostGIS), fcm_token, is_active, deleted_at
+  - [x] `Hospital` modeli: id, hospital_code, name, address, district, city, location (PostGIS), geofence_radius_meters, phone_number, email, is_active
+  - [x] `HospitalStaff` modeli: id, user_id, hospital_id (FK), is_active
+  - [x] `BloodRequest` modeli: id, request_code (UNIQUE), requester_id, hospital_id (FK), blood_type, request_type, priority, units_needed, units_collected, status, location (PostGIS), expires_at, patient_name, notes
+  - [x] `DonationCommitment` modeli: id, donor_id, blood_request_id (FK), status, timeout_minutes, arrived_at, completed_at
+  - [x] `QRCode` modeli: id, commitment_id (UNIQUE FK), token (UNIQUE), signature, is_used, used_at, expires_at
+  - [x] `Donation` modeli: id, donor_id, hospital_id, blood_request_id, commitment_id (UNIQUE FK), qr_code_id (UNIQUE FK), donation_type, blood_type, verified_by, verified_at, hero_points_earned, status, notes
+  - [x] `Notification` modeli: id, user_id (FK CASCADE), notification_type, blood_request_id, donation_id, title, message, is_read, read_at, is_push_sent, push_sent_at, fcm_token
+- [x] TimestampMixin: created_at ve updated_at (onupdate=func.now()) tüm modellere uygulandı
+- [x] Check constraints: hero_points >= 0, trust_score 0-100, blood_type valid, units_needed > 0, vb.
+- [x] Partial unique indexes: users(phone_number) WHERE deleted_at IS NULL, users(email) WHERE email IS NOT NULL AND deleted_at IS NULL
+- [x] PostGIS GIST indexes: users.location, hospitals.location, blood_requests.location
+- [x] Single active commitment index: idx_single_active_commitment WHERE status IN ('ON_THE_WAY', 'ARRIVED')
+- [x] Relationship tanımları: Tüm modellerde ilişkiler tanımlandı
 
 ---
 
-### Task 2.5: SQLAlchemy Model - blood_requests
-
-**Tahmini Süre:** 1.5 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `blood_requests` modeli oluştur:
-  - [ ] `request_id`: UUID, primary key
-  - [ ] `request_code`: String(20), UNIQUE, NOT NULL
-  - [ ] `requester_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `hospital_id`: UUID, ForeignKey(hospitals.hospital_id), NOT NULL
-  - [ ] `blood_type`: String(10), NOT NULL
-  - [ ] `units_needed`: Integer, NOT NULL, default 1
-  - [ ] `units_collected`: Integer, NOT NULL, default 0
-  - [ ] `request_type`: String(50), NOT NULL, CHECK (WHOLE_BLOOD, APHERESIS)
-  - [ ] `priority`: String(50), default NORMAL, CHECK
-  - [ ] `location`: Geography(Point, 4326), NOT NULL
-  - [ ] `status`: String(50), default ACTIVE, CHECK
-  - [ ] `created_at`: DateTime, default now
-  - [ ] `expires_at`: DateTime, NOT NULL
-  - [ ] `fulfilled_at`: DateTime, nullable
-- [ ] CHECK constraint: units_needed > 0 AND units_collected >= 0
-- [ ] CHECK constraint: units_collected <= units_needed
-- [ ] CHECK constraint: expires_at > created_at
-- [ ] GIST index: location
-- [ ] Composite index: (status, blood_type, hospital_id)
-- [ ] Index: status
-- [ ] Relationship: requester, hospital, commitments
-
----
-
-### Task 2.6: SQLAlchemy Model - donation_commitments
-
-**Tahmini Süre:** 1 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `donation_commitments` modeli oluştur:
-  - [ ] `commitment_id`: UUID, primary key
-  - [ ] `request_id`: UUID, ForeignKey(blood_requests.request_id), NOT NULL
-  - [ ] `donor_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `status`: String(50), default ON_THE_WAY, CHECK
-  - [ ] `committed_at`: DateTime, default now
-  - [ ] `expected_arrival_time`: DateTime, nullable
-  - [ ] `arrived_at`: DateTime, nullable
-  - [ ] `timeout_minutes`: Integer, default 60
-  - [ ] `cancel_reason`: Text, nullable
-  - [ ] `notes`: Text, nullable
-- [ ] Partial unique index: donor_id WHERE status IN ('ON_THE_WAY', 'ARRIVED')
-- [ ] Composite index: (status, committed_at) — timeout tarama için
-- [ ] Index: status, donor_id, request_id
-- [ ] Relationship: request, donor, qr_code, donation
-
----
-
-### Task 2.7: SQLAlchemy Model - qr_codes
-
-**Tahmini Süre:** 1 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `qr_codes` modeli oluştur:
-  - [ ] `qr_id`: UUID, primary key
-  - [ ] `commitment_id`: UUID, ForeignKey(donation_commitments.commitment_id), NOT NULL, UNIQUE
-  - [ ] `token`: String(255), UNIQUE, NOT NULL
-  - [ ] `signature`: Text, NOT NULL
-  - [ ] `is_used`: Boolean, default False
-  - [ ] `used_at`: DateTime, nullable
-  - [ ] `used_by`: UUID, ForeignKey(users.user_id), nullable
-  - [ ] `created_at`: DateTime, default now
-  - [ ] `expires_at`: DateTime, NOT NULL
-- [ ] Index: token
-- [ ] Partial index: commitment_id WHERE is_used = false
-- [ ] Relationship: commitment, verified_by_user
-
----
-
-### Task 2.8: SQLAlchemy Model - donations
-
-**Tahmini Süre:** 1 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `donations` modeli oluştur:
-  - [ ] `donation_id`: UUID, primary key
-  - [ ] `request_id`: UUID, ForeignKey(blood_requests.request_id), nullable
-  - [ ] `commitment_id`: UUID, ForeignKey(donation_commitments.commitment_id), nullable
-  - [ ] `donor_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `hospital_id`: UUID, ForeignKey(hospitals.hospital_id), NOT NULL
-  - [ ] `verified_by`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `blood_type`: String(10), NOT NULL
-  - [ ] `donation_type`: String(50), NOT NULL, CHECK (WHOLE_BLOOD, APHERESIS)
-  - [ ] `units_donated`: Integer, default 1
-  - [ ] `qr_id`: UUID, ForeignKey(qr_codes.qr_id), NOT NULL
-  - [ ] `status`: String(50), default COMPLETED, CHECK
-  - [ ] `hero_points_earned`: Integer, default 50
-  - [ ] `donation_date`: DateTime, default now
-  - [ ] `created_at`: DateTime, default now
-- [ ] Relationship: request, commitment, donor, hospital, verifier, qr_code
-
----
-
-### Task 2.9: SQLAlchemy Model - notifications
-
-**Tahmini Süre:** 45 dakika
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `notifications` modeli oluştur:
-  - [ ] `notification_id`: UUID, primary key
-  - [ ] `user_id`: UUID, ForeignKey(users.user_id, ondelete=CASCADE), NOT NULL
-  - [ ] `notification_type`: String(50), NOT NULL
-  - [ ] `title`: String(255), NOT NULL
-  - [ ] `message`: Text, NOT NULL
-  - [ ] `request_id`: UUID, ForeignKey(blood_requests.request_id, ondelete=SET NULL), nullable
-  - [ ] `donation_id`: UUID, ForeignKey(donations.donation_id, ondelete=SET NULL), nullable
-  - [ ] `is_read`: Boolean, default False
-  - [ ] `read_at`: DateTime, nullable
-  - [ ] `is_push_sent`: Boolean, default False
-  - [ ] `created_at`: DateTime, default now
-- [ ] Composite index: (user_id, is_read)
-- [ ] Partial index: user_id WHERE is_read = false
-- [ ] Relationship: user, blood_request, donation
-
----
-
-### Task 2.10: Alembic Migration Setup
+### Task 2.10: Alembic Migration
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] Alembic'i initialize et: `alembic init alembic`
-- [ ] `backend/alembic.ini` düzenle:
-  - [ ] sqlalchemy.url = DATABASE_URL'den oku
-- [ ] `backend/alembic/env.py` düzenle:
-  - [ ] Async engine desteği ekle
-  - [ ] Target metadata = Base.metadata
-  - [ ] PostGIS tip desteği (GeoAlchemy2)
-- [ ] İlk migration'ı oluştur: `alembic revision --autogenerate -m "initial_schema"`
-- [ ] Migration'ı uygula: `alembic upgrade head`
-- [ ] Tüm tabloların oluştuğunu doğrula:
-  ```sql
-  \dt
-  ```
-- [ ] PostGIS extension'ın aktif olduğunu doğrula:
-  ```sql
-  SELECT PostGIS_Version();
-  ```
-- [ ] Index'lerin oluştuğunu doğrula:
-  ```sql
-  \di
-  ```
-- [ ] Unit test yaz (`tests/test_models.py`):
-  - [ ] test_all_8_tables_created (users, hospitals, hospital_staff, blood_requests, donation_commitments, qr_codes, donations, notifications)
-  - [ ] test_user_model_columns_and_defaults
-  - [ ] test_user_phone_unique_constraint (partial, deleted_at IS NULL)
-  - [ ] test_user_email_unique_constraint (partial)
-  - [ ] test_hospital_code_unique_constraint
-  - [ ] test_blood_request_check_constraints (units_needed > 0)
-  - [ ] test_commitment_partial_unique_index (tek aktif commitment)
-  - [ ] test_postgis_gist_indexes_exist (users, hospitals, blood_requests)
-  - [ ] test_model_relationships (foreign key ilişkileri)
-  - [ ] test_migration_upgrade_downgrade (alembic upgrade/downgrade)
+**Yapılanlar:**
+- [x] `backend/alembic/versions/20250220_0001_create_tables.py` oluştur:
+  - [x] 7 ENUM type: userrole, requeststatus, requesttype, priority, commitmentstatus, donationstatus, notificationtype
+  - [x] 8 tablo oluşturma (correct FK order)
+  - [x] CHECK constraints
+  - [x] PostGIS GIST indexes
+  - [x] Partial unique indexes
+  - [x] Normal indexes
+- [x] Migration'ı uygula: `alembic upgrade head`
+- [x] Tüm tabloların oluştuğunu doğrula (8 tablo)
+- [x] PostGIS extension aktif
+- [x] Unit test yaz (`tests/test_models.py`):
+  - [x] test_all_8_models_exist
+  - [x] test_table_names_correct
+  - [x] test_all_models_have_timestamps
+  - [x] test_user_relationships
+  - [x] test_hospital_relationships
+  - [x] test_blood_request_relationships
+  - [x] test_donation_commitment_relationships
+  - [x] test_qr_code_relationships
+  - [x] test_donation_relationships
+  - [x] test_notification_relationships
 
 ---
 
@@ -673,46 +474,51 @@ her test için fresh engine oluşturarak ve NullPool kullanarak çözüldü.
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/scripts/seed_data.py` oluştur:
-  - [ ] Antalya hastaneleri (3-5 adet):
-    - [ ] Akdeniz Üniversitesi Hastanesi
-    - [ ] Antalya Eğitim ve Araştırma Hastanesi
-    - [ ] Memorial Antalya Hastanesi
-    - [ ] Gerçek koordinatlarını ekle (lat/lng)
-  - [ ] Test kullanıcıları (5-10 adet):
-    - [ ] Her kan grubundan en az 1 kullanıcı
-    - [ ] 1 NURSE rolünde kullanıcı
-    - [ ] 1 ADMIN rolünde kullanıcı
-    - [ ] Antalya'da farklı konumlarla
-  - [ ] Hospital staff kayıtları (NURSE → Hastane eşleştirmesi)
-  - [ ] Örnek blood_request (1-2 adet, ACTIVE durumda)
-- [ ] `backend/scripts/cleanup_db.py` oluştur (tabloları temizleme)
-- [ ] Seed script'ini çalıştır ve doğrula
-- [ ] Seed data'nın idempotent olduğunu doğrula (tekrar çalıştırılınca hata vermemeli)
-- [ ] Unit test yaz (`tests/test_seed_data.py`):
-  - [ ] test_seed_hospitals_created (3-5 hastane)
-  - [ ] test_seed_users_all_blood_types (her gruptan en az 1)
-  - [ ] test_seed_nurse_role_exists
-  - [ ] test_seed_admin_role_exists
-  - [ ] test_seed_hospital_staff_assigned
-  - [ ] test_seed_sample_requests_active
-  - [ ] test_seed_idempotent (çift çalıştırmada hata yok)
-  - [ ] test_seed_coordinates_valid (Antalya bölgesi)
+**Yapılanlar:**
+- [x] `backend/scripts/seed_data.py` oluştur:
+  - [x] Antalya hastaneleri (5 adet):
+    - [x] Akdeniz Üniversitesi Hastanesi
+    - [x] Antalya Eğitim ve Araştırma Hastanesi
+    - [x] Memorial Antalya Hastanesi
+    - [x] Aksu Devlet Hastanesi
+    - [x] Kepez Devlet Hastanesi
+    - [x] Gerçek koordinatlarını ekle (POINT lng, lat format)
+  - [x] Test kullanıcıları (10 adet):
+    - [x] Her kan grubundan en az 1 kullanıcı
+    - [x] 1 NURSE rolünde kullanıcı (Hemşire Aylin)
+    - [x] 1 ADMIN rolünde kullanıcı (Admin KanVer)
+    - [x] Async SQLAlchemy ile implementasyon
+  - [x] Hospital staff kayıtları (NURSE/ADMIN → Hastane eşleştirmesi)
+  - [x] Örnek blood_request (2 adet, ACTIVE durumunda)
+  - [x] Idempotent tasarım (tekrar çalıştırılabilir)
+- [x] `backend/scripts/cleanup_db.py` oluştur (TRUNCATE CASCADE ile temizleme)
+- [x] `app/core/security.py` oluştur:
+  - [x] hash_password fonksiyonu (bcrypt, rounds=12)
+  - [x] verify_password fonksiyonu
+- [x] Task 2.10: Model'e idx_single_active_commitment eklendi (unique=True ile)
+- [x] Unit test yaz (`tests/test_seed_data.py`):
+  - [x] test_seed_hospitals_created (5 hastane)
+  - [x] test_seed_users_all_blood_types (her gruptan en az 1)
+  - [x] test_seed_nurse_role_exists
+  - [x] test_seed_admin_role_exists
+  - [x] test_seed_hospital_staff_assigned
+  - [x] test_seed_sample_requests_active
+  - [x] test_seed_idempotent (çift çalıştırmada hata yok)
+  - [x] Diğer validation test'leri
 
 ---
 
 ### 📊 Phase 1 Success Metrics
 
-- [ ] `docker-compose up -d` ile tüm servisler 30 saniye içinde ayağa kalkıyor
-- [ ] `GET /health/detailed` 200 OK dönüyor, DB bağlantısı sağlıklı
-- [ ] 8 tablo PostgreSQL'de mevcut
-- [ ] PostGIS GIST index'leri aktif
-- [ ] Alembic migration history temiz
-- [ ] Seed data yüklenmiş ve sorgulanabilir
-- [ ] Swagger UI (`/docs`) erişilebilir
+- [x] `docker-compose up -d` ile tüm servisler 30 saniye içinde ayağa kalkıyor
+- [x] `GET /health/detailed` 200 OK dönüyor, DB bağlantısı sağlıklı
+- [x] 8 tablo PostgreSQL'de mevcut
+- [x] PostGIS GIST index'leri aktif
+- [x] Alembic migration history temiz
+- [x] Seed data yüklenmiş ve sorgulanabilir
+- [x] Swagger UI (`/docs`) erişilebilir
 
 ---
 

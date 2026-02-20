@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
 from app.config import settings
 
@@ -19,8 +19,15 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-# Base class for models
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    """
+    SQLAlchemy declarative base.
+
+    Tüm modeller bu sınıftan miras alır.
+    SQLAlchemy 2.0 modern yaklaşımı kullanılır.
+    """
+    pass
 
 
 # Dependency injection
