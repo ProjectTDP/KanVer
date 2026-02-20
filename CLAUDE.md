@@ -526,9 +526,36 @@ GET /api/admin/users              # Kullanıcı listesi
   - 18 auth endpoint test'i geçiyor
   - User modeline date_of_birth alanı eklendi (migration 442f47db67bf)
   - **Toplam:** 173 test geçiyor
+- ✅ **Phase 2 - Task 4.1:** User Service Implementation
+  - `app/utils/location.py` oluşturuldu (create_point_wkt with validation)
+  - `app/services/user_service.py` oluşturuldu
+  - 6 service function: get_user_by_id, get_user_by_phone, update_user_profile, update_user_location, soft_delete_user, get_user_stats
+  - `app/schemas.py` güncellendi (LocationUpdateRequest, UserStatsResponse)
+  - 31 user_service test'i geçiyor
+  - **Toplam:** 204 test geçiyor
+- ✅ **Phase 2 - Task 4.2:** User Router Implementation
+  - `backend/app/routers/users.py` oluşturuldu (5 endpoint)
+  - GET /me, PATCH /me, DELETE /me, PATCH /me/location, GET /me/stats
+  - `main.py` ve `routers/__init__.py` güncellendi
+  - `UserResponse` şemasına `fcm_token` alanı eklendi
+  - 18 user endpoint test'i yazıldı
+  - **Toplam:** 222 test geçiyor
+- ✅ **Phase 2 - Task 4.3:** Auth Unit Tests
+  - `backend/tests/conftest.py` güncellendi (test_user, auth_headers, expired_token_headers, refresh_token_headers fixtures)
+  - `backend/tests/test_auth.py` oluşturuldu (17 test)
+    - TestLoginEndpoint: nonexistent_user, deleted_user, phone_normalization (2)
+    - TestRefreshTokenEndpoint: expired, invalid, wrong_type, deleted_user (4)
+    - TestProtectedEndpoints: no_token, invalid_token, expired_token, deleted_user (4)
+    - TestTokenGeneration: access/refresh claims & expiration (4)
+    - TestPasswordNormalization: login_with_normalized_phone (1)
+  - `backend/tests/test_auth_endpoints.py` genişletildi (7 yeni test)
+    - test_register_duplicate_phone, duplicate_email
+    - test_register_invalid_blood_type, underage, weak_password
+    - test_register_phone_normalization (2)
+  - **Toplam:** 246 test geçiyor
 
 ### Sırada
-- ⏳ **Phase 2 - Task 3.6-3.x:** User Endpoints & Profile
+- ⏳ **Phase 2 - Task 4.4:** Location & PostGIS Utilities
 
 ---
 

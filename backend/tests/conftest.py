@@ -104,3 +104,78 @@ async def client(db_session):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def test_user(db_session: AsyncSession):
+    """Kayıtlı test kullanıcısı."""
+    from app.models import User
+    from app.core.security import hash_password
+    from app.constants import UserRole
+
+    user = User(
+        phone_number="+905551234567",
+        password_hash=hash_password("Test1234!"),
+        full_name="Test User",
+        blood_type="A+",
+        role=UserRole.USER.value,
+        is_active=True
+    )
+    db_session.add(user)
+    await db_session.flush()
+    return user
+
+
+@pytest_asyncio.fixture
+async def auth_headers(test_user) -> dict:
+    """JWT token ile authorization header'ı."""
+    from app.auth import create_access_token
+
+    token_data = {"sub": str(test_user.id), "role": test_user.role}
+    access_token = create_access_token(token_data)
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest_asyncio.fixture
+async def expired_token_headers() -> dict:
+    """Expire olmuş token ile authorization header'ı."""
+    from datetime import datetime, timedelta, timezone
+    from jose import jwt
+    from app.config import settings
+
+    past_time = datetime.now(timezone.utc) - timedelta(hours=1)
+    token_data = {
+        "sub": "dummy-user-id",
+        "role": "USER",
+        "exp": past_time.timestamp(),
+        "type": "access"
+    }
+    token = jwt.encode(token_data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def refresh_token_headers() -> dict:
+    """Refresh token ile authorization header'ı."""
+    from app.auth import create_refresh_token
+
+    token_data = {"sub": "test-user-id", "role": "USER"}
+    refresh_token = create_refresh_token(token_data)
+    return {"refresh_token": refresh_token}
+
+
+@pytest_asyncio.fixture
+async def expired_refresh_token() -> str:
+    """Expire olmuş refresh token."""
+    from datetime import datetime, timedelta, timezone
+    from jose import jwt
+    from app.config import settings
+
+    past_time = datetime.now(timezone.utc) - timedelta(days=8)
+    token_data = {
+        "sub": "test-user-id",
+        "role": "USER",
+        "exp": past_time.timestamp(),
+        "type": "refresh"
+    }
+    return jwt.encode(token_data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)

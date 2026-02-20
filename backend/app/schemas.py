@@ -180,6 +180,16 @@ class UserUpdateRequest(BaseSchema):
         return v.lower() if v else v
 
 
+class LocationUpdateRequest(BaseSchema):
+    """
+    Konum güncelleme request şeması.
+
+    Latitude ve longitude değerleri Pydantic ile doğrulanır.
+    """
+    latitude: float = Field(..., ge=-90, le=90, description="Enlem (-90 ile +90 arası)")
+    longitude: float = Field(..., ge=-180, le=180, description="Boylam (-180 ile +180 arası)")
+
+
 # =============================================================================
 # RESPONSE SCHEMAS
 # =============================================================================
@@ -210,6 +220,7 @@ class UserResponse(BaseSchema):
     hero_points: int = Field(default=0, description="Kahramanlık puanı")
     trust_score: int = Field(default=100, description="Güven skoru (0-100)")
     total_donations: int = Field(default=0, description="Toplam bağış sayısı")
+    fcm_token: Optional[str] = Field(None, description="FCM token (bildirimler için)")
     created_at: datetime = Field(..., description="Kayıt tarihi")
 
 
@@ -221,6 +232,21 @@ class RegisterResponse(BaseSchema):
     """
     user: UserResponse = Field(..., description="Kullanıcı bilgileri")
     tokens: TokenResponse = Field(..., description="JWT token'lar")
+
+
+class UserStatsResponse(BaseSchema):
+    """
+    Kullanıcı istatistikleri response şeması.
+    """
+    hero_points: int = Field(..., description="Kahramanlık puanı")
+    trust_score: int = Field(..., description="Güven skoru (0-100)")
+    total_donations: int = Field(..., description="Toplam bağış sayısı")
+    no_show_count: int = Field(..., description="No-show sayısı")
+    next_available_date: Optional[datetime] = Field(None, description="Bir sonraki bağış tarihi")
+    last_donation_date: Optional[datetime] = Field(None, description="Son bağış tarihi")
+    is_in_cooldown: bool = Field(..., description="Cooldown'da mı?")
+    cooldown_remaining_days: Optional[int] = Field(None, description="Kalan gün sayısı")
+    rank_badge: str = Field(..., description="Rozet")
 
 
 # =============================================================================

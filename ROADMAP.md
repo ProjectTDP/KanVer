@@ -728,27 +728,37 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/services/user_service.py` oluştur:
-  - [ ] `get_user_by_id(db, user_id) -> User`
-  - [ ] `get_user_by_phone(db, phone_number) -> User`
-  - [ ] `update_user(db, user_id, data) -> User`
-  - [ ] `update_location(db, user_id, lat, lng) -> User`
-  - [ ] `soft_delete_user(db, user_id) -> None`
-  - [ ] `get_user_stats(db, user_id) -> dict` (hero_points, total_donations, trust_score)
-- [ ] `backend/app/services/__init__.py` oluştur
-- [ ] Unit test yaz (`tests/test_user_service.py`):
-  - [ ] test_get_user_by_id_exists
-  - [ ] test_get_user_by_id_not_found (404)
-  - [ ] test_get_user_by_phone_exists
-  - [ ] test_get_user_by_phone_not_found
-  - [ ] test_update_user_success
-  - [ ] test_update_location_postgis_point
-  - [ ] test_soft_delete_user_sets_deleted_at
-  - [ ] test_soft_deleted_user_not_returned
-  - [ ] test_get_user_stats_correct_values
+**Yapılanlar:**
+- [x] `backend/app/utils/location.py` oluştur:
+  - [x] `create_point_wkt(latitude, longitude) -> WKTElement`
+  - [x] Validation: lat [-90, 90], lng [-180, 180]
+  - [x] PostGIS Geography Point (SRID 4326) formatında döner
+- [x] `backend/app/services/user_service.py` oluştur:
+  - [x] `get_user_by_id(db, user_id) -> User | None`
+  - [x] `get_user_by_phone(db, phone_number) -> User | None` (normalizasyon ile)
+  - [x] `update_user_profile(db, user, update_data) -> User`
+  - [x] `update_user_location(db, user, latitude, longitude) -> User`
+  - [x] `soft_delete_user(db, user) -> None`
+  - [x] `get_user_stats(db, user) -> dict` (detaylı: hero_points, trust_score, cooldown, rank_badge)
+- [x] `backend/app/services/__init__.py` oluştur (export tüm fonksiyonlar)
+- [x] `backend/app/schemas.py` güncelle:
+  - [x] `LocationUpdateRequest` (latitude, longitude with validation)
+  - [x] `UserStatsResponse` (detaylı istatistik response)
+- [x] `backend/app/utils/__init__.py` oluştur (export create_point_wkt)
+- [x] Unit test yaz (`tests/test_user_service.py`):
+  - [x] test_get_user_by_id_exists / not_found
+  - [x] test_get_user_by_phone_exists / not_found / normalization
+  - [x] test_update_user_profile (full_name, email, fcm_token, multiple)
+  - [x] test_update_user_profile_email_unique_conflict
+  - [x] test_update_user_profile_ignores_invalid_fields
+  - [x] test_update_user_location_success / boundaries / invalid_lat_lon
+  - [x] test_soft_delete_user_sets_deleted_at / is_active_false / remains_in_db
+  - [x] test_get_user_stats_correct_values / is_in_cooldown / rank_badge
+  - [x] test_get_user_stats_rank_boundaries (Yeni, Bronz, Gümüş, Altın, Platin)
+- [x] **31 user_service testi geçiyor**
+- [x] **Toplam: 204 test geçiyor**
 
 ---
 
@@ -756,39 +766,53 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/users.py` oluştur
-- [ ] `GET /api/users/me` — Kendi profilini getir:
-  - [ ] Requires: authenticated user
-  - [ ] Response: UserResponse
-- [ ] `PATCH /api/users/me` — Profil güncelle:
-  - [ ] Requires: authenticated user
-  - [ ] Request: UserUpdateRequest
-  - [ ] Güncellenebilir alanlar: full_name, email, fcm_token
-  - [ ] Response: UserResponse
-- [ ] `DELETE /api/users/me` — Hesabı sil (soft delete):
-  - [ ] Requires: authenticated user
-  - [ ] deleted_at = now() olarak işaretle
-  - [ ] Response: 204 No Content
-- [ ] `PATCH /api/users/me/location` — Konum güncelle:
-  - [ ] Requires: authenticated user
-  - [ ] Request body: `{ "latitude": float, "longitude": float }`
-  - [ ] PostGIS Point objesi oluştur ve kaydet
-  - [ ] Response: UserResponse
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/users`)
-- [ ] Tüm endpoint'lerin JWT koruması altında olduğunu doğrula
-- [ ] Unit test yaz (`tests/test_users.py`):
-  - [ ] test_get_profile_authenticated
-  - [ ] test_get_profile_unauthenticated (401)
-  - [ ] test_update_profile_success
-  - [ ] test_update_profile_invalid_data (422)
-  - [ ] test_delete_account_soft_delete (204)
-  - [ ] test_deleted_user_cannot_login
-  - [ ] test_update_location_valid_coordinates
-  - [ ] test_update_location_invalid_coordinates (422)
-  - [ ] test_update_fcm_token
+- [x] `backend/app/routers/users.py` oluştur
+- [x] `GET /api/users/me` — Kendi profilini getir:
+  - [x] Requires: authenticated user
+  - [x] Response: UserResponse
+- [x] `PATCH /api/users/me` — Profil güncelle:
+  - [x] Requires: authenticated user
+  - [x] Request: UserUpdateRequest
+  - [x] Güncellenebilir alanlar: full_name, email, fcm_token
+  - [x] Response: UserResponse
+- [x] `DELETE /api/users/me` — Hesabı sil (soft delete):
+  - [x] Requires: authenticated user
+  - [x] deleted_at = now() olarak işaretle
+  - [x] Response: MessageResponse (200 OK)
+- [x] `PATCH /api/users/me/location` — Konum güncelle:
+  - [x] Requires: authenticated user
+  - [x] Request body: `{ "latitude": float, "longitude": float }`
+  - [x] PostGIS Point objesi oluştur ve kaydet
+  - [x] Response: UserResponse
+- [x] `GET /api/users/me/stats` — İstatistikleri getir (eklendi):
+  - [x] Requires: authenticated user
+  - [x] Response: UserStatsResponse
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/users`)
+- [x] Tüm endpoint'lerin JWT koruması altında olduğunu doğrula
+- [x] Unit test yaz (`tests/test_users.py`):
+  - [x] test_get_profile_authenticated
+  - [x] test_get_profile_unauthenticated (401)
+  - [x] test_get_profile_deleted_user (401)
+  - [x] test_update_profile_full_name
+  - [x] test_update_profile_email
+  - [x] test_update_profile_fcm_token
+  - [x] test_update_profile_multiple_fields
+  - [x] test_update_profile_invalid_email (422)
+  - [x] test_update_profile_email_conflict (409)
+  - [x] test_delete_account_success
+  - [x] test_delete_account_unauthenticated (401)
+  - [x] test_deleted_user_cannot_login (403)
+  - [x] test_update_location_valid_coordinates
+  - [x] test_update_location_invalid_latitude (422)
+  - [x] test_update_location_invalid_longitude (422)
+  - [x] test_get_stats_authenticated
+  - [x] test_get_stats_unauthenticated (401)
+  - [x] test_get_stats_includes_rank_badge
+- [x] **18 user endpoint testi geçiyor**
+- [x] **Toplam: 222 test geçiyor**
 
 ---
 
@@ -796,40 +820,45 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/tests/conftest.py` oluştur:
-  - [ ] Test database (SQLite veya test PostgreSQL)
-  - [ ] Test client (httpx AsyncClient)
-  - [ ] Override get_db dependency
-  - [ ] Fixture: test_user (kayıtlı kullanıcı)
-  - [ ] Fixture: auth_headers (JWT token ile)
-- [ ] `backend/tests/test_auth.py` oluştur:
-  - [ ] test_register_success
-  - [ ] test_register_duplicate_phone
-  - [ ] test_register_invalid_blood_type
-  - [ ] test_register_underage (18 yaş altı)
-  - [ ] test_login_success
-  - [ ] test_login_wrong_password
-  - [ ] test_login_nonexistent_user
-  - [ ] test_refresh_token_success
-  - [ ] test_refresh_token_expired
-  - [ ] test_protected_endpoint_without_token
-  - [ ] test_protected_endpoint_with_invalid_token
-- [ ] `pytest tests/test_auth.py -v` ile tüm testleri çalıştır
-- [ ] Tüm testler geçiyor
+**Yapılanlar:**
+- [x] `backend/tests/conftest.py` güncellendi:
+  - [x] Test database (test PostgreSQL with NullPool)
+  - [x] Test client (httpx AsyncClient)
+  - [x] Override get_db dependency
+  - [x] Fixture: test_user (kayıtlı kullanıcı)
+  - [x] Fixture: auth_headers (JWT token ile)
+  - [x] Fixture: expired_token_headers (expire olmuş token)
+  - [x] Fixture: refresh_token_headers (refresh token)
+- [x] `backend/tests/test_auth.py` oluşturuldu:
+  - [x] TestLoginEndpoint (4 test): nonexistent_user, deleted_user, phone_normalization (2 test)
+  - [x] TestRefreshTokenEndpoint (4 test): expired, invalid, wrong_type, deleted_user
+  - [x] TestProtectedEndpoints (4 test): no_token, invalid_token, expired_token, deleted_user
+  - [x] TestTokenGeneration (4 test): access_claims, refresh_claims, access_expiration, refresh_expiration
+  - [x] TestPasswordNormalization (1 test): login_with_normalized_phone
+- [x] `backend/tests/test_auth_endpoints.py` genişletildi:
+  - [x] test_register_duplicate_phone (409 Conflict)
+  - [x] test_register_duplicate_email (409 Conflict)
+  - [x] test_register_invalid_blood_type (422)
+  - [x] test_register_underage (422)
+  - [x] test_register_weak_password (400)
+  - [x] test_register_phone_normalization_with_0_prefix
+  - [x] test_register_phone_normalization_without_prefix
+- [x] `pytest tests/test_auth.py tests/test_auth_endpoints.py -v` ile tüm testler çalıştırıldı
+- [x] 28 auth testi tümü geçiyor
+- [x] Toplam 246 test passing
 
 ---
 
 ### 📊 Phase 2 Success Metrics
 
-- [ ] Register → Login → Token Refresh akışı sorunsuz çalışıyor
-- [ ] Profil CRUD (GET/PATCH/DELETE) çalışıyor
-- [ ] Konum güncelleme PostGIS ile kaydediliyor
-- [ ] JWT olmadan protected endpoint'lere erişilemiyor
-- [ ] Auth testleri %100 geçiyor
-- [ ] Swagger UI'da tüm akış test edilebiliyor
+- [x] Register → Login → Token Refresh akışı sorunsuz çalışıyor
+- [x] Profil CRUD (GET/PATCH/DELETE) çalışıyor
+- [x] Konum güncelleme PostGIS ile kaydediliyor
+- [x] JWT olmadan protected endpoint'lere erişilemiyor
+- [x] Auth testleri %100 geçiyor
+- [x] Swagger UI'da tüm akış test edilebiliyor
 
 ---
 
