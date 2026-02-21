@@ -106,6 +106,26 @@ class TestLoginEndpoint:
         assert response.status_code == 200
         assert "access_token" in response.json()
 
+    async def test_login_phone_normalization_90_prefix(self, client: AsyncClient):
+        """BUG FIX: 905xxx formatı ile login çalışmalı."""
+        phone_normalized = "+905553334444"
+        # Register with normalized format
+        await client.post("/api/auth/register", json={
+            "phone_number": phone_normalized,
+            "password": "Test1234!",
+            "full_name": "Test User",
+            "date_of_birth": "2000-01-01",
+            "blood_type": "A+"
+        })
+
+        # Login with 90 prefix (without +)
+        response = await client.post("/api/auth/login", json={
+            "phone_number": "905553334444",
+            "password": "Test1234!"
+        })
+        assert response.status_code == 200
+        assert "access_token" in response.json()
+
 
 class TestRefreshTokenEndpoint:
     """Refresh token endpoint test'leri."""
@@ -347,7 +367,7 @@ class TestPasswordNormalization:
         })
 
         # Login with different formats should all work
-        formats = ["05554445555", "5554445555", "+905554445555"]
+        formats = ["05554445555", "5554445555", "+905554445555", "905554445555"]
 
         for phone_format in formats:
             response = await client.post("/api/auth/login", json={

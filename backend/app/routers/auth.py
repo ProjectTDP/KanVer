@@ -27,6 +27,7 @@ from app.schemas import (
     UserLoginRequest,
     UserRegisterRequest,
 )
+from app.utils.helpers import normalize_phone
 
 # Router - prefix main.py'de tanımlanacak
 router = APIRouter(tags=["Authentication"])
@@ -75,11 +76,7 @@ async def register(
         raise BadRequestException(f"Şifre zayıf: {error_msg}")
 
     # 2. Normalize phone number to +90 format (BEFORE unique check)
-    phone = data.phone_number
-    if phone.startswith('0'):
-        phone = '+90' + phone[1:]
-    elif not phone.startswith('+90'):
-        phone = '+90' + phone
+    phone = normalize_phone(data.phone_number)
 
     # 3. Check if phone number already exists (soft delete excluded)
     result = await db.execute(
@@ -167,12 +164,8 @@ async def login(
         UnauthorizedException: Kullanıcı bulunamadı veya şifre yanlış
         ForbiddenException: Kullanıcı silinmiş (soft delete)
     """
-    # 1. Normalize phone number to +90 format (same logic as register)
-    phone = credentials.phone_number
-    if phone.startswith('0'):
-        phone = '+90' + phone[1:]
-    elif not phone.startswith('+90'):
-        phone = '+90' + phone
+    # 1. Normalize phone number to +90 format
+    phone = normalize_phone(credentials.phone_number)
 
     # 2. Find user by normalized phone number
     result = await db.execute(

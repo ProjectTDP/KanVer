@@ -213,6 +213,20 @@ class TestAuthEndpoints:
         # Phone should be normalized to +90 format
         assert response.json()["user"]["phone_number"] == "+905551234567"
 
+    async def test_register_90_prefix_normalization(self, client: AsyncClient):
+        """BUG FIX: 90555... formatı +90555... olmalı (not +9090555...)."""
+        phone_input = "905551234567"
+        response = await client.post("/api/auth/register", json={
+            "phone_number": phone_input,
+            "password": "Test1234!",
+            "full_name": "Test User",
+            "date_of_birth": "2000-01-01",
+            "blood_type": "A+"
+        })
+        assert response.status_code == 201
+        # Phone should be normalized to +90555... (NOT +9090555...)
+        assert response.json()["user"]["phone_number"] == "+905551234567"
+
     async def test_register_duplicate_phone_different_formats(self, client: AsyncClient):
         """Aynı numaranın farklı formatlarla tekrar kaydı → 409 Conflict."""
         # First register with 0555... format
@@ -241,3 +255,12 @@ class TestAuthEndpoints:
             "blood_type": "A+"
         })
         assert response2.status_code == 409
+        # Fourth register with 90555... format (same number, 90 prefix)
+        response3 = await client.post("/api/auth/register", json={
+            "phone_number": "905551234567",
+            "password": "Test1234!",
+            "full_name": "Fourth User",
+            "date_of_birth": "2000-01-01",
+            "blood_type": "A+"
+        })
+        assert response3.status_code == 409

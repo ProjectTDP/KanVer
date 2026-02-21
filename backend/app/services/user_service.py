@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User
+from app.utils.helpers import normalize_phone
 from app.utils.location import create_point_wkt
 from app.core.exceptions import ConflictException
 
@@ -63,36 +64,12 @@ async def get_user_by_phone(db: AsyncSession, phone_number: str) -> Optional[Use
         >>> if user:
         ...     print(user.full_name)
     """
-    normalized_phone = _normalize_phone(phone_number)
+    normalized_phone = normalize_phone(phone_number)
 
     result = await db.execute(
         select(User).where(User.phone_number == normalized_phone)
     )
     return result.scalar_one_or_none()
-
-
-def _normalize_phone(phone_number: str) -> str:
-    """
-    Telefon numarasını normalize eder (+90 formatına).
-
-    Args:
-        phone_number: Telefon numarası
-
-    Returns:
-        Normalize edilmiş telefon numarası (+90 formatında)
-    """
-    phone = phone_number.strip().replace(" ", "")
-
-    # Başında +90 varsa, olduğu gibi bırak
-    if phone.startswith("+90"):
-        return phone
-
-    # Başında 0 varsa, +90 ile değiştir
-    if phone.startswith("0"):
-        return "+90" + phone[1:]
-
-    # Hiçbiri yoksa, +90 ekle
-    return "+90" + phone
 
 
 # =============================================================================
