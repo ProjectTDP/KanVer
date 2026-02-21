@@ -222,6 +222,7 @@ google-services.json
 GoogleService-Info.plist
 
 # KanVer specific
+backend/logs/
 backend/firebase-credentials.json
 frontend/android/app/google-services.json
 frontend/ios/Runner/GoogleService-Info.plist
@@ -236,9 +237,17 @@ Thumbs.db
 # Maestro
 .maestro/
 
+# AI Assistant documentation (project-specific)
+CLAUDE.md
+CODE_REVIEWER.md
+GEMINI.md
+
 # IDE
 .idea/
 .vscode/settings.json
 .vscode/launch.json
 *.sublime-project
 *.sublime-workspace
+
+
+

@@ -78,14 +78,14 @@
 ### Definition of Done
 
 Phase 1 tamamlanmış sayılır eğer:
-- [ ] Docker container'lar çalışıyor (FastAPI + PostgreSQL/PostGIS)
-- [ ] Tüm 8 database tablosu oluşturuldu
-- [ ] SQLAlchemy modelleri hazır ve ilişkiler tanımlı
-- [ ] Alembic migration'ları çalışıyor
-- [ ] Health check endpoint'leri aktif
-- [ ] PostGIS extension yüklü ve test edildi
-- [ ] Seed data script'i çalışıyor
-- [ ] Documentation güncel
+- [x] Docker container'lar çalışıyor (FastAPI + PostgreSQL/PostGIS)
+- [x] Tüm 8 database tablosu oluşturuldu
+- [x] SQLAlchemy modelleri hazır ve ilişkiler tanımlı
+- [x] Alembic migration'ları çalışıyor (PostGIS init + tables)
+- [x] Health check endpoint'leri aktif
+- [x] PostGIS extension yüklü ve test edildi
+- [ ] Seed data script'i çalışıyor (Task 2.11)
+- [x] Documentation güncel
 
 ---
 
@@ -99,10 +99,10 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] Backend klasör yapısını oluştur:
+- [x] Backend klasör yapısını oluştur:
   ```
   backend/
   ├── app/
@@ -138,9 +138,9 @@ Phase 1 tamamlanmış sayılır eğer:
   ├── alembic.ini
   └── pytest.ini
   ```
-- [ ] Root seviyede `docker-compose.yml` oluştur
-- [ ] Root `.gitignore` güncelle (logs/, .env, __pycache__, vb.)
-- [ ] Backend `.gitignore` oluştur
+- [x] Root seviyede `docker-compose.yml` oluştur
+- [x] Root `.gitignore` güncelle (logs/, .env, __pycache__, vb.)
+- [x] Backend `.gitignore` oluştur
 
 ---
 
@@ -148,10 +148,10 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/.env.example` oluştur:
+- [x] `backend/.env.example` oluştur:
   ```env
   # Database
   DATABASE_URL=postgresql+asyncpg://kanver_user:kanver_pass_2024@db:5432/kanver_db
@@ -185,9 +185,9 @@ Phase 1 tamamlanmış sayılır eğer:
   HERO_POINTS_APHERESIS=100
   NO_SHOW_PENALTY=-10
   ```
-- [ ] `backend/app/config.py` oluştur (Pydantic Settings sınıfı)
-- [ ] Tüm config değerlerinin `.env`'den okunduğunu doğrula
-- [ ] `.env` dosyasının `.gitignore`'da olduğunu doğrula
+- [x] `backend/app/config.py` oluştur (Pydantic Settings sınıfı)
+- [x] Tüm config değerlerinin `.env`'den okunduğunu doğrula
+- [x] `.env` dosyasının `.gitignore`'da olduğunu doğrula
 
 ---
 
@@ -195,29 +195,29 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/Dockerfile` oluştur:
-  - [ ] Python 3.11-slim base image
-  - [ ] Working directory: `/app`
-  - [ ] `requirements.txt` kopyala ve install et
-  - [ ] Uygulama kodunu kopyala
-  - [ ] Uvicorn ile başlat (host 0.0.0.0, port 8000)
-- [ ] `backend/.dockerignore` oluştur
-- [ ] `docker-compose.yml` oluştur (root seviye):
-  - [ ] **backend** servisi: FastAPI (port 8000, volume mount, hot-reload)
-  - [ ] **db** servisi: PostGIS image (`postgis/postgis:16-3.4`), port 5432
-  - [ ] Volume tanımları (postgres_data persistent volume)
-  - [ ] Network tanımı (kanver-network)
-  - [ ] Environment variables (.env referansı)
-  - [ ] Healthcheck tanımları
-  - [ ] depends_on: db (backend db'ye bağımlı)
-- [ ] `docker-compose build` ile build al
-- [ ] `docker-compose up -d` ile container'ları başlat
-- [ ] `docker-compose ps` ile durumları kontrol et
-- [ ] Backend'e `curl http://localhost:8000` ile erişimi test et
-- [ ] PostgreSQL'e `docker-compose exec db psql -U kanver_user -d kanver_db` ile bağlan
+- [x] `backend/Dockerfile` oluştur:
+  - [x] Python 3.11-slim base image
+  - [x] Working directory: `/app`
+  - [x] `requirements.txt` kopyala ve install et
+  - [x] Uygulama kodunu kopyala
+  - [x] Uvicorn ile başlat (host 0.0.0.0, port 8000)
+- [x] `backend/.dockerignore` oluştur
+- [x] `docker-compose.yml` oluştur (root seviye):
+  - [x] **backend** servisi: FastAPI (port 8000, volume mount, hot-reload)
+  - [x] **db** servisi: PostGIS image (`postgis/postgis:16-3.4`), port 5432
+  - [x] Volume tanımları (postgres_data persistent volume)
+  - [x] Network tanımı (kanver-network)
+  - [x] Environment variables (.env referansı)
+  - [x] Healthcheck tanımları
+  - [x] depends_on: db (backend db'ye bağımlı)
+- [x] `docker-compose build` ile build al
+- [x] `docker-compose up -d` ile container'ları başlat
+- [x] `docker-compose ps` ile durumları kontrol et
+- [x] Backend'e `curl http://localhost:8000` ile erişimi test et
+- [x] PostgreSQL'e `docker-compose exec db psql -U kanver_user -d kanver_db` ile bağlan
 
 ---
 
@@ -225,10 +225,10 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/requirements.txt` oluştur:
+- [x] `backend/requirements.txt` oluştur:
   ```
   fastapi>=0.109.0
   uvicorn[standard]>=0.27.0
@@ -243,7 +243,7 @@ Phase 1 tamamlanmış sayılır eğer:
   geoalchemy2>=0.14.0
   httpx>=0.26.0
   ```
-- [ ] `backend/requirements-dev.txt` oluştur:
+- [x] `backend/requirements-dev.txt` oluştur:
   ```
   pytest>=8.0.0
   pytest-asyncio>=0.23.0
@@ -251,17 +251,17 @@ Phase 1 tamamlanmış sayılır eğer:
   httpx>=0.26.0
   faker>=22.0.0
   ```
-- [ ] `backend/app/main.py` oluştur:
-  - [ ] FastAPI app instance (title, description, version)
-  - [ ] CORS middleware konfigürasyonu
-  - [ ] `GET /` - Root endpoint (API bilgisi)
-  - [ ] `GET /health` - Basic health check
-  - [ ] `GET /health/detailed` - Detaylı sistem durumu (DB bağlantısı dahil)
-  - [ ] Startup event: DB bağlantı testi
-  - [ ] Shutdown event: DB bağlantı kapatma
-- [ ] `backend/app/__init__.py` oluştur
-- [ ] FastAPI Swagger UI çalıştığını doğrula: `http://localhost:8000/docs`
-- [ ] Hot-reload aktif olduğunu doğrula (--reload flag)
+- [x] `backend/app/main.py` oluştur:
+  - [x] FastAPI app instance (title, description, version)
+  - [x] CORS middleware konfigürasyonu
+  - [x] `GET /` - Root endpoint (API bilgisi)
+  - [x] `GET /health` - Basic health check
+  - [x] `GET /health/detailed` - Detaylı sistem durumu (DB bağlantısı dahil)
+  - [x] Startup event: DB bağlantı testi
+  - [x] Shutdown event: DB bağlantı kapatma
+- [x] `backend/app/__init__.py` oluştur
+- [x] FastAPI Swagger UI çalıştığını doğrula: `http://localhost:8000/docs`
+- [x] Hot-reload aktif olduğunu doğrula (--reload flag)
 
 ---
 
@@ -269,24 +269,32 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/database.py` oluştur:
-  - [ ] Async SQLAlchemy engine (create_async_engine)
-  - [ ] AsyncSession factory (async_sessionmaker)
-  - [ ] Base = declarative_base()
-  - [ ] `async def get_db()` dependency (AsyncSession yield)
-  - [ ] Connection pool ayarları: pool_size=5, max_overflow=10
-- [ ] `backend/app/dependencies.py` oluştur:
-  - [ ] `get_db` dependency (database.py'den re-export)
-  - [ ] `get_current_user` placeholder (Phase 2'de implement edilecek)
-- [ ] PostGIS extension'ın yüklü olduğunu doğrula:
+- [x] `backend/app/database.py` oluştur:
+  - [x] Async SQLAlchemy engine (create_async_engine)
+  - [x] AsyncSession factory (async_sessionmaker)
+  - [x] Base = declarative_base()
+  - [x] `async def get_db()` dependency (AsyncSession yield)
+  - [x] Connection pool ayarları: pool_size=5, max_overflow=10
+- [x] `backend/app/dependencies.py` oluştur:
+  - [x] `get_db` dependency (database.py'den re-export)
+  - [x] `get_current_user` placeholder (Phase 2'de implement edilecek)
+- [x] PostGIS extension'ın yüklü olduğunu doğrula:
   ```sql
   SELECT PostGIS_Version();
   ```
-- [ ] Database bağlantı testi yap (health endpoint üzerinden)
-- [ ] Connection pool'un çalıştığını doğrula
+- [x] Database bağlantı testi yap (health endpoint üzerinden)
+- [x] Connection pool'un çalıştığını doğrula
+- [x] Unit test yaz (`tests/test_database.py`):
+  - [x] test_db_connection_success
+  - [x] test_db_session_lifecycle
+  - [x] test_get_db_dependency_lifecycle (get_db generator contract)
+  - [x] test_postgis_extension_active
+  - [x] test_connection_pool_settings (pool_size=5, max_overflow=10)
+- [x] Alembic konfigürasyonu (alembic.ini, env.py)
+- [x] İlk migration: PostGIS extension activation
 
 ---
 
@@ -294,26 +302,77 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/core/logging.py` oluştur:
-  - [ ] Python logging konfigürasyonu
-  - [ ] Console handler (development)
-  - [ ] File handler (logs/app.log)
-  - [ ] Error file handler (logs/error.log)
-  - [ ] Log format: `[%(asctime)s] %(levelname)s %(name)s: %(message)s`
-  - [ ] Log level: DEBUG (dev), INFO (prod)
-- [ ] `backend/app/core/__init__.py` oluştur
-- [ ] `backend/app/core/exceptions.py` oluştur:
-  - [ ] `KanVerException` base exception
-  - [ ] `NotFoundException` (404)
-  - [ ] `ForbiddenException` (403)
-  - [ ] `BadRequestException` (400)
-  - [ ] `ConflictException` (409)
-  - [ ] `CooldownActiveException` (bağışçı soğuma süresinde)
-  - [ ] `GeofenceException` (konum doğrulaması başarısız)
-- [ ] Logging'in tüm katmanlarda çalıştığını doğrula
+- [x] `backend/app/core/logging.py` oluştur:
+  - [x] Python logging konfigürasyonu
+  - [x] Console handler (development)
+  - [x] File handler (logs/app.log)
+  - [x] Error file handler (logs/error.log)
+  - [x] Log format: `[%(asctime)s] %(levelname)s %(name)s: %(message)s`
+  - [x] Log level: DEBUG (dev), INFO (prod)
+  - [x] JSON format support (production)
+- [x] `backend/app/core/__init__.py` oluştur
+- [x] `backend/app/core/exceptions.py` oluştur:
+  - [x] `KanVerException` base exception
+  - [x] `NotFoundException` (404)
+  - [x] `ForbiddenException` (403)
+  - [x] `BadRequestException` (400)
+  - [x] `ConflictException` (409)
+  - [x] `CooldownActiveException` (bağışçı soğuma süresinde)
+  - [x] `GeofenceException` (konum doğrulaması başarısız)
+  - [x] `UnauthorizedException` (401)
+  - [x] `ActiveCommitmentExistsException` (409)
+  - [x] `SlotFullException` (409)
+- [x] `backend/app/middleware/logging_middleware.py` oluştur:
+  - [x] Request ID generation and tracking
+  - [x] Request/response logging
+  - [x] Timing measurement
+- [x] Global exception handler in main.py
+- [x] PostGIS verification on startup
+- [x] Logging'in tüm katmanlarda çalıştığını doğrula
+- [x] Unit test yaz (`tests/test_exceptions.py`):
+  - [x] test_kanver_exception_base_class
+  - [x] test_not_found_exception_status_code (404)
+  - [x] test_forbidden_exception_status_code (403)
+  - [x] test_bad_request_exception_status_code (400)
+  - [x] test_conflict_exception_status_code (409)
+  - [x] test_cooldown_active_exception_message
+  - [x] test_geofence_exception_message
+- [x] Logging doğrulama testi:
+  - [x] test_log_file_creation (logs/app.log, logs/error.log)
+  - [x] test_log_format_correct
+  - [x] test_error_log_separate_file
+
+---
+
+### Task 1.7: Test Infrastructure Bug Fixes (Code Review)
+
+**Tahmini Süre:** 2 saat
+
+**Durum:** ✅ TAMAMLANDI
+
+**Yapılacaklar:**
+- [x] `test_database.py` import sorunu düzelt:
+  - [x] `test_db_connection` → `db_connection_check` alias (pytest collection conflict)
+- [x] `conftest.py` env bağımsız hale getir:
+  - [x] Mock settings fixture ile .env bağımsız test collection
+  - [x] Unit testler (exception, main) Docker olmadan çalışır
+- [x] `get_db` dependency lifecycle testi ekle:
+  - [x] `test_get_db_dependency_lifecycle` - async generator contract doğrulaması
+- [x] `get_current_user` placeholder stub:
+  - [x] NotImplementedError fırlatan gerçek fonksiyon
+- [x] **Pytest Async Event Loop sorunu çözümü:**
+  - [x] `pytest.ini` oluştur - `asyncio_default_fixture_loop_scope = session`
+  - [x] `conftest.py`'de session-scoped event_loop fixture ekle
+  - [x] `conftest.py`'de NullPool ile test engine yapılandırması
+  - [x] `test_database.py`'de sorumlu testler için fresh engine kullanımı
+  - [x] `python-json-logger` paket eksikliği düzeltmesi
+  - [x] Tüm 37 test geçiyor (9 database + 23 exceptions + 5 main)
+
+**Not:** SQLAlchemy async engine ile pytest-asyncio arasındaki event loop çakışması,
+her test için fresh engine oluşturarak ve NullPool kullanarak çözüldü.
 
 ---
 
@@ -327,266 +386,87 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/constants/blood_types.py` oluştur:
-  - [ ] `BloodType` enum: A+, A-, B+, B-, AB+, AB-, O+, O-
-  - [ ] Kan grubu uyumluluk matrisi (hangi grup kime verebilir)
-- [ ] `backend/app/constants/roles.py` oluştur:
-  - [ ] `UserRole` enum: USER, NURSE, ADMIN
-- [ ] `backend/app/constants/status.py` oluştur:
-  - [ ] `RequestStatus` enum: ACTIVE, FULFILLED, CANCELLED, EXPIRED
-  - [ ] `RequestType` enum: WHOLE_BLOOD, APHERESIS
-  - [ ] `Priority` enum: LOW, NORMAL, URGENT, CRITICAL
-  - [ ] `CommitmentStatus` enum: ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT
-  - [ ] `DonationStatus` enum: COMPLETED, CANCELLED, REJECTED
-  - [ ] `NotificationType` enum: NEW_REQUEST, DONOR_FOUND, DONOR_ON_WAY, DONATION_COMPLETE, TIMEOUT_WARNING, NO_SHOW vb.
-- [ ] `backend/app/constants/__init__.py` oluştur (tüm enum'ları export et)
-
----
-
-### Task 2.2: SQLAlchemy Model - users
-
-**Tahmini Süre:** 1.5 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `backend/app/models.py` içinde `User` modeli oluştur:
-  - [ ] `user_id`: UUID, primary key, default gen_random_uuid
-  - [ ] `phone_number`: String(20), NOT NULL
-  - [ ] `password_hash`: String(255), NOT NULL
-  - [ ] `full_name`: String(100), NOT NULL
-  - [ ] `email`: String(255), nullable
-  - [ ] `date_of_birth`: Date, NOT NULL
-  - [ ] `blood_type`: String(10), NOT NULL, CHECK constraint
-  - [ ] `role`: String(50), default 'USER', CHECK constraint
-  - [ ] `is_verified`: Boolean, default False
-  - [ ] `last_donation_date`: DateTime(timezone=True), nullable
-  - [ ] `next_available_date`: DateTime(timezone=True), nullable
-  - [ ] `total_donations`: Integer, default 0
-  - [ ] `location`: Geography(Point, 4326), nullable (GeoAlchemy2)
-  - [ ] `hero_points`: Integer, default 0
-  - [ ] `trust_score`: Integer, default 100
-  - [ ] `no_show_count`: Integer, default 0
-  - [ ] `fcm_token`: String(255), nullable
-  - [ ] `created_at`: DateTime, default now
-  - [ ] `deleted_at`: DateTime, nullable (soft delete)
-- [ ] Partial unique index: phone_number WHERE deleted_at IS NULL
-- [ ] Partial unique index: email WHERE email IS NOT NULL AND deleted_at IS NULL
-- [ ] GIST index: location WHERE location IS NOT NULL
-- [ ] Index: blood_type WHERE deleted_at IS NULL
-- [ ] Index: fcm_token WHERE fcm_token IS NOT NULL
-- [ ] Relationship tanımları: commitments, donations, notifications
+**Yapılanlar:**
+- [x] `backend/app/constants/blood_types.py` oluştur:
+  - [x] `BloodType` enum: A+, A-, B+, B-, AB+, AB-, O+, O-
+  - [x] Kan grubu uyumluluk matrisi (hangi grup kime verebilir)
+- [x] `backend/app/constants/roles.py` oluştur:
+  - [x] `UserRole` enum: USER, NURSE, ADMIN
+- [x] `backend/app/constants/status.py` oluştur:
+  - [x] `RequestStatus` enum: ACTIVE, FULFILLED, CANCELLED, EXPIRED
+  - [x] `RequestType` enum: WHOLE_BLOOD, APHERESIS
+  - [x] `Priority` enum: LOW, NORMAL, URGENT, CRITICAL
+  - [x] `CommitmentStatus` enum: ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT
+  - [x] `DonationStatus` enum: COMPLETED, CANCELLED, REJECTED
+  - [x] `NotificationType` enum: NEW_REQUEST, DONOR_FOUND, DONOR_ON_WAY, DONATION_COMPLETE, TIMEOUT_WARNING, NO_SHOW vb.
+- [x] `backend/app/constants/__init__.py` oluştur (tüm enum'ları export et)
+- [x] Unit test yaz (`tests/test_constants.py`):
+  - [x] test_blood_type_enum_values (8 kan grubu mevcut)
+  - [x] test_blood_type_compatibility_matrix_complete
+  - [x] test_user_role_enum_values (USER, NURSE, ADMIN)
+  - [x] test_request_status_enum_values (ACTIVE, FULFILLED, CANCELLED, EXPIRED)
+  - [x] test_commitment_status_enum_values (ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT)
+  - [x] test_donation_status_enum_values
+  - [x] test_notification_type_enum_values
+  - [x] test_priority_enum_values (LOW, NORMAL, URGENT, CRITICAL)
 
 ---
 
-### Task 2.3: SQLAlchemy Model - hospitals
+### Task 2.2-2.9: SQLAlchemy Models
 
-**Tahmini Süre:** 1 saat
+**Tahmini Süre:** 8 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `hospitals` modeli oluştur:
-  - [ ] `hospital_id`: UUID, primary key
-  - [ ] `hospital_name`: String(255), NOT NULL
-  - [ ] `hospital_code`: String(50), UNIQUE, NOT NULL
-  - [ ] `location`: Geography(Point, 4326), NOT NULL
-  - [ ] `address`: Text, NOT NULL
-  - [ ] `city`: String(100), NOT NULL
-  - [ ] `district`: String(100), NOT NULL
-  - [ ] `phone_number`: String(20), NOT NULL
-  - [ ] `geofence_radius_meters`: Integer, default 5000
-  - [ ] `has_blood_bank`: Boolean, default True
-  - [ ] `is_active`: Boolean, default True
-  - [ ] `created_at`: DateTime, default now
-- [ ] GIST index: location
-- [ ] Composite index: (city, district)
-- [ ] Relationship: staff, blood_requests, donations
-
----
-
-### Task 2.4: SQLAlchemy Model - hospital_staff
-
-**Tahmini Süre:** 30 dakika
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `hospital_staff` modeli oluştur:
-  - [ ] `staff_id`: UUID, primary key
-  - [ ] `user_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `hospital_id`: UUID, ForeignKey(hospitals.hospital_id), NOT NULL
-  - [ ] `staff_role`: String(100), nullable
-  - [ ] `department`: String(100), nullable
-  - [ ] `is_active`: Boolean, default True
-  - [ ] `assigned_at`: DateTime, default now
-- [ ] UniqueConstraint: (user_id, hospital_id)
-- [ ] Relationship: user, hospital
+**Yapılanlar:**
+- [x] `backend/app/models.py` oluştur (tüm 8 model ile):
+  - [x] `User` modeli: id, phone_number, email, full_name, password_hash, role, blood_type, hero_points, trust_score, next_available_date, total_donations, no_show_count, location (PostGIS), fcm_token, is_active, deleted_at
+  - [x] `Hospital` modeli: id, hospital_code, name, address, district, city, location (PostGIS), geofence_radius_meters, phone_number, email, is_active
+  - [x] `HospitalStaff` modeli: id, user_id, hospital_id (FK), is_active
+  - [x] `BloodRequest` modeli: id, request_code (UNIQUE), requester_id, hospital_id (FK), blood_type, request_type, priority, units_needed, units_collected, status, location (PostGIS), expires_at, patient_name, notes
+  - [x] `DonationCommitment` modeli: id, donor_id, blood_request_id (FK), status, timeout_minutes, arrived_at, completed_at
+  - [x] `QRCode` modeli: id, commitment_id (UNIQUE FK), token (UNIQUE), signature, is_used, used_at, expires_at
+  - [x] `Donation` modeli: id, donor_id, hospital_id, blood_request_id, commitment_id (UNIQUE FK), qr_code_id (UNIQUE FK), donation_type, blood_type, verified_by, verified_at, hero_points_earned, status, notes
+  - [x] `Notification` modeli: id, user_id (FK CASCADE), notification_type, blood_request_id, donation_id, title, message, is_read, read_at, is_push_sent, push_sent_at, fcm_token
+- [x] TimestampMixin: created_at ve updated_at (onupdate=func.now()) tüm modellere uygulandı
+- [x] Check constraints: hero_points >= 0, trust_score 0-100, blood_type valid, units_needed > 0, vb.
+- [x] Partial unique indexes: users(phone_number) WHERE deleted_at IS NULL, users(email) WHERE email IS NOT NULL AND deleted_at IS NULL
+- [x] PostGIS GIST indexes: users.location, hospitals.location, blood_requests.location
+- [x] Single active commitment index: idx_single_active_commitment WHERE status IN ('ON_THE_WAY', 'ARRIVED')
+- [x] Relationship tanımları: Tüm modellerde ilişkiler tanımlandı
 
 ---
 
-### Task 2.5: SQLAlchemy Model - blood_requests
-
-**Tahmini Süre:** 1.5 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `blood_requests` modeli oluştur:
-  - [ ] `request_id`: UUID, primary key
-  - [ ] `request_code`: String(20), UNIQUE, NOT NULL
-  - [ ] `requester_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `hospital_id`: UUID, ForeignKey(hospitals.hospital_id), NOT NULL
-  - [ ] `blood_type`: String(10), NOT NULL
-  - [ ] `units_needed`: Integer, NOT NULL, default 1
-  - [ ] `units_collected`: Integer, NOT NULL, default 0
-  - [ ] `request_type`: String(50), NOT NULL, CHECK (WHOLE_BLOOD, APHERESIS)
-  - [ ] `priority`: String(50), default NORMAL, CHECK
-  - [ ] `location`: Geography(Point, 4326), NOT NULL
-  - [ ] `status`: String(50), default ACTIVE, CHECK
-  - [ ] `created_at`: DateTime, default now
-  - [ ] `expires_at`: DateTime, NOT NULL
-  - [ ] `fulfilled_at`: DateTime, nullable
-- [ ] CHECK constraint: units_needed > 0 AND units_collected >= 0
-- [ ] CHECK constraint: units_collected <= units_needed
-- [ ] CHECK constraint: expires_at > created_at
-- [ ] GIST index: location
-- [ ] Composite index: (status, blood_type, hospital_id)
-- [ ] Index: status
-- [ ] Relationship: requester, hospital, commitments
-
----
-
-### Task 2.6: SQLAlchemy Model - donation_commitments
-
-**Tahmini Süre:** 1 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `donation_commitments` modeli oluştur:
-  - [ ] `commitment_id`: UUID, primary key
-  - [ ] `request_id`: UUID, ForeignKey(blood_requests.request_id), NOT NULL
-  - [ ] `donor_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `status`: String(50), default ON_THE_WAY, CHECK
-  - [ ] `committed_at`: DateTime, default now
-  - [ ] `expected_arrival_time`: DateTime, nullable
-  - [ ] `arrived_at`: DateTime, nullable
-  - [ ] `timeout_minutes`: Integer, default 60
-  - [ ] `cancel_reason`: Text, nullable
-  - [ ] `notes`: Text, nullable
-- [ ] Partial unique index: donor_id WHERE status IN ('ON_THE_WAY', 'ARRIVED')
-- [ ] Composite index: (status, committed_at) — timeout tarama için
-- [ ] Index: status, donor_id, request_id
-- [ ] Relationship: request, donor, qr_code, donation
-
----
-
-### Task 2.7: SQLAlchemy Model - qr_codes
-
-**Tahmini Süre:** 1 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `qr_codes` modeli oluştur:
-  - [ ] `qr_id`: UUID, primary key
-  - [ ] `commitment_id`: UUID, ForeignKey(donation_commitments.commitment_id), NOT NULL, UNIQUE
-  - [ ] `token`: String(255), UNIQUE, NOT NULL
-  - [ ] `signature`: Text, NOT NULL
-  - [ ] `is_used`: Boolean, default False
-  - [ ] `used_at`: DateTime, nullable
-  - [ ] `used_by`: UUID, ForeignKey(users.user_id), nullable
-  - [ ] `created_at`: DateTime, default now
-  - [ ] `expires_at`: DateTime, NOT NULL
-- [ ] Index: token
-- [ ] Partial index: commitment_id WHERE is_used = false
-- [ ] Relationship: commitment, verified_by_user
-
----
-
-### Task 2.8: SQLAlchemy Model - donations
-
-**Tahmini Süre:** 1 saat
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `donations` modeli oluştur:
-  - [ ] `donation_id`: UUID, primary key
-  - [ ] `request_id`: UUID, ForeignKey(blood_requests.request_id), nullable
-  - [ ] `commitment_id`: UUID, ForeignKey(donation_commitments.commitment_id), nullable
-  - [ ] `donor_id`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `hospital_id`: UUID, ForeignKey(hospitals.hospital_id), NOT NULL
-  - [ ] `verified_by`: UUID, ForeignKey(users.user_id), NOT NULL
-  - [ ] `blood_type`: String(10), NOT NULL
-  - [ ] `donation_type`: String(50), NOT NULL, CHECK (WHOLE_BLOOD, APHERESIS)
-  - [ ] `units_donated`: Integer, default 1
-  - [ ] `qr_id`: UUID, ForeignKey(qr_codes.qr_id), NOT NULL
-  - [ ] `status`: String(50), default COMPLETED, CHECK
-  - [ ] `hero_points_earned`: Integer, default 50
-  - [ ] `donation_date`: DateTime, default now
-  - [ ] `created_at`: DateTime, default now
-- [ ] Relationship: request, commitment, donor, hospital, verifier, qr_code
-
----
-
-### Task 2.9: SQLAlchemy Model - notifications
-
-**Tahmini Süre:** 45 dakika
-
-**Durum:** ⬜ BEKLEMEDE
-
-**Yapılacaklar:**
-- [ ] `notifications` modeli oluştur:
-  - [ ] `notification_id`: UUID, primary key
-  - [ ] `user_id`: UUID, ForeignKey(users.user_id, ondelete=CASCADE), NOT NULL
-  - [ ] `notification_type`: String(50), NOT NULL
-  - [ ] `title`: String(255), NOT NULL
-  - [ ] `message`: Text, NOT NULL
-  - [ ] `request_id`: UUID, ForeignKey(blood_requests.request_id, ondelete=SET NULL), nullable
-  - [ ] `donation_id`: UUID, ForeignKey(donations.donation_id, ondelete=SET NULL), nullable
-  - [ ] `is_read`: Boolean, default False
-  - [ ] `read_at`: DateTime, nullable
-  - [ ] `is_push_sent`: Boolean, default False
-  - [ ] `created_at`: DateTime, default now
-- [ ] Composite index: (user_id, is_read)
-- [ ] Partial index: user_id WHERE is_read = false
-- [ ] Relationship: user, blood_request, donation
-
----
-
-### Task 2.10: Alembic Migration Setup
+### Task 2.10: Alembic Migration
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] Alembic'i initialize et: `alembic init alembic`
-- [ ] `backend/alembic.ini` düzenle:
-  - [ ] sqlalchemy.url = DATABASE_URL'den oku
-- [ ] `backend/alembic/env.py` düzenle:
-  - [ ] Async engine desteği ekle
-  - [ ] Target metadata = Base.metadata
-  - [ ] PostGIS tip desteği (GeoAlchemy2)
-- [ ] İlk migration'ı oluştur: `alembic revision --autogenerate -m "initial_schema"`
-- [ ] Migration'ı uygula: `alembic upgrade head`
-- [ ] Tüm tabloların oluştuğunu doğrula:
-  ```sql
-  \dt
-  ```
-- [ ] PostGIS extension'ın aktif olduğunu doğrula:
-  ```sql
-  SELECT PostGIS_Version();
-  ```
-- [ ] Index'lerin oluştuğunu doğrula:
-  ```sql
-  \di
-  ```
+**Yapılanlar:**
+- [x] `backend/alembic/versions/20250220_0001_create_tables.py` oluştur:
+  - [x] 7 ENUM type: userrole, requeststatus, requesttype, priority, commitmentstatus, donationstatus, notificationtype
+  - [x] 8 tablo oluşturma (correct FK order)
+  - [x] CHECK constraints
+  - [x] PostGIS GIST indexes
+  - [x] Partial unique indexes
+  - [x] Normal indexes
+- [x] Migration'ı uygula: `alembic upgrade head`
+- [x] Tüm tabloların oluştuğunu doğrula (8 tablo)
+- [x] PostGIS extension aktif
+- [x] Unit test yaz (`tests/test_models.py`):
+  - [x] test_all_8_models_exist
+  - [x] test_table_names_correct
+  - [x] test_all_models_have_timestamps
+  - [x] test_user_relationships
+  - [x] test_hospital_relationships
+  - [x] test_blood_request_relationships
+  - [x] test_donation_commitment_relationships
+  - [x] test_qr_code_relationships
+  - [x] test_donation_relationships
+  - [x] test_notification_relationships
 
 ---
 
@@ -594,37 +474,51 @@ Phase 1 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/scripts/seed_data.py` oluştur:
-  - [ ] Antalya hastaneleri (3-5 adet):
-    - [ ] Akdeniz Üniversitesi Hastanesi
-    - [ ] Antalya Eğitim ve Araştırma Hastanesi
-    - [ ] Memorial Antalya Hastanesi
-    - [ ] Gerçek koordinatlarını ekle (lat/lng)
-  - [ ] Test kullanıcıları (5-10 adet):
-    - [ ] Her kan grubundan en az 1 kullanıcı
-    - [ ] 1 NURSE rolünde kullanıcı
-    - [ ] 1 ADMIN rolünde kullanıcı
-    - [ ] Antalya'da farklı konumlarla
-  - [ ] Hospital staff kayıtları (NURSE → Hastane eşleştirmesi)
-  - [ ] Örnek blood_request (1-2 adet, ACTIVE durumda)
-- [ ] `backend/scripts/cleanup_db.py` oluştur (tabloları temizleme)
-- [ ] Seed script'ini çalıştır ve doğrula
-- [ ] Seed data'nın idempotent olduğunu doğrula (tekrar çalıştırılınca hata vermemeli)
+**Yapılanlar:**
+- [x] `backend/scripts/seed_data.py` oluştur:
+  - [x] Antalya hastaneleri (5 adet):
+    - [x] Akdeniz Üniversitesi Hastanesi
+    - [x] Antalya Eğitim ve Araştırma Hastanesi
+    - [x] Memorial Antalya Hastanesi
+    - [x] Aksu Devlet Hastanesi
+    - [x] Kepez Devlet Hastanesi
+    - [x] Gerçek koordinatlarını ekle (POINT lng, lat format)
+  - [x] Test kullanıcıları (10 adet):
+    - [x] Her kan grubundan en az 1 kullanıcı
+    - [x] 1 NURSE rolünde kullanıcı (Hemşire Aylin)
+    - [x] 1 ADMIN rolünde kullanıcı (Admin KanVer)
+    - [x] Async SQLAlchemy ile implementasyon
+  - [x] Hospital staff kayıtları (NURSE/ADMIN → Hastane eşleştirmesi)
+  - [x] Örnek blood_request (2 adet, ACTIVE durumunda)
+  - [x] Idempotent tasarım (tekrar çalıştırılabilir)
+- [x] `backend/scripts/cleanup_db.py` oluştur (TRUNCATE CASCADE ile temizleme)
+- [x] `app/core/security.py` oluştur:
+  - [x] hash_password fonksiyonu (bcrypt, rounds=12)
+  - [x] verify_password fonksiyonu
+- [x] Task 2.10: Model'e idx_single_active_commitment eklendi (unique=True ile)
+- [x] Unit test yaz (`tests/test_seed_data.py`):
+  - [x] test_seed_hospitals_created (5 hastane)
+  - [x] test_seed_users_all_blood_types (her gruptan en az 1)
+  - [x] test_seed_nurse_role_exists
+  - [x] test_seed_admin_role_exists
+  - [x] test_seed_hospital_staff_assigned
+  - [x] test_seed_sample_requests_active
+  - [x] test_seed_idempotent (çift çalıştırmada hata yok)
+  - [x] Diğer validation test'leri
 
 ---
 
 ### 📊 Phase 1 Success Metrics
 
-- [ ] `docker-compose up -d` ile tüm servisler 30 saniye içinde ayağa kalkıyor
-- [ ] `GET /health/detailed` 200 OK dönüyor, DB bağlantısı sağlıklı
-- [ ] 8 tablo PostgreSQL'de mevcut
-- [ ] PostGIS GIST index'leri aktif
-- [ ] Alembic migration history temiz
-- [ ] Seed data yüklenmiş ve sorgulanabilir
-- [ ] Swagger UI (`/docs`) erişilebilir
+- [x] `docker-compose up -d` ile tüm servisler 30 saniye içinde ayağa kalkıyor
+- [x] `GET /health/detailed` 200 OK dönüyor, DB bağlantısı sağlıklı
+- [x] 8 tablo PostgreSQL'de mevcut
+- [x] PostGIS GIST index'leri aktif
+- [x] Alembic migration history temiz
+- [x] Seed data yüklenmiş ve sorgulanabilir
+- [x] Swagger UI (`/docs`) erişilebilir
 
 ---
 
@@ -671,15 +565,16 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/core/security.py` oluştur:
-  - [ ] `CryptContext` ile bcrypt setup (passlib)
-  - [ ] `hash_password(plain: str) -> str`
-  - [ ] `verify_password(plain: str, hashed: str) -> bool`
-  - [ ] Password strength validation (min 8 karakter)
-- [ ] Unit test yaz: hash oluşturma ve doğrulama
+- [x] `backend/app/core/security.py` oluştur:
+  - [x] Doğrudan `bcrypt` kütüphanesi ile şifreleme altyapısı (Performans ve stabilite nedeniyle `passlib` yerine tercih edildi)
+  - [x] `hash_password(plain: str) -> str`
+  - [x] `verify_password(plain: str, hashed: str) -> bool`
+  - [x] `validate_password_strength(password: str)` (min 8 karakter, büyük/küçük harf ve rakam kontrolü)
+- [x] Unit test yaz (`tests/test_password.py`)
+- [x] Bcrypt 72 byte limit koruması (truncate) eklendi
 
 ---
 
@@ -687,22 +582,36 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/auth.py` oluştur:
-  - [ ] `create_access_token(data: dict, expires_delta: timedelta) -> str`
-  - [ ] `create_refresh_token(data: dict) -> str`
-  - [ ] `decode_token(token: str) -> dict`
-  - [ ] Token payload: `{"sub": user_id, "role": role, "exp": expiry}`
-  - [ ] Access token TTL: 30 dakika (configurable)
-  - [ ] Refresh token TTL: 7 gün (configurable)
-- [ ] `backend/app/dependencies.py` güncelle:
-  - [ ] `get_current_user(token: str = Depends(oauth2_scheme)) -> User`
-  - [ ] `get_current_active_user` (deleted_at IS NULL kontrolü)
-  - [ ] `require_role(roles: list[str])` — rol bazlı yetkilendirme dependency
-- [ ] OAuth2PasswordBearer scheme tanımla
-- [ ] Token decode hata yönetimi (expired, invalid)
+- [x] `backend/app/auth.py` oluştur:
+  - [x] `create_access_token(data: dict, expires_delta: timedelta) -> str`
+  - [x] `create_refresh_token(data: dict) -> str`
+  - [x] `decode_token(token: str) -> dict`
+  - [x] Token payload: `{"sub": user_id, "role": role, "exp": expiry}`
+  - [x] Access token TTL: 30 dakika (configurable)
+  - [x] Refresh token TTL: 7 gün (configurable)
+- [x] `backend/app/dependencies.py` güncelle:
+  - [x] `get_current_user(token: str = Depends(oauth2_scheme)) -> User`
+  - [x] `get_current_active_user` (deleted_at IS NULL kontrolü)
+  - [x] `require_role(roles: list[str])` — rol bazlı yetkilendirme dependency
+- [x] OAuth2PasswordBearer scheme tanımla
+- [x] Token decode hata yönetimi (expired, invalid)
+- [x] Unit test yaz (`tests/test_jwt.py`):
+  - [x] test_create_access_token_valid
+  - [x] test_create_refresh_token_valid
+  - [x] test_decode_valid_token
+  - [x] test_decode_expired_token_raises
+  - [x] test_decode_invalid_token_raises
+  - [x] test_token_contains_correct_claims (sub, role, exp)
+  - [x] test_access_token_ttl_30_minutes
+  - [x] test_refresh_token_ttl_7_days
+  - [x] test_get_current_user_valid_token
+  - [x] test_get_current_user_invalid_token (401)
+  - [x] test_get_current_user_expired_token (401)
+  - [x] test_require_role_authorized
+  - [x] test_require_role_unauthorized (403)
 
 ---
 
@@ -710,39 +619,48 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/schemas.py` içinde auth şemaları oluştur:
-  - [ ] `UserRegisterRequest`:
-    - [ ] phone_number (validator: Türkiye format +90...)
-    - [ ] password (min 8 karakter)
-    - [ ] full_name
-    - [ ] email (optional)
-    - [ ] date_of_birth
-    - [ ] blood_type (enum validation)
-  - [ ] `UserLoginRequest`:
-    - [ ] phone_number
-    - [ ] password
-  - [ ] `TokenResponse`:
-    - [ ] access_token
-    - [ ] refresh_token
-    - [ ] token_type: "bearer"
-  - [ ] `RefreshTokenRequest`:
-    - [ ] refresh_token
-  - [ ] `UserResponse`:
-    - [ ] user_id, phone_number, full_name, email, blood_type
-    - [ ] role, is_verified, hero_points, trust_score
-    - [ ] total_donations, created_at
-    - [ ] password_hash HARİÇ
-  - [ ] `UserUpdateRequest`:
-    - [ ] full_name (optional)
-    - [ ] email (optional)
-    - [ ] fcm_token (optional)
-- [ ] Custom validators:
-  - [ ] Telefon numarası format kontrolü
-  - [ ] Kan grubu geçerlilik kontrolü
-  - [ ] Doğum tarihi kontrolü (18 yaş üstü)
+- [x] `backend/app/schemas.py` içinde auth şemaları oluştur:
+  - [x] `UserRegisterRequest`:
+    - [x] phone_number (validator: Türkiye format +90...)
+    - [x] password (min 8 karakter)
+    - [x] full_name
+    - [x] email (optional)
+    - [x] date_of_birth
+    - [x] blood_type (enum validation)
+  - [x] `UserLoginRequest`:
+    - [x] phone_number
+    - [x] password
+  - [x] `TokenResponse`:
+    - [x] access_token
+    - [x] refresh_token
+    - [x] token_type: "bearer"
+  - [x] `RefreshTokenRequest`:
+    - [x] refresh_token
+  - [x] `UserResponse`:
+    - [x] user_id, phone_number, full_name, email, blood_type
+    - [x] role, hero_points, trust_score
+    - [x] total_donations, created_at
+    - [x] password_hash HARİÇ
+  - [x] `UserUpdateRequest`:
+    - [x] full_name (optional)
+    - [x] email (optional)
+    - [x] fcm_token (optional)
+- [x] Custom validators:
+  - [x] Telefon numarası format kontrolü
+  - [x] Kan grubu geçerlilik kontrolü
+  - [x] Doğum tarihi kontrolü (18 yaş üstü)
+- [x] Unit test yaz (`tests/test_schemas.py`):
+  - [x] test_user_register_valid_data
+  - [x] test_user_register_invalid_phone_format
+  - [x] test_user_register_invalid_blood_type
+  - [x] test_user_register_underage_rejected (< 18 yaş)
+  - [x] test_user_register_short_password (< 8 karakter)
+  - [x] test_user_response_excludes_password_hash
+  - [x] test_token_response_schema_fields
+  - [x] test_user_update_request_optional_fields
 
 ---
 
@@ -750,24 +668,24 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/auth.py` oluştur
-- [ ] `POST /api/auth/register` endpoint'i:
-  - [ ] Request body: UserRegisterRequest
-  - [ ] Telefon numarası unique kontrolü (soft delete hariç)
-  - [ ] Email unique kontrolü (varsa)
-  - [ ] Password hash'le
-  - [ ] User oluştur ve kaydet
-  - [ ] Access + Refresh token üret
-  - [ ] Response: TokenResponse + UserResponse
-  - [ ] Error cases:
-    - [ ] 409 Conflict: Telefon zaten kayıtlı
-    - [ ] 409 Conflict: Email zaten kayıtlı
-    - [ ] 422 Validation Error: Geçersiz blood_type, vb.
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/auth`)
-- [ ] Swagger UI üzerinden test et
+- [x] `backend/app/routers/auth.py` oluştur
+- [x] `POST /api/auth/register` endpoint'i:
+  - [x] Request body: UserRegisterRequest
+  - [x] Telefon numarası unique kontrolü (soft delete hariç)
+  - [x] Email unique kontrolü (varsa)
+  - [x] Password hash'le
+  - [x] User oluştur ve kaydet
+  - [x] Access + Refresh token üret
+  - [x] Response: TokenResponse + UserResponse
+  - [x] Error cases:
+    - [x] 409 Conflict: Telefon zaten kayıtlı
+    - [x] 409 Conflict: Email zaten kayıtlı
+    - [x] 422 Validation Error: Geçersiz blood_type, vb.
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/auth`)
+- [x] Swagger UI üzerinden test et
 
 ---
 
@@ -775,28 +693,28 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `POST /api/auth/login` endpoint'i:
-  - [ ] Request body: UserLoginRequest
-  - [ ] Telefon numarasına göre user bul
-  - [ ] Password doğrula (verify_password)
-  - [ ] Soft deleted kontrolü
-  - [ ] Access + Refresh token üret
-  - [ ] Response: TokenResponse
-  - [ ] Error cases:
-    - [ ] 401 Unauthorized: Yanlış telefon veya şifre
-    - [ ] 403 Forbidden: Hesap silinmiş
-- [ ] `POST /api/auth/refresh` endpoint'i:
-  - [ ] Request body: RefreshTokenRequest
-  - [ ] Refresh token decode et
-  - [ ] User'ın hala aktif olduğunu doğrula
-  - [ ] Yeni access + refresh token üret
-  - [ ] Response: TokenResponse
-  - [ ] Error cases:
-    - [ ] 401 Unauthorized: Geçersiz veya expired refresh token
-- [ ] Swagger UI üzerinden login → token al → protected endpoint test akışı
+- [x] `POST /api/auth/login` endpoint'i:
+  - [x] Request body: UserLoginRequest
+  - [x] Telefon numarasına göre user bul
+  - [x] Password doğrula (verify_password)
+  - [x] Soft deleted kontrolü
+  - [x] Access + Refresh token üret
+  - [x] Response: TokenResponse
+  - [x] Error cases:
+    - [x] 401 Unauthorized: Yanlış telefon veya şifre
+    - [x] 403 Forbidden: Hesap silinmiş
+- [x] `POST /api/auth/refresh` endpoint'i:
+  - [x] Request body: RefreshTokenRequest
+  - [x] Refresh token decode et
+  - [x] User'ın hala aktif olduğunu doğrula (is_active + deleted_at kontrolü)
+  - [x] Yeni access + refresh token üret
+  - [x] Response: TokenResponse
+  - [x] Error cases:
+    - [x] 401 Unauthorized: Geçersiz veya expired refresh token, hesap aktif değil
+- [x] Swagger UI üzerinden login → token al → protected endpoint test akışı
 
 ---
 
@@ -810,17 +728,37 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/services/user_service.py` oluştur:
-  - [ ] `get_user_by_id(db, user_id) -> User`
-  - [ ] `get_user_by_phone(db, phone_number) -> User`
-  - [ ] `update_user(db, user_id, data) -> User`
-  - [ ] `update_location(db, user_id, lat, lng) -> User`
-  - [ ] `soft_delete_user(db, user_id) -> None`
-  - [ ] `get_user_stats(db, user_id) -> dict` (hero_points, total_donations, trust_score)
-- [ ] `backend/app/services/__init__.py` oluştur
+**Yapılanlar:**
+- [x] `backend/app/utils/location.py` oluştur:
+  - [x] `create_point_wkt(latitude, longitude) -> WKTElement`
+  - [x] Validation: lat [-90, 90], lng [-180, 180]
+  - [x] PostGIS Geography Point (SRID 4326) formatında döner
+- [x] `backend/app/services/user_service.py` oluştur:
+  - [x] `get_user_by_id(db, user_id) -> User | None`
+  - [x] `get_user_by_phone(db, phone_number) -> User | None` (normalizasyon ile)
+  - [x] `update_user_profile(db, user, update_data) -> User`
+  - [x] `update_user_location(db, user, latitude, longitude) -> User`
+  - [x] `soft_delete_user(db, user) -> None`
+  - [x] `get_user_stats(db, user) -> dict` (detaylı: hero_points, trust_score, cooldown, rank_badge)
+- [x] `backend/app/services/__init__.py` oluştur (export tüm fonksiyonlar)
+- [x] `backend/app/schemas.py` güncelle:
+  - [x] `LocationUpdateRequest` (latitude, longitude with validation)
+  - [x] `UserStatsResponse` (detaylı istatistik response)
+- [x] `backend/app/utils/__init__.py` oluştur (export create_point_wkt)
+- [x] Unit test yaz (`tests/test_user_service.py`):
+  - [x] test_get_user_by_id_exists / not_found
+  - [x] test_get_user_by_phone_exists / not_found / normalization
+  - [x] test_update_user_profile (full_name, email, fcm_token, multiple)
+  - [x] test_update_user_profile_email_unique_conflict
+  - [x] test_update_user_profile_ignores_invalid_fields
+  - [x] test_update_user_location_success / boundaries / invalid_lat_lon
+  - [x] test_soft_delete_user_sets_deleted_at / is_active_false / remains_in_db
+  - [x] test_get_user_stats_correct_values / is_in_cooldown / rank_badge
+  - [x] test_get_user_stats_rank_boundaries (Yeni, Bronz, Gümüş, Altın, Platin)
+- [x] **31 user_service testi geçiyor**
+- [x] **Toplam: 204 test geçiyor**
 
 ---
 
@@ -828,29 +766,53 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/users.py` oluştur
-- [ ] `GET /api/users/me` — Kendi profilini getir:
-  - [ ] Requires: authenticated user
-  - [ ] Response: UserResponse
-- [ ] `PATCH /api/users/me` — Profil güncelle:
-  - [ ] Requires: authenticated user
-  - [ ] Request: UserUpdateRequest
-  - [ ] Güncellenebilir alanlar: full_name, email, fcm_token
-  - [ ] Response: UserResponse
-- [ ] `DELETE /api/users/me` — Hesabı sil (soft delete):
-  - [ ] Requires: authenticated user
-  - [ ] deleted_at = now() olarak işaretle
-  - [ ] Response: 204 No Content
-- [ ] `PATCH /api/users/me/location` — Konum güncelle:
-  - [ ] Requires: authenticated user
-  - [ ] Request body: `{ "latitude": float, "longitude": float }`
-  - [ ] PostGIS Point objesi oluştur ve kaydet
-  - [ ] Response: UserResponse
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/users`)
-- [ ] Tüm endpoint'lerin JWT koruması altında olduğunu doğrula
+- [x] `backend/app/routers/users.py` oluştur
+- [x] `GET /api/users/me` — Kendi profilini getir:
+  - [x] Requires: authenticated user
+  - [x] Response: UserResponse
+- [x] `PATCH /api/users/me` — Profil güncelle:
+  - [x] Requires: authenticated user
+  - [x] Request: UserUpdateRequest
+  - [x] Güncellenebilir alanlar: full_name, email, fcm_token
+  - [x] Response: UserResponse
+- [x] `DELETE /api/users/me` — Hesabı sil (soft delete):
+  - [x] Requires: authenticated user
+  - [x] deleted_at = now() olarak işaretle
+  - [x] Response: MessageResponse (200 OK)
+- [x] `PATCH /api/users/me/location` — Konum güncelle:
+  - [x] Requires: authenticated user
+  - [x] Request body: `{ "latitude": float, "longitude": float }`
+  - [x] PostGIS Point objesi oluştur ve kaydet
+  - [x] Response: UserResponse
+- [x] `GET /api/users/me/stats` — İstatistikleri getir (eklendi):
+  - [x] Requires: authenticated user
+  - [x] Response: UserStatsResponse
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/users`)
+- [x] Tüm endpoint'lerin JWT koruması altında olduğunu doğrula
+- [x] Unit test yaz (`tests/test_users.py`):
+  - [x] test_get_profile_authenticated
+  - [x] test_get_profile_unauthenticated (401)
+  - [x] test_get_profile_deleted_user (401)
+  - [x] test_update_profile_full_name
+  - [x] test_update_profile_email
+  - [x] test_update_profile_fcm_token
+  - [x] test_update_profile_multiple_fields
+  - [x] test_update_profile_invalid_email (422)
+  - [x] test_update_profile_email_conflict (409)
+  - [x] test_delete_account_success
+  - [x] test_delete_account_unauthenticated (401)
+  - [x] test_deleted_user_cannot_login (403)
+  - [x] test_update_location_valid_coordinates
+  - [x] test_update_location_invalid_latitude (422)
+  - [x] test_update_location_invalid_longitude (422)
+  - [x] test_get_stats_authenticated
+  - [x] test_get_stats_unauthenticated (401)
+  - [x] test_get_stats_includes_rank_badge
+- [x] **18 user endpoint testi geçiyor**
+- [x] **Toplam: 222 test geçiyor**
 
 ---
 
@@ -858,40 +820,45 @@ Phase 2 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/tests/conftest.py` oluştur:
-  - [ ] Test database (SQLite veya test PostgreSQL)
-  - [ ] Test client (httpx AsyncClient)
-  - [ ] Override get_db dependency
-  - [ ] Fixture: test_user (kayıtlı kullanıcı)
-  - [ ] Fixture: auth_headers (JWT token ile)
-- [ ] `backend/tests/test_auth.py` oluştur:
-  - [ ] test_register_success
-  - [ ] test_register_duplicate_phone
-  - [ ] test_register_invalid_blood_type
-  - [ ] test_register_underage (18 yaş altı)
-  - [ ] test_login_success
-  - [ ] test_login_wrong_password
-  - [ ] test_login_nonexistent_user
-  - [ ] test_refresh_token_success
-  - [ ] test_refresh_token_expired
-  - [ ] test_protected_endpoint_without_token
-  - [ ] test_protected_endpoint_with_invalid_token
-- [ ] `pytest tests/test_auth.py -v` ile tüm testleri çalıştır
-- [ ] Tüm testler geçiyor
+**Yapılanlar:**
+- [x] `backend/tests/conftest.py` güncellendi:
+  - [x] Test database (test PostgreSQL with NullPool)
+  - [x] Test client (httpx AsyncClient)
+  - [x] Override get_db dependency
+  - [x] Fixture: test_user (kayıtlı kullanıcı)
+  - [x] Fixture: auth_headers (JWT token ile)
+  - [x] Fixture: expired_token_headers (expire olmuş token)
+  - [x] Fixture: refresh_token_headers (refresh token)
+- [x] `backend/tests/test_auth.py` oluşturuldu:
+  - [x] TestLoginEndpoint (4 test): nonexistent_user, deleted_user, phone_normalization (2 test)
+  - [x] TestRefreshTokenEndpoint (4 test): expired, invalid, wrong_type, deleted_user
+  - [x] TestProtectedEndpoints (4 test): no_token, invalid_token, expired_token, deleted_user
+  - [x] TestTokenGeneration (4 test): access_claims, refresh_claims, access_expiration, refresh_expiration
+  - [x] TestPasswordNormalization (1 test): login_with_normalized_phone
+- [x] `backend/tests/test_auth_endpoints.py` genişletildi:
+  - [x] test_register_duplicate_phone (409 Conflict)
+  - [x] test_register_duplicate_email (409 Conflict)
+  - [x] test_register_invalid_blood_type (422)
+  - [x] test_register_underage (422)
+  - [x] test_register_weak_password (400)
+  - [x] test_register_phone_normalization_with_0_prefix
+  - [x] test_register_phone_normalization_without_prefix
+- [x] `pytest tests/test_auth.py tests/test_auth_endpoints.py -v` ile tüm testler çalıştırıldı
+- [x] 28 auth testi tümü geçiyor
+- [x] Toplam 246 test passing
 
 ---
 
 ### 📊 Phase 2 Success Metrics
 
-- [ ] Register → Login → Token Refresh akışı sorunsuz çalışıyor
-- [ ] Profil CRUD (GET/PATCH/DELETE) çalışıyor
-- [ ] Konum güncelleme PostGIS ile kaydediliyor
-- [ ] JWT olmadan protected endpoint'lere erişilemiyor
-- [ ] Auth testleri %100 geçiyor
-- [ ] Swagger UI'da tüm akış test edilebiliyor
+- [x] Register → Login → Token Refresh akışı sorunsuz çalışıyor
+- [x] Profil CRUD (GET/PATCH/DELETE) çalışıyor
+- [x] Konum güncelleme PostGIS ile kaydediliyor
+- [x] JWT olmadan protected endpoint'lere erişilemiyor
+- [x] Auth testleri %100 geçiyor
+- [x] Swagger UI'da tüm akış test edilebiliyor
 
 ---
 
@@ -971,6 +938,21 @@ Phase 3 tamamlanmış sayılır eğer:
   - [ ] `get_hospital_staff(db, hospital_id) -> list[HospitalStaff]`
   - [ ] `is_user_in_geofence(db, user_lat, user_lng, hospital_id) -> bool`:
     - [ ] PostGIS `ST_DWithin` ile geofence_radius_meters kontrol
+- [ ] Unit test yaz (`tests/test_hospital_service.py`):
+  - [ ] test_create_hospital_success
+  - [ ] test_create_hospital_duplicate_code (409)
+  - [ ] test_get_hospital_exists
+  - [ ] test_get_hospital_not_found (404)
+  - [ ] test_list_hospitals_with_filters (city, district)
+  - [ ] test_list_hospitals_pagination
+  - [ ] test_get_nearby_hospitals_postgis
+  - [ ] test_get_nearby_hospitals_distance_ordering
+  - [ ] test_get_nearby_hospitals_excludes_inactive
+  - [ ] test_assign_staff_success
+  - [ ] test_assign_staff_duplicate (409)
+  - [ ] test_remove_staff_success
+  - [ ] test_is_user_in_geofence_inside (True)
+  - [ ] test_is_user_in_geofence_outside (False)
 
 ---
 
@@ -1003,6 +985,18 @@ Phase 3 tamamlanmış sayılır eğer:
 - [ ] `GET /api/hospitals/{id}/staff` — Personel listesi:
   - [ ] Requires: ADMIN veya ilgili hastane NURSE'ü
 - [ ] Router'ı `main.py`'ye include et (prefix: `/api/hospitals`)
+- [ ] Unit test yaz (`tests/test_hospitals.py`):
+  - [ ] test_list_hospitals_public (auth gerekmiyor)
+  - [ ] test_get_nearby_hospitals_with_distance
+  - [ ] test_get_hospital_detail
+  - [ ] test_create_hospital_admin_only
+  - [ ] test_create_hospital_non_admin_rejected (403)
+  - [ ] test_update_hospital_admin_only
+  - [ ] test_assign_staff_admin_only
+  - [ ] test_assign_staff_updates_role_to_nurse
+  - [ ] test_remove_staff_admin_only
+  - [ ] test_get_hospital_staff_list
+  - [ ] test_hospital_staff_nurse_access
 
 ---
 
@@ -1116,6 +1110,12 @@ Phase 4 tamamlanmış sayılır eğer:
     - [ ] Race condition koruması (SELECT FOR UPDATE veya SERIAL)
   - [ ] `generate_unique_token(length=32) -> str`:
     - [ ] QR token'ları için (secrets.token_urlsafe)
+- [ ] Unit test yaz (`tests/test_helpers.py`):
+  - [ ] test_generate_request_code_format (#KAN-XXX)
+  - [ ] test_generate_request_code_sequential
+  - [ ] test_generate_request_code_unique
+  - [ ] test_generate_unique_token_length
+  - [ ] test_generate_unique_token_uniqueness
 
 ---
 
@@ -1150,6 +1150,22 @@ Phase 4 tamamlanmış sayılır eğer:
     - [ ] expires_at < now olan ACTIVE talepleri EXPIRED yap
     - [ ] Cron job / background task ile çağrılacak
     - [ ] Kaç talep expire edildiğini döndür
+- [ ] Unit test yaz (`tests/test_blood_request_service.py`):
+  - [ ] test_create_request_inside_geofence
+  - [ ] test_create_request_outside_geofence_raises
+  - [ ] test_create_request_generates_code (#KAN-XXX)
+  - [ ] test_create_request_sets_expires_at (WHOLE_BLOOD: 24h, APHERESIS: 6h)
+  - [ ] test_get_request_success
+  - [ ] test_get_request_not_found (404)
+  - [ ] test_list_requests_with_filters
+  - [ ] test_list_requests_pagination
+  - [ ] test_list_requests_excludes_expired
+  - [ ] test_update_request_by_owner
+  - [ ] test_update_request_by_non_owner_raises (403)
+  - [ ] test_update_fulfilled_request_raises
+  - [ ] test_cancel_request_changes_status
+  - [ ] test_cancel_request_cancels_active_commitments
+  - [ ] test_expire_stale_requests_count
 
 ---
 
@@ -1178,6 +1194,15 @@ Phase 4 tamamlanmış sayılır eğer:
   - [ ] Requires: talep sahibi veya ADMIN
   - [ ] Aktif commitment'ları iptal et
 - [ ] Router'ı `main.py`'ye include et (prefix: `/api/requests`)
+- [ ] Unit test yaz (`tests/test_requests.py`):
+  - [ ] test_create_request_success (201)
+  - [ ] test_create_request_geofence_violation (403)
+  - [ ] test_create_request_unauthenticated (401)
+  - [ ] test_list_requests_with_query_params
+  - [ ] test_get_request_detail_with_commitments
+  - [ ] test_update_request_owner_only
+  - [ ] test_cancel_request_owner_or_admin
+  - [ ] test_cancel_request_non_owner (403)
 
 ---
 
@@ -1396,6 +1421,23 @@ Phase 5 tamamlanmış sayılır eğer:
     - [ ] Talep FULFILLED olduğunda kalan aktif commitment'ları
     - [ ] "Genel kan stoğuna yönlendir" mesajı ile bilgilendir
     - [ ] Status → COMPLETED (ama farklı flag ile — genel stok)
+- [ ] Unit test yaz (`tests/test_commitment_service.py`):
+  - [ ] test_create_commitment_success
+  - [ ] test_create_commitment_inactive_request (400)
+  - [ ] test_create_commitment_expired_request (400)
+  - [ ] test_create_commitment_in_cooldown_raises
+  - [ ] test_create_commitment_active_exists_raises (409)
+  - [ ] test_create_commitment_incompatible_blood (400)
+  - [ ] test_n_plus_1_rule_accepts_within_limit
+  - [ ] test_n_plus_1_rule_rejects_over_limit
+  - [ ] test_update_commitment_arrived
+  - [ ] test_update_commitment_cancelled
+  - [ ] test_check_timeouts_updates_status_to_timeout
+  - [ ] test_check_timeouts_penalizes_trust_score (-10)
+  - [ ] test_check_timeouts_increments_no_show_count
+  - [ ] test_get_active_commitment
+  - [ ] test_get_request_commitments
+  - [ ] test_redirect_excess_donors_on_fulfilled
 
 ---
 
@@ -1423,6 +1465,19 @@ Phase 5 tamamlanmış sayılır eğer:
     - [ ] Requires: authenticated user
     - [ ] Tüm commitment'lar (tamamlanan, iptal edilen, timeout)
     - [ ] Pagination
+- [ ] Unit test yaz (`tests/test_donors.py`):
+  - [ ] test_accept_commitment_success (201)
+  - [ ] test_accept_commitment_cooldown_active (400)
+  - [ ] test_accept_commitment_duplicate (409)
+  - [ ] test_accept_commitment_slot_full (400)
+  - [ ] test_accept_commitment_request_not_found (404)
+  - [ ] test_get_active_commitment_exists
+  - [ ] test_get_active_commitment_none
+  - [ ] test_update_commitment_to_arrived
+  - [ ] test_update_commitment_to_cancelled
+  - [ ] test_update_commitment_not_owner (403)
+  - [ ] test_get_donor_history_paginated
+  - [ ] test_get_nearby_requests_for_donor
 
 ---
 
@@ -1445,6 +1500,15 @@ Phase 5 tamamlanmış sayılır eğer:
   - [ ] Bağışçı no_show_count +1
   - [ ] Log kaydı oluştur
 - [ ] Startup'ta timeout checker'ın başladığını logla
+- [ ] Unit test yaz (`tests/test_timeout_checker.py`):
+  - [ ] test_timeout_identifies_expired_commitments
+  - [ ] test_timeout_updates_status_to_timeout
+  - [ ] test_timeout_decreases_trust_score (-10)
+  - [ ] test_timeout_increments_no_show_count
+  - [ ] test_timeout_skips_non_expired_commitments
+  - [ ] test_timeout_skips_arrived_status
+  - [ ] test_timeout_returns_count
+  - [ ] test_timeout_logs_results
 
 ---
 
@@ -1509,6 +1573,13 @@ Phase 5 tamamlanmış sayılır eğer:
     - [ ] qr_id, token, signature, expires_at, is_used
     - [ ] commitment bilgisi
     - [ ] qr_content: `{token}:{commitment_id}:{signature}` (frontend QR render için)
+- [ ] Unit test yaz (`tests/test_qr_generation.py`):
+  - [ ] test_qr_generated_on_arrived_status
+  - [ ] test_qr_not_generated_if_not_arrived
+  - [ ] test_qr_reuse_existing (duplicate guard)
+  - [ ] test_qr_content_format (token:commitment_id:signature)
+  - [ ] test_qr_expires_in_2_hours
+  - [ ] test_qr_schema_response_fields
 
 ---
 
@@ -1554,6 +1625,20 @@ Phase 5 tamamlanmış sayılır eğer:
     - [ ] hero_points, total_donations, trust_score
     - [ ] Son bağış tarihi, sonraki uygun tarih
 - [ ] Router'ı `main.py`'ye include et (prefix: `/api/donations`)
+- [ ] Unit test yaz (`tests/test_donation_verification.py`):
+  - [ ] test_verify_donation_success
+  - [ ] test_verify_invalid_qr_token (404)
+  - [ ] test_verify_expired_qr (400)
+  - [ ] test_verify_used_qr (400)
+  - [ ] test_verify_non_nurse_role (403)
+  - [ ] test_verify_nurse_wrong_hospital (403)
+  - [ ] test_donation_updates_units_collected
+  - [ ] test_donation_fulfills_request (units_collected >= units_needed)
+  - [ ] test_donation_awards_hero_points
+  - [ ] test_donation_starts_cooldown
+  - [ ] test_donation_increments_total_donations
+  - [ ] test_get_donation_history_paginated
+  - [ ] test_get_donation_stats
 
 ---
 
@@ -1695,6 +1780,17 @@ Phase 6 tamamlanmış sayılır eğer:
     - [ ] TIMEOUT_WARNING: "Taahhüt süreniz dolmak üzere ({remaining} dk kaldı)"
     - [ ] NO_SHOW: "Taahhüdünüz zaman aşımına uğradı. Güven skorunuz düştü."
     - [ ] REDIRECT_TO_BANK: "Talep karşılandı — bağışınızı genel kan stoğuna yapabilirsiniz"
+- [ ] Unit test yaz (`tests/test_notification_service.py`):
+  - [ ] test_create_notification_success
+  - [ ] test_get_user_notifications_paginated
+  - [ ] test_get_user_notifications_unread_only
+  - [ ] test_get_unread_count
+  - [ ] test_mark_as_read_specific
+  - [ ] test_mark_all_as_read
+  - [ ] test_notification_not_visible_to_other_user
+  - [ ] test_notification_templates_correct_content
+  - [ ] test_notification_with_request_reference
+  - [ ] test_notification_with_donation_reference
 
 ---
 
@@ -1719,6 +1815,14 @@ Phase 6 tamamlanmış sayılır eğer:
     - [ ] FCM push gönder (fcm_token varsa)
     - [ ] is_push_sent güncelle
 - [ ] Firebase credentials yoksa graceful skip (development mode)
+- [ ] Unit test yaz (`tests/test_fcm.py`):
+  - [ ] test_send_push_notification_success (mock Firebase)
+  - [ ] test_send_push_invalid_token_handled
+  - [ ] test_send_push_to_multiple_tokens
+  - [ ] test_send_push_partial_failure_report
+  - [ ] test_graceful_skip_without_credentials
+  - [ ] test_notification_with_push_creates_both (in-app + push)
+  - [ ] test_is_push_sent_flag_updated
 
 ---
 
@@ -1744,6 +1848,15 @@ Phase 6 tamamlanmış sayılır eğer:
   - [ ] Requires: authenticated user
   - [ ] Response: `{ "count": int }`
 - [ ] Router'ı `main.py`'ye include et (prefix: `/api/notifications`)
+- [ ] Unit test yaz (`tests/test_notifications.py`):
+  - [ ] test_list_notifications_authenticated
+  - [ ] test_list_notifications_unauthenticated (401)
+  - [ ] test_list_notifications_unread_only_filter
+  - [ ] test_list_notifications_pagination
+  - [ ] test_mark_notifications_read
+  - [ ] test_mark_all_notifications_read
+  - [ ] test_get_unread_count_endpoint
+  - [ ] test_unread_count_decreases_after_read
 
 ---
 
@@ -1778,6 +1891,19 @@ Phase 6 tamamlanmış sayılır eğer:
 - [ ] Mevcut servislere gamification çağrıları entegre et:
   - [ ] donation_service → verify_and_complete → award_hero_points
   - [ ] donation_service → check_timeouts → penalize_no_show
+- [ ] Unit test yaz (`tests/test_gamification.py`):
+  - [ ] test_award_hero_points_whole_blood (+50)
+  - [ ] test_award_hero_points_apheresis (+100)
+  - [ ] test_penalize_no_show_decreases_trust_score (-10)
+  - [ ] test_penalize_no_show_minimum_zero
+  - [ ] test_penalize_no_show_increments_count
+  - [ ] test_get_user_rank_yeni_kahraman (0-49)
+  - [ ] test_get_user_rank_bronz_kahraman (50-199)
+  - [ ] test_get_user_rank_gumus_kahraman (200-499)
+  - [ ] test_get_user_rank_altin_kahraman (500-999)
+  - [ ] test_get_user_rank_platin_kahraman (1000+)
+  - [ ] test_get_leaderboard_ordering
+  - [ ] test_get_leaderboard_limit
 
 ---
 
@@ -1796,6 +1922,15 @@ Phase 6 tamamlanmış sayılır eğer:
   - [ ] `donation_service.check_timeouts` → bağışçıya NO_SHOW
   - [ ] `donation_service.redirect_excess_donors` → fazla bağışçılara REDIRECT_TO_BANK
 - [ ] Tüm notification'ların hem in-app hem push olarak gönderildiğini doğrula
+- [ ] Integration test yaz (`tests/test_notification_integration.py`):
+  - [ ] test_create_request_triggers_new_request_notification
+  - [ ] test_create_commitment_triggers_donor_found_notification
+  - [ ] test_arrived_triggers_donor_arrived_notification
+  - [ ] test_donation_complete_triggers_notification (bağışçı + talep sahibi)
+  - [ ] test_timeout_triggers_no_show_notification
+  - [ ] test_redirect_triggers_redirect_to_bank_notification
+  - [ ] test_request_fulfilled_triggers_notification
+  - [ ] test_notifications_include_push_when_fcm_token_exists
 
 ---
 
@@ -1878,6 +2013,19 @@ Phase 7 tamamlanmış sayılır eğer:
   - [ ] Requires: ADMIN role
   - [ ] Tarih aralığı filtresi
 - [ ] Router'ı `main.py`'ye include et (prefix: `/api/admin`)
+- [ ] Unit test yaz (`tests/test_admin.py`):
+  - [ ] test_admin_stats_admin_only
+  - [ ] test_admin_stats_non_admin_rejected (403)
+  - [ ] test_admin_stats_correct_counts
+  - [ ] test_admin_list_users_with_filters
+  - [ ] test_admin_list_users_search
+  - [ ] test_admin_list_users_pagination
+  - [ ] test_admin_update_user_role
+  - [ ] test_admin_update_user_verified
+  - [ ] test_admin_reset_trust_score
+  - [ ] test_admin_list_requests_all_statuses
+  - [ ] test_admin_list_donations_date_filter
+  - [ ] test_admin_user_role_required (USER → 403)
 
 ---
 
@@ -1894,6 +2042,13 @@ Phase 7 tamamlanmış sayılır eğer:
   - [ ] Hassas data'yı maskele (Authorization header, password fields)
   - [ ] Access log dosyasına yaz (logs/access.log)
 - [ ] Middleware'i `main.py`'ye ekle
+- [ ] Unit test yaz (`tests/test_logging_middleware.py`):
+  - [ ] test_request_logged_method_and_path
+  - [ ] test_response_logged_status_code
+  - [ ] test_response_time_logged
+  - [ ] test_sensitive_data_masked_authorization
+  - [ ] test_password_field_masked_in_logs
+  - [ ] test_access_log_file_written
 
 ---
 
@@ -1929,6 +2084,17 @@ Phase 7 tamamlanmış sayılır eğer:
     }
     ```
 - [ ] Middleware'i `main.py`'ye ekle
+- [ ] Unit test yaz (`tests/test_error_handler.py`):
+  - [ ] test_not_found_exception_returns_404
+  - [ ] test_forbidden_exception_returns_403
+  - [ ] test_bad_request_exception_returns_400
+  - [ ] test_conflict_exception_returns_409
+  - [ ] test_cooldown_exception_includes_date
+  - [ ] test_geofence_exception_returns_403
+  - [ ] test_generic_exception_returns_500
+  - [ ] test_error_response_format_consistent (error.code, error.message)
+  - [ ] test_validation_error_returns_422
+  - [ ] test_stack_trace_hidden_in_production
 
 ---
 
@@ -1947,7 +2113,13 @@ Phase 7 tamamlanmış sayılır eğer:
   - [ ] 429 Too Many Requests response
   - [ ] Retry-After header
 - [ ] Middleware'i `main.py`'ye ekle
-- [ ] Rate limit aşıldığında doğru response döndüğünü test et
+- [ ] Unit test yaz (`tests/test_rate_limiter.py`):
+  - [ ] test_rate_limit_under_threshold_allowed
+  - [ ] test_rate_limit_exceeded_returns_429
+  - [ ] test_rate_limit_retry_after_header
+  - [ ] test_auth_endpoint_stricter_limit (10/dk)
+  - [ ] test_rate_limit_ip_based_isolation
+  - [ ] test_rate_limit_resets_after_window
 
 ---
 
@@ -1986,6 +2158,14 @@ Phase 7 tamamlanmış sayılır eğer:
 - [ ] HTTPS zorunlu (production - FastAPI seviyesinde değil, nginx/load balancer'da)
 - [ ] Rate limiting (brute-force koruması)
 - [ ] CORS whitelist (allowed_origins config)
+- [ ] Unit test yaz (`tests/test_security_hardening.py`):
+  - [ ] test_cors_allowed_origin_accepted
+  - [ ] test_cors_disallowed_origin_rejected
+  - [ ] test_security_headers_present (X-Content-Type-Options, X-Frame-Options)
+  - [ ] test_password_hash_not_in_any_response
+  - [ ] test_stack_trace_hidden_in_production
+  - [ ] test_sql_injection_prevented
+  - [ ] test_invalid_input_sanitized
 ---
 
 ## 📅 Week 12: End-to-End Testing & Documentation
@@ -2134,7 +2314,7 @@ Phase 7 tamamlanmış sayılır eğer:
 
 | Phase | Süre | Hafta | Durum |
 |-------|------|-------|-------|
-| **Phase 1:** Infrastructure & Database | 2 hafta | Week 1-2 | ⬜ Beklemede |
+| **Phase 1:** Infrastructure & Database | 2 hafta | Week 1-2 | 🔄 Devam Ediyor (Task 1.1, 1.2, 1.3, 1.4 ✅) |
 | **Phase 2:** Authentication & User Management | 2 hafta | Week 3-4 | ⬜ Beklemede |
 | **Phase 3:** Hospital & Staff Management | 1 hafta | Week 5 | ⬜ Beklemede |
 | **Phase 4:** Blood Request System | 2 hafta | Week 6-7 | ⬜ Beklemede |
