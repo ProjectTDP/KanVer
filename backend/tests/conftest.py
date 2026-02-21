@@ -11,7 +11,8 @@ from sqlalchemy import text, event
 
 @pytest.fixture(scope="session", autouse=True)
 def mock_settings():
-    """Environment ayarlarını mock'lar."""
+    """Environment ayarlarını ayarlar ve gerçek Settings instance kullanır."""
+    # Required field'lar için environment variables set et
     os.environ["DATABASE_URL"] = "postgresql+asyncpg://kanver_user:kanver_pass_2024@db:5432/kanver_db"
     os.environ["SECRET_KEY"] = "test-secret-key-min-32-chars-for-testing-purposes-only"
     os.environ["ALGORITHM"] = "HS256"
@@ -30,20 +31,12 @@ def mock_settings():
     os.environ["LOG_LEVEL"] = "WARNING"
     os.environ["FIREBASE_CREDENTIALS"] = "/app/firebase-credentials.json"
 
-    mock_settings_obj = MagicMock()
-    for key, value in os.environ.items():
-        if key in ["DATABASE_URL", "SECRET_KEY", "ALGORITHM", "ACCESS_TOKEN_EXPIRE_MINUTES",
-                   "REFRESH_TOKEN_EXPIRE_DAYS", "DEBUG", "ALLOWED_ORIGINS", "MAX_SEARCH_RADIUS_KM",
-                   "DEFAULT_SEARCH_RADIUS_KM", "WHOLE_BLOOD_COOLDOWN_DAYS", "APHERESIS_COOLDOWN_HOURS",
-                   "COMMITMENT_TIMEOUT_MINUTES", "HERO_POINTS_WHOLE_BLOOD", "HERO_POINTS_APHERESIS",
-                   "NO_SHOW_PENALTY", "LOG_LEVEL", "FIREBASE_CREDENTIALS"]:
-            if value.lower() == "true": setattr(mock_settings_obj, key, True)
-            elif value.lower() == "false": setattr(mock_settings_obj, key, False)
-            elif value.isdigit(): setattr(mock_settings_obj, key, int(value))
-            else: setattr(mock_settings_obj, key, value)
+    # GERÇEK Settings instance oluştur (property'ler çalışır)
+    from app.config import Settings
+    real_settings = Settings()
 
-    with patch("app.config.settings", mock_settings_obj):
-        yield mock_settings_obj
+    with patch("app.config.settings", real_settings):
+        yield real_settings
 
 
 @pytest_asyncio.fixture(scope="session")

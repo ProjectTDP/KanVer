@@ -212,3 +212,32 @@ class TestAuthEndpoints:
         assert response.status_code == 201
         # Phone should be normalized to +90 format
         assert response.json()["user"]["phone_number"] == "+905551234567"
+
+    async def test_register_duplicate_phone_different_formats(self, client: AsyncClient):
+        """Aynı numaranın farklı formatlarla tekrar kaydı → 409 Conflict."""
+        # First register with 0555... format
+        await client.post("/api/auth/register", json={
+            "phone_number": "05551234567",
+            "password": "Test1234!",
+            "full_name": "First User",
+            "date_of_birth": "2000-01-01",
+            "blood_type": "A+"
+        })
+        # Second register with +90555... format (same number)
+        response = await client.post("/api/auth/register", json={
+            "phone_number": "+905551234567",
+            "password": "Test1234!",
+            "full_name": "Second User",
+            "date_of_birth": "2000-01-01",
+            "blood_type": "A+"
+        })
+        assert response.status_code == 409
+        # Third register with 555... format (same number, no prefix)
+        response2 = await client.post("/api/auth/register", json={
+            "phone_number": "5551234567",
+            "password": "Test1234!",
+            "full_name": "Third User",
+            "date_of_birth": "2000-01-01",
+            "blood_type": "A+"
+        })
+        assert response2.status_code == 409

@@ -52,9 +52,9 @@ async def register(
 
     İşlem adımları:
     1. Password strength validation
-    2. Phone number unique kontrolü
-    3. Email unique kontrolü (eğer sağlanmışsa)
-    4. Telefon numarası normalize (+90 formatına)
+    2. Telefon numarası normalize (+90 formatına)
+    3. Phone number unique kontrolü
+    4. Email unique kontrolü (eğer sağlanmışsa)
     5. User oluştur
     6. Token'ları üret ve döndür
 
@@ -74,17 +74,24 @@ async def register(
     if not is_valid:
         raise BadRequestException(f"Şifre zayıf: {error_msg}")
 
-    # 2. Check if phone number already exists (soft delete excluded)
+    # 2. Normalize phone number to +90 format (BEFORE unique check)
+    phone = data.phone_number
+    if phone.startswith('0'):
+        phone = '+90' + phone[1:]
+    elif not phone.startswith('+90'):
+        phone = '+90' + phone
+
+    # 3. Check if phone number already exists (soft delete excluded)
     result = await db.execute(
         select(User).where(
-            User.phone_number == data.phone_number,
+            User.phone_number == phone,  # Using normalized value
             User.deleted_at.is_(None)
         )
     )
     if result.scalar_one_or_none():
         raise ConflictException("Bu telefon numarası zaten kayıtlı")
 
-    # 3. Check if email already exists (if provided)
+    # 4. Check if email already exists (if provided)
     if data.email:
         result = await db.execute(
             select(User).where(
@@ -94,13 +101,6 @@ async def register(
         )
         if result.scalar_one_or_none():
             raise ConflictException("Bu e-posta adresi zaten kayıtlı")
-
-    # 4. Normalize phone number to +90 format
-    phone = data.phone_number
-    if phone.startswith('0'):
-        phone = '+90' + phone[1:]
-    elif not phone.startswith('+90'):
-        phone = '+90' + phone
 
     # 5. Create user
     user = User(
