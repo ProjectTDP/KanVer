@@ -267,3 +267,146 @@ class ErrorResponse(BaseSchema):
     error: str = Field(..., description="Hata mesajı")
     detail: Optional[str] = Field(None, description="Detaylı hata açıklaması")
     status_code: int = Field(..., description="HTTP durum kodu")
+
+
+# =============================================================================
+# HOSPITAL SCHEMAS
+# =============================================================================
+
+class HospitalCreateRequest(BaseSchema):
+    """
+    Hastane oluşturma request şeması.
+
+    ADMIN rolü gerektirir.
+    """
+    hospital_name: str = Field(..., min_length=2, max_length=255, description="Hastane adı")
+    hospital_code: str = Field(..., min_length=2, max_length=20, description="Benzersiz hastane kodu (örn: AKD-001)")
+    address: str = Field(..., min_length=5, description="Tam adres")
+    latitude: float = Field(..., ge=-90, le=90, description="Enlem (-90 ile +90 arası)")
+    longitude: float = Field(..., ge=-180, le=180, description="Boylam (-180 ile +180 arası)")
+    city: str = Field(..., min_length=2, max_length=100, description="Şehir")
+    district: str = Field(..., min_length=2, max_length=100, description="İlçe")
+    phone_number: str = Field(..., min_length=7, max_length=20, description="Hastane telefon numarası")
+    email: Optional[str] = Field(None, max_length=255, description="Hastane e-posta adresi (opsiyonel)")
+    geofence_radius_meters: int = Field(default=5000, ge=100, le=50000, description="Geofence yarıçapı (metre), varsayılan: 5000")
+    has_blood_bank: bool = Field(default=True, description="Kan bankası var mı?")
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+        """E-posta formatını doğrular (eğer sağlanmışsa)."""
+        if v is None:
+            return v
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, v):
+            raise ValueError('Geçersiz e-posta formatı')
+        return v.lower()
+
+    @field_validator('hospital_code')
+    @classmethod
+    def validate_hospital_code(cls, v: str) -> str:
+        """Hastane kodunu büyük harfe çevirir ve boşlukları temizler."""
+        return v.strip().upper()
+
+
+class HospitalUpdateRequest(BaseSchema):
+    """
+    Hastane güncelleme request şeması.
+
+    Tüm alanlar opsiyoneldir. ADMIN rolü gerektirir.
+    """
+    hospital_name: Optional[str] = Field(None, min_length=2, max_length=255, description="Hastane adı")
+    hospital_code: Optional[str] = Field(None, min_length=2, max_length=20, description="Benzersiz hastane kodu")
+    address: Optional[str] = Field(None, min_length=5, description="Tam adres")
+    latitude: Optional[float] = Field(None, ge=-90, le=90, description="Enlem")
+    longitude: Optional[float] = Field(None, ge=-180, le=180, description="Boylam")
+    city: Optional[str] = Field(None, min_length=2, max_length=100, description="Şehir")
+    district: Optional[str] = Field(None, min_length=2, max_length=100, description="İlçe")
+    phone_number: Optional[str] = Field(None, min_length=7, max_length=20, description="Hastane telefon numarası")
+    email: Optional[str] = Field(None, max_length=255, description="Hastane e-posta adresi")
+    geofence_radius_meters: Optional[int] = Field(None, ge=100, le=50000, description="Geofence yarıçapı (metre)")
+    has_blood_bank: Optional[bool] = Field(None, description="Kan bankası var mı?")
+    is_active: Optional[bool] = Field(None, description="Hastane aktif mi?")
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+        """E-posta formatını doğrular (eğer sağlanmışsa)."""
+        if v is None:
+            return v
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, v):
+            raise ValueError('Geçersiz e-posta formatı')
+        return v.lower()
+
+    @field_validator('hospital_code')
+    @classmethod
+    def validate_hospital_code(cls, v: Optional[str]) -> Optional[str]:
+        """Hastane kodunu büyük harfe çevirir."""
+        if v is None:
+            return v
+        return v.strip().upper()
+
+
+class HospitalResponse(BaseSchema):
+    """
+    Hastane response şeması.
+
+    Tüm hastane alanlarını içerir.
+    Yakındaki hastane sorgularında distance_km de döner.
+    """
+    id: str = Field(..., description="Hastane ID'si")
+    hospital_code: str = Field(..., description="Benzersiz hastane kodu")
+    name: str = Field(..., description="Hastane adı")
+    address: str = Field(..., description="Tam adres")
+    district: str = Field(..., description="İlçe")
+    city: str = Field(..., description="Şehir")
+    phone_number: str = Field(..., description="Telefon numarası")
+    email: Optional[str] = Field(None, description="E-posta adresi")
+    geofence_radius_meters: int = Field(..., description="Geofence yarıçapı (metre)")
+    is_active: bool = Field(..., description="Hastane aktif mi?")
+    distance_km: Optional[float] = Field(None, description="Kullanıcıya olan uzaklık (km) — yakındaki sorgularda).")
+    created_at: datetime = Field(..., description="Kayıt tarihi")
+
+
+class HospitalListResponse(BaseSchema):
+    """
+    Hastane listesi response şeması.
+
+    Pagination metadata ile birlikte hastane listesi döner.
+    """
+    items: list["HospitalResponse"] = Field(..., description="Hastane listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Mevcut sayfa numarası (1'den başlar)")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")
+
+
+# =============================================================================
+# STAFF SCHEMAS
+# =============================================================================
+
+class StaffAssignRequest(BaseSchema):
+    """
+    Personel atama request şeması.
+
+    ADMIN rolü gerektirir. Hedef kullanıcı NURSE rolüne yükseltilir.
+    """
+    user_id: str = Field(..., description="Atanacak kullanıcının ID'si")
+    staff_role: str = Field(default="NURSE", description="Personel rolü (NURSE)")
+    department: Optional[str] = Field(None, max_length=100, description="Departman adı (opsiyonel, örn: Acil, Kan Bankası)")
+
+
+class StaffResponse(BaseSchema):
+    """
+    Personel response şeması.
+
+    Personel bilgileri ve atanmış kullanıcı bilgilerini içerir.
+    """
+    staff_id: str = Field(..., description="Personel atama kaydı ID'si")
+    user_id: str = Field(..., description="Kullanıcı ID'si")
+    full_name: str = Field(..., description="Personelin adı soyadı")
+    phone_number: str = Field(..., description="Personelin telefon numarası")
+    staff_role: str = Field(..., description="Personel rolü")
+    department: Optional[str] = Field(None, description="Departman adı")
+    assigned_at: datetime = Field(..., description="Atama tarihi")

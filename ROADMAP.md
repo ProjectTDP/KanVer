@@ -896,24 +896,24 @@ Phase 3 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `schemas.py`'ye hospital şemaları ekle:
-  - [ ] `HospitalCreateRequest`:
-    - [ ] hospital_name, hospital_code, address
-    - [ ] latitude, longitude
-    - [ ] city, district, phone_number
-    - [ ] geofence_radius_meters (optional, default 5000)
-    - [ ] has_blood_bank (optional, default True)
-  - [ ] `HospitalUpdateRequest` (tüm alanlar optional)
-  - [ ] `HospitalResponse`:
-    - [ ] Tüm alanlar + distance_km (opsiyonel, nearby sorgularında)
-  - [ ] `HospitalListResponse` (pagination destekli)
-  - [ ] `StaffAssignRequest`:
-    - [ ] user_id, staff_role, department
-  - [ ] `StaffResponse`:
-    - [ ] staff_id, user info, staff_role, department, assigned_at
+- [x] `schemas.py`'ye hospital şemaları ekle:
+  - [x] `HospitalCreateRequest`:
+    - [x] hospital_name, hospital_code, address
+    - [x] latitude, longitude
+    - [x] city, district, phone_number
+    - [x] geofence_radius_meters (optional, default 5000)
+    - [x] has_blood_bank (optional, default True)
+  - [x] `HospitalUpdateRequest` (tüm alanlar optional)
+  - [x] `HospitalResponse`:
+    - [x] Tüm alanlar + distance_km (opsiyonel, nearby sorgularında)
+  - [x] `HospitalListResponse` (pagination destekli)
+  - [x] `StaffAssignRequest`:
+    - [x] user_id, staff_role, department
+  - [x] `StaffResponse`:
+    - [x] staff_id, user info, staff_role, department, assigned_at
 
 ---
 
@@ -921,38 +921,40 @@ Phase 3 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/services/hospital_service.py` oluştur:
-  - [ ] `create_hospital(db, data) -> Hospital`
-  - [ ] `get_hospital(db, hospital_id) -> Hospital`
-  - [ ] `list_hospitals(db, city, district, page, size) -> list[Hospital]`
-  - [ ] `update_hospital(db, hospital_id, data) -> Hospital`
-  - [ ] `get_nearby_hospitals(db, lat, lng, radius_km) -> list[Hospital]`:
-    - [ ] PostGIS `ST_DWithin` kullan
-    - [ ] Mesafeye göre sırala (`ST_Distance`)
-    - [ ] Sadece is_active=True olanları döndür
-  - [ ] `assign_staff(db, hospital_id, user_id, role, department) -> HospitalStaff`
-  - [ ] `remove_staff(db, staff_id) -> None`
-  - [ ] `get_hospital_staff(db, hospital_id) -> list[HospitalStaff]`
-  - [ ] `is_user_in_geofence(db, user_lat, user_lng, hospital_id) -> bool`:
-    - [ ] PostGIS `ST_DWithin` ile geofence_radius_meters kontrol
-- [ ] Unit test yaz (`tests/test_hospital_service.py`):
-  - [ ] test_create_hospital_success
-  - [ ] test_create_hospital_duplicate_code (409)
-  - [ ] test_get_hospital_exists
-  - [ ] test_get_hospital_not_found (404)
-  - [ ] test_list_hospitals_with_filters (city, district)
-  - [ ] test_list_hospitals_pagination
-  - [ ] test_get_nearby_hospitals_postgis
-  - [ ] test_get_nearby_hospitals_distance_ordering
-  - [ ] test_get_nearby_hospitals_excludes_inactive
-  - [ ] test_assign_staff_success
-  - [ ] test_assign_staff_duplicate (409)
-  - [ ] test_remove_staff_success
-  - [ ] test_is_user_in_geofence_inside (True)
-  - [ ] test_is_user_in_geofence_outside (False)
+- [x] `backend/app/services/hospital_service.py` oluştur:
+  - [x] `create_hospital(db, data) -> Hospital`
+  - [x] `get_hospital(db, hospital_id) -> Hospital`
+  - [x] `list_hospitals(db, city, district, page, size) -> list[Hospital]`
+  - [x] `update_hospital(db, hospital_id, data) -> Hospital`
+  - [x] `get_nearby_hospitals(db, lat, lng, radius_km) -> list[Hospital]`:
+    - [x] PostGIS `ST_DWithin` kullan
+    - [x] Mesafeye göre sırala (`ST_Distance`)
+    - [x] Sadece is_active=True olanları döndür
+  - [x] `assign_staff(db, hospital_id, user_id, role, department) -> HospitalStaff`
+  - [x] `remove_staff(db, staff_id) -> None`
+  - [x] `get_hospital_staff(db, hospital_id) -> list[HospitalStaff]`
+  - [x] `is_user_in_geofence(db, user_lat, user_lng, hospital_id) -> bool`:
+    - [x] PostGIS `ST_DWithin` ile geofence_radius_meters kontrol
+- [x] Unit test yaz (`tests/test_hospital_service.py`):
+  - [x] test_create_hospital_success
+  - [x] test_create_hospital_duplicate_code (409)
+  - [x] test_get_hospital_exists
+  - [x] test_get_hospital_not_found (404)
+  - [x] test_list_hospitals_with_filters (city, district)
+  - [x] test_list_hospitals_pagination
+  - [x] test_get_nearby_hospitals_postgis
+  - [x] test_get_nearby_hospitals_distance_ordering
+  - [x] test_get_nearby_hospitals_excludes_inactive
+  - [x] test_assign_staff_success
+  - [x] test_assign_staff_duplicate (409)
+  - [x] test_remove_staff_success
+  - [x] test_is_user_in_geofence_inside (True)
+  - [x] test_is_user_in_geofence_outside (False)
+- [x] **39 hospital_service testi geçiyor**
+- [x] **Toplam: 349 test geçiyor**
 
 ---
 
@@ -960,43 +962,45 @@ Phase 3 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/hospitals.py` oluştur
-- [ ] `GET /api/hospitals` — Hastane listesi:
-  - [ ] Query params: city, district, page, size
-  - [ ] Public endpoint (auth gerekmiyor)
-- [ ] `GET /api/hospitals/nearby` — Yakındaki hastaneler:
-  - [ ] Query params: latitude, longitude, radius_km
-  - [ ] PostGIS spatial query
-  - [ ] Response'a distance_km ekle
-- [ ] `GET /api/hospitals/{id}` — Hastane detayı:
-  - [ ] Public endpoint
-- [ ] `POST /api/hospitals` — Hastane oluştur:
-  - [ ] Requires: ADMIN role
-- [ ] `PATCH /api/hospitals/{id}` — Hastane güncelle:
-  - [ ] Requires: ADMIN role
-- [ ] `POST /api/hospitals/{id}/staff` — Personel ata:
-  - [ ] Requires: ADMIN role
-  - [ ] Target user'ın rolünü NURSE'e güncelle
-- [ ] `DELETE /api/hospitals/{id}/staff/{staff_id}` — Personel kaldır:
-  - [ ] Requires: ADMIN role
-- [ ] `GET /api/hospitals/{id}/staff` — Personel listesi:
-  - [ ] Requires: ADMIN veya ilgili hastane NURSE'ü
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/hospitals`)
-- [ ] Unit test yaz (`tests/test_hospitals.py`):
-  - [ ] test_list_hospitals_public (auth gerekmiyor)
-  - [ ] test_get_nearby_hospitals_with_distance
-  - [ ] test_get_hospital_detail
-  - [ ] test_create_hospital_admin_only
-  - [ ] test_create_hospital_non_admin_rejected (403)
-  - [ ] test_update_hospital_admin_only
-  - [ ] test_assign_staff_admin_only
-  - [ ] test_assign_staff_updates_role_to_nurse
-  - [ ] test_remove_staff_admin_only
-  - [ ] test_get_hospital_staff_list
-  - [ ] test_hospital_staff_nurse_access
+- [x] `backend/app/routers/hospitals.py` oluştur
+- [x] `GET /api/hospitals` — Hastane listesi:
+  - [x] Query params: city, district, page, size
+  - [x] Public endpoint (auth gerekmiyor)
+- [x] `GET /api/hospitals/nearby` — Yakındaki hastaneler:
+  - [x] Query params: latitude, longitude, radius_km
+  - [x] PostGIS spatial query
+  - [x] Response'a distance_km ekle
+- [x] `GET /api/hospitals/{id}` — Hastane detayı:
+  - [x] Public endpoint
+- [x] `POST /api/hospitals` — Hastane oluştur:
+  - [x] Requires: ADMIN role
+- [x] `PATCH /api/hospitals/{id}` — Hastane güncelle:
+  - [x] Requires: ADMIN role
+- [x] `POST /api/hospitals/{id}/staff` — Personel ata:
+  - [x] Requires: ADMIN role
+  - [x] Target user'ın rolünü NURSE'e güncelle
+- [x] `DELETE /api/hospitals/{id}/staff/{staff_id}` — Personel kaldır:
+  - [x] Requires: ADMIN role
+- [x] `GET /api/hospitals/{id}/staff` — Personel listesi:
+  - [x] Requires: ADMIN veya ilgili hastane NURSE'ü
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/hospitals`)
+- [x] Unit test yaz (`tests/test_hospitals.py`):
+  - [x] test_list_hospitals_public (auth gerekmiyor)
+  - [x] test_get_nearby_hospitals_with_distance
+  - [x] test_get_hospital_detail
+  - [x] test_create_hospital_admin_only
+  - [x] test_create_hospital_non_admin_rejected (403)
+  - [x] test_update_hospital_admin_only
+  - [x] test_assign_staff_admin_only
+  - [x] test_assign_staff_updates_role_to_nurse
+  - [x] test_remove_staff_admin_only
+  - [x] test_get_hospital_staff_list
+  - [x] test_hospital_staff_nurse_access
+- [x] **33 hospital router testi geçiyor**
+- [x] **Toplam: 382 test geçiyor**
 
 ---
 
@@ -1004,34 +1008,36 @@ Phase 3 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/utils/location.py` oluştur:
-  - [ ] `create_point(lat: float, lng: float) -> WKTElement`:
-    - [ ] PostGIS POINT objesi oluştur (SRID 4326)
-  - [ ] `distance_between(lat1, lng1, lat2, lng2) -> float`:
-    - [ ] ST_Distance ile metre cinsinden mesafe
-  - [ ] `find_within_radius(db, model, lat, lng, radius_meters)`:
-    - [ ] ST_DWithin query builder
-    - [ ] Reusable (users, hospitals, requests için)
-  - [ ] `validate_geofence(db, user_lat, user_lng, hospital_id) -> bool`:
-    - [ ] Kullanıcı hastane geofence'ı içinde mi?
-- [ ] `backend/tests/test_location.py` oluştur:
-  - [ ] test_create_point
-  - [ ] test_distance_calculation (bilinen 2 nokta arası)
-  - [ ] test_within_radius (içeride/dışarıda)
-  - [ ] test_geofence_validation
+- [x] `backend/app/utils/location.py` oluştur:
+  - [x] `create_point(lat: float, lng: float) -> WKTElement`:
+    - [x] PostGIS POINT objesi oluştur (SRID 4326)
+  - [x] `distance_between(lat1, lng1, lat2, lng2) -> float`:
+    - [x] Haversine formülü ile metre cinsinden mesafe
+  - [x] `find_within_radius(db, model, lat, lng, radius_meters)`:
+    - [x] ST_DWithin query builder
+    - [x] Reusable (users, hospitals, requests için)
+  - [x] `validate_geofence(db, user_lat, user_lng, hospital_id) -> bool`:
+    - [x] Kullanıcı hastane geofence'ı içinde mi?
+- [x] `backend/tests/test_location.py` oluştur:
+  - [x] test_create_point
+  - [x] test_distance_calculation (bilinen 2 nokta arası)
+  - [x] test_within_radius (içeride/dışarıda)
+  - [x] test_geofence_validation
+- [x] **31 location utility testi geçiyor**
+- [x] **Toplam: 413 test geçiyor**
 
 ---
 
 ### 📊 Phase 3 Success Metrics
 
-- [ ] Hastane CRUD sorunsuz çalışıyor
-- [ ] `GET /api/hospitals/nearby?latitude=36.89&longitude=30.71&radius_km=5` doğru sonuç dönüyor
-- [ ] Staff atama/kaldırma çalışıyor
-- [ ] Geofence doğrulaması doğru çalışıyor (içeride: true, dışarıda: false)
-- [ ] PostGIS spatial query'ler performanslı (<100ms)
+- [x] Hastane CRUD sorunsuz çalışıyor
+- [x] `GET /api/hospitals/nearby?latitude=36.89&longitude=30.71&radius_km=5` doğru sonuç dönüyor
+- [x] Staff atama/kaldırma çalışıyor
+- [x] Geofence doğrulaması doğru çalışıyor (içeride: true, dışarıda: false)
+- [x] PostGIS spatial query'ler performanslı (<100ms)
 
 ---
 
