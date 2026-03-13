@@ -491,17 +491,21 @@ GET /api/admin/users              # Kullanıcı listesi
 - **Migration:** `last_donation_date` users tablosuna eklendi
 - **Migration:** `blood_request_code_seq` sequence oluşturuldu
 
-#### ✅ Phase 5: Donation Commitment & QR Workflow (Başladı)
+#### ✅ Phase 5: Donation Commitment & QR Workflow (Devam Ediyor)
 - **Task 8.1:** Donation Commitment Schemas
   - 7 yeni şema: CommitmentCreateRequest, CommitmentDonorInfo, CommitmentRequestInfo, QRCodeInfo, CommitmentResponse, CommitmentStatusUpdateRequest, CommitmentListResponse
   - Computed fields: expected_arrival_time, remaining_time_minutes
   - 39 yeni test eklendi
+- **Task 8.2:** Donation Service - Commitment Logic
+  - 6 service fonksiyonu: create_commitment, update_commitment_status, check_timeouts, get_active_commitment, get_request_commitments, redirect_excess_donors
+  - N+1 kuralı implementasyonu
+  - Timeout ve no-show ceza sistemi
+  - 30 yeni test eklendi
 
 ### Test Durumu
-- **Toplam Test:** 611 test geçiyor
+- **Toplam Test:** 641 test geçiyor
 
 ### Sırada
-- ⏳ **Phase 5 - Task 8.2:** Donation Service - Commitment Logic
 - ⏳ **Phase 5 - Task 8.3:** Commitment Router
 - ⏳ **Phase 5 - Task 8.4:** Background Task - Timeout Checker
 - ⏳ **Phase 5 - Task 9.1:** QR Code Utility

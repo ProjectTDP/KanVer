@@ -1496,53 +1496,37 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 4 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/services/donation_service.py` oluştur:
-  - [ ] `create_commitment(db, donor_id, request_id) -> Commitment`:
-    - [ ] Kontroller:
-      - [ ] Talep ACTIVE mi?
-      - [ ] Talep expire olmamış mı?
-      - [ ] Bağışçı cooldown'da mı? → CooldownActiveException
-      - [ ] Bağışçının zaten aktif commitment'ı var mı? → ConflictException
-      - [ ] Kan grubu uyumlu mu?
-    - [ ] N+1 kuralı kontrolü:
-      - [ ] units_needed vs mevcut aktif commitment sayısı
-      - [ ] Eğer aktif commitments >= units_needed + 1 → "Slot dolu" mesajı
-    - [ ] Commitment oluştur (status: ON_THE_WAY)
-    - [ ] expected_arrival_time = now + timeout_minutes
-  - [ ] `update_commitment_status(db, commitment_id, donor_id, status, reason) -> Commitment`:
-    - [ ] ARRIVED: arrived_at = now
-    - [ ] CANCELLED: cancel_reason kaydet, slot boşalt
-  - [ ] `check_timeouts(db) -> int`:
-    - [ ] committed_at + timeout_minutes < now olan ON_THE_WAY commitment'ları bul
-    - [ ] Status → TIMEOUT
-    - [ ] Bağışçının no_show_count +1, trust_score -10
-    - [ ] Kaç commitment timeout edildiğini döndür
-  - [ ] `get_active_commitment(db, donor_id) -> Commitment | None`
-  - [ ] `get_request_commitments(db, request_id) -> list[Commitment]`
-  - [ ] `redirect_excess_donors(db, request_id) -> list[Commitment]`:
-    - [ ] Talep FULFILLED olduğunda kalan aktif commitment'ları
-    - [ ] "Genel kan stoğuna yönlendir" mesajı ile bilgilendir
-    - [ ] Status → COMPLETED (ama farklı flag ile — genel stok)
-- [ ] Unit test yaz (`tests/test_commitment_service.py`):
-  - [ ] test_create_commitment_success
-  - [ ] test_create_commitment_inactive_request (400)
-  - [ ] test_create_commitment_expired_request (400)
-  - [ ] test_create_commitment_in_cooldown_raises
-  - [ ] test_create_commitment_active_exists_raises (409)
-  - [ ] test_create_commitment_incompatible_blood (400)
-  - [ ] test_n_plus_1_rule_accepts_within_limit
-  - [ ] test_n_plus_1_rule_rejects_over_limit
-  - [ ] test_update_commitment_arrived
-  - [ ] test_update_commitment_cancelled
-  - [ ] test_check_timeouts_updates_status_to_timeout
-  - [ ] test_check_timeouts_penalizes_trust_score (-10)
-  - [ ] test_check_timeouts_increments_no_show_count
-  - [ ] test_get_active_commitment
-  - [ ] test_get_request_commitments
-  - [ ] test_redirect_excess_donors_on_fulfilled
+**Yapılanlar:**
+- [x] `backend/app/services/donation_service.py` oluşturuldu:
+  - [x] `create_commitment(db, donor_id, request_id) -> Commitment`:
+    - [x] Kontroller:
+      - [x] Talep ACTIVE mi?
+      - [x] Talep expire olmamış mı?
+      - [x] Bağışçı cooldown'da mı? → CooldownActiveException
+      - [x] Bağışçının zaten aktif commitment'ı var mı? → ActiveCommitmentExistsException
+      - [x] Kan grubu uyumlu mu?
+    - [x] N+1 kuralı kontrolü (SlotFullException)
+    - [x] Commitment oluştur (status: ON_THE_WAY)
+  - [x] `update_commitment_status(db, commitment_id, donor_id, status, reason) -> Commitment`:
+    - [x] ARRIVED: arrived_at = now
+    - [x] CANCELLED: status güncelle
+    - [x] Sahiplik kontrolü (ForbiddenException)
+    - [x] Terminal durum kontrolü
+  - [x] `check_timeouts(db) -> int`:
+    - [x] Timeout olmuş commitment'ları bul
+    - [x] Status → TIMEOUT
+    - [x] Bağışçının no_show_count +1, trust_score -10
+  - [x] `get_commitment_by_id(db, commitment_id) -> Commitment | None`
+  - [x] `get_active_commitment(db, donor_id) -> Commitment | None`
+  - [x] `get_request_commitments(db, request_id, status_list) -> list[Commitment]`
+  - [x] `count_active_commitments(db, request_id) -> int`
+  - [x] `redirect_excess_donors(db, request_id) -> list[Commitment]`:
+    - [x] Talep FULFILLED kontrolü
+    - [x] Aktif commitment'ları COMPLETED yap
+- [x] Unit test yazıldı (`tests/test_commitment_service.py`): 30 test PASS
+- [x] Toplam test: 641 PASS
 
 ---
 
