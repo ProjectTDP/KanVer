@@ -1534,39 +1534,43 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/routers/donors.py`'ye commitment endpoint'leri ekle:
-  - [ ] `POST /api/donors/accept` — "Geliyorum" taahhüdü:
-    - [ ] Requires: authenticated user
-    - [ ] Request: CommitmentCreateRequest
-    - [ ] Response: CommitmentResponse (201 Created)
-    - [ ] Errors: 409 (zaten aktif commitment), 400 (cooldown), 404 (talep yok)
-  - [ ] `GET /api/donors/me/commitment` — Aktif commitment'ımı getir:
-    - [ ] Requires: authenticated user
-    - [ ] Response: CommitmentResponse | null
-  - [ ] `PATCH /api/donors/me/commitment/{id}` — Commitment durumu güncelle:
-    - [ ] Requires: commitment sahibi
-    - [ ] Request: CommitmentStatusUpdate
-    - [ ] ARRIVED veya CANCELLED
-  - [ ] `GET /api/donors/history` — Bağış geçmişim:
-    - [ ] Requires: authenticated user
-    - [ ] Tüm commitment'lar (tamamlanan, iptal edilen, timeout)
-    - [ ] Pagination
-- [ ] Unit test yaz (`tests/test_donors.py`):
-  - [ ] test_accept_commitment_success (201)
-  - [ ] test_accept_commitment_cooldown_active (400)
-  - [ ] test_accept_commitment_duplicate (409)
-  - [ ] test_accept_commitment_slot_full (400)
-  - [ ] test_accept_commitment_request_not_found (404)
-  - [ ] test_get_active_commitment_exists
-  - [ ] test_get_active_commitment_none
-  - [ ] test_update_commitment_to_arrived
-  - [ ] test_update_commitment_to_cancelled
-  - [ ] test_update_commitment_not_owner (403)
-  - [ ] test_get_donor_history_paginated
-  - [ ] test_get_nearby_requests_for_donor
+**Yapılanlar:**
+- [x] `backend/app/routers/donors.py`'ye commitment endpoint'leri ekle:
+  - [x] Helper function: `_build_commitment_response()` — Nested schemas oluşturur
+  - [x] `POST /api/donors/accept` — "Geliyorum" taahhüdü:
+    - [x] Requires: authenticated user
+    - [x] Request: CommitmentCreateRequest
+    - [x] Response: CommitmentResponse (201 Created)
+    - [x] Errors: 409 (zaten aktif commitment), 400 (cooldown), 404 (talep yok), 409 (slot dolu N+1)
+  - [x] `GET /api/donors/me/commitment` — Aktif commitment'ımı getir:
+    - [x] Requires: authenticated user
+    - [x] Response: CommitmentResponse | null
+  - [x] `PATCH /api/donors/me/commitment/{id}` — Commitment durumu güncelle:
+    - [x] Requires: commitment sahibi
+    - [x] Request: CommitmentStatusUpdateRequest
+    - [x] ARRIVED veya CANCELLED
+    - [x] 403: Taahhüt sahibi değil
+  - [x] `GET /api/donors/history` — Bağış geçmişim:
+    - [x] Requires: authenticated user
+    - [x] Tüm commitment'lar (tamamlanan, iptal edilen, timeout)
+    - [x] Pagination (page, size, total, pages)
+    - [x] Tarihe göre descending sıralı
+- [x] Unit test yaz (`tests/test_donors.py`):
+  - [x] test_accept_commitment_success (201)
+  - [x] test_accept_commitment_cooldown_active (400)
+  - [x] test_accept_commitment_duplicate (409)
+  - [x] test_accept_commitment_slot_full (409)
+  - [x] test_accept_commitment_request_not_found (404)
+  - [x] test_get_active_commitment_exists
+  - [x] test_get_active_commitment_none
+  - [x] test_update_commitment_to_arrived
+  - [x] test_update_commitment_to_cancelled
+  - [x] test_update_commitment_not_owner (403)
+  - [x] test_get_donor_history_paginated
+- [x] **17 donors testi geçiyor** (6 existing + 11 new)
+- [x] **Toplam: 641 test geçiyor**
 
 ---
 

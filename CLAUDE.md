@@ -501,12 +501,15 @@ GET /api/admin/users              # Kullanıcı listesi
   - N+1 kuralı implementasyonu
   - Timeout ve no-show ceza sistemi
   - 30 yeni test eklendi
+- **Task 8.3:** Commitment Router
+  - 4 yeni endpoint: POST /accept, GET /me/commitment, PATCH /me/commitment/{id}, GET /history
+  - Helper function: _build_commitment_response() — Nested schemas oluşturur
+  - 11 yeni test eklendi (toplam 17 donors testi)
 
 ### Test Durumu
-- **Toplam Test:** 641 test geçiyor
+- **Toplam Test:** 652 test geçiyor
 
 ### Sırada
-- ⏳ **Phase 5 - Task 8.3:** Commitment Router
 - ⏳ **Phase 5 - Task 8.4:** Background Task - Timeout Checker
 - ⏳ **Phase 5 - Task 9.1:** QR Code Utility
 - ⏳ **Phase 5 - Task 9.2:** QR Code Generation Flow
