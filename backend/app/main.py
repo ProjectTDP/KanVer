@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -8,6 +9,7 @@ from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import KanVerException
 from app.middleware.logging_middleware import LoggingMiddleware
 from app.routers import auth, users, hospitals, requests, donors
+from app.background.timeout_checker import run_timeout_checker, stop_timeout_checker
 import logging
 
 # Setup application logging
@@ -33,9 +35,19 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("Database connection failed")
 
+    # Start background tasks
+    timeout_task = asyncio.create_task(run_timeout_checker())
+    logger.info("Background timeout checker task started")
+
     yield
 
     # Shutdown
+    stop_timeout_checker()
+    timeout_task.cancel()
+    try:
+        await timeout_task
+    except asyncio.CancelledError:
+        pass
     logger.info("KanVer API shutting down...")
     # Dispose database engine
     await engine.dispose()

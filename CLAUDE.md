@@ -505,12 +505,16 @@ GET /api/admin/users              # Kullanıcı listesi
   - 4 yeni endpoint: POST /accept, GET /me/commitment, PATCH /me/commitment/{id}, GET /history
   - Helper function: _build_commitment_response() — Nested schemas oluşturur
   - 11 yeni test eklendi (toplam 17 donors testi)
+- **Task 8.4:** Background Task - Timeout Checker
+  - `backend/app/background/timeout_checker.py` — asyncio loop ile periyodik timeout kontrolü
+  - FastAPI lifespan entegrasyonu (startup/shutdown)
+  - 5 dakikada bir otomatik kontrol
+  - 5 yeni test eklendi
 
 ### Test Durumu
-- **Toplam Test:** 652 test geçiyor
+- **Toplam Test:** 657 test geçiyor
 
 ### Sırada
-- ⏳ **Phase 5 - Task 8.4:** Background Task - Timeout Checker
 - ⏳ **Phase 5 - Task 9.1:** QR Code Utility
 - ⏳ **Phase 5 - Task 9.2:** QR Code Generation Flow
 - ⏳ **Phase 5 - Task 9.3:** Donation Verification & Completion

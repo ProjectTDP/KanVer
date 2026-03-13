@@ -1578,30 +1578,28 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/services/donation_service.py`'de `check_timeouts` implement et
-- [ ] Timeout kontrolünü periyodik çalıştıracak mekanizma seç:
-  - [ ] Option A: FastAPI BackgroundTasks ile `startup` event'te
-  - [ ] Option B: APScheduler entegrasyonu
-  - [ ] Option C: Basit asyncio loop (MVP için yeterli)
-- [ ] Her 5 dakikada bir `check_timeouts` çalıştır
-- [ ] Timeout olan commitment'lar için:
-  - [ ] Status → TIMEOUT
-  - [ ] Bağışçı trust_score -10
-  - [ ] Bağışçı no_show_count +1
-  - [ ] Log kaydı oluştur
-- [ ] Startup'ta timeout checker'ın başladığını logla
-- [ ] Unit test yaz (`tests/test_timeout_checker.py`):
-  - [ ] test_timeout_identifies_expired_commitments
-  - [ ] test_timeout_updates_status_to_timeout
-  - [ ] test_timeout_decreases_trust_score (-10)
-  - [ ] test_timeout_increments_no_show_count
-  - [ ] test_timeout_skips_non_expired_commitments
-  - [ ] test_timeout_skips_arrived_status
-  - [ ] test_timeout_returns_count
-  - [ ] test_timeout_logs_results
+- [x] `backend/app/services/donation_service.py`'de `check_timeouts` implement et (Task 8.2'de yapıldı)
+- [x] Timeout kontrolünü periyodik çalıştıracak mekanizma seç:
+  - [ ] ~~Option A: FastAPI BackgroundTasks ile `startup` event'te~~
+  - [ ] ~~Option B: APScheduler entegrasyonu~~
+  - [x] Option C: Basit asyncio loop (MVP için yeterli)
+- [x] Her 5 dakikada bir `check_timeouts` çalıştır
+- [x] Timeout olan commitment'lar için:
+  - [x] Status → TIMEOUT
+  - [x] Bağışçı trust_score -10
+  - [x] Bağışçı no_show_count +1
+  - [x] Log kaydı oluştur
+- [x] Startup'ta timeout checker'ın başladığını logla
+- [x] Unit test yaz (`tests/test_timeout_checker.py`):
+  - [x] test_timeout_checker_runs_periodically
+  - [x] test_timeout_checker_can_be_stopped
+  - [x] test_timeout_checker_handles_db_errors
+  - [x] test_timeout_checker_logs_timeouts
+  - [x] test_timeout_checker_interval_configuration
+  - [x] (Not: check_timeouts fonksiyonu testleri test_donations.py'de mevcut)
 
 ---
 
