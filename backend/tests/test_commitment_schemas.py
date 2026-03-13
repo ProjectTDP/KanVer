@@ -151,12 +151,14 @@ class TestQRCodeInfo:
             token="qr-token-abc123xyz",
             signature="hmac-sha256-signature-here",
             expires_at=now + timedelta(hours=2),
-            is_used=False
+            is_used=False,
+            qr_content="qr-token-abc123xyz:commitment-id:hmac-sha256-signature-here"
         )
         assert data.token == "qr-token-abc123xyz"
         assert data.signature == "hmac-sha256-signature-here"
         assert data.expires_at > now
         assert data.is_used is False
+        assert data.qr_content == "qr-token-abc123xyz:commitment-id:hmac-sha256-signature-here"
 
     def test_qr_code_info_used_status(self):
         """QR kod kullanılmış durumu."""
@@ -164,7 +166,8 @@ class TestQRCodeInfo:
             token="used-token",
             signature="signature",
             expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
-            is_used=True
+            is_used=True,
+            qr_content="used-token:commitment-id:signature"
         )
         assert data.is_used is True
 
@@ -175,6 +178,7 @@ class TestQRCodeInfo:
         assert "signature" in fields
         assert "expires_at" in fields
         assert "is_used" in fields
+        assert "qr_content" in fields
 
 
 # =============================================================================
@@ -333,13 +337,15 @@ class TestCommitmentResponse:
                 "token": "qr-token-123",
                 "signature": "signature-here",
                 "expires_at": now + timedelta(hours=2),
-                "is_used": False
+                "is_used": False,
+                "qr_content": "qr-token-123:commitment-id:signature-here"
             }
         )
         data = CommitmentResponse(**data_dict)
         assert data.qr_code is not None
         assert data.qr_code.token == "qr-token-123"
         assert data.qr_code.is_used is False
+        assert data.qr_code.qr_content == "qr-token-123:commitment-id:signature-here"
 
 
 # =============================================================================

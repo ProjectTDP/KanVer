@@ -33,6 +33,7 @@ from app.services.donation_service import (
 )
 from app.utils.cooldown import is_in_cooldown
 from app.utils.validators import can_donate_to
+from app.utils.qr_code import format_qr_content
 
 router = APIRouter(tags=["Donors"])
 
@@ -255,6 +256,7 @@ async def _build_commitment_response(
 			signature=qr_code.signature,
 			expires_at=qr_code.expires_at,
 			is_used=qr_code.is_used,
+			qr_content=format_qr_content(qr_code.token, qr_code.commitment_id, qr_code.signature),
 		)
 
 	return CommitmentResponse(

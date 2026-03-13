@@ -655,11 +655,13 @@ class QRCodeInfo(BaseSchema):
 
     Bağışçı hastaneye vardığında (ARRIVED) oluşturulan QR kod bilgisi.
     signature alanı Task 9.1 için hazırdır (HMAC-SHA256 imzası).
+    qr_content alanı frontend'in QR render için kullanır.
     """
     token: str = Field(..., description="QR kod token'ı (benzersiz)")
     signature: str = Field(..., description="HMAC-SHA256 imzası")
     expires_at: datetime = Field(..., description="QR kod geçerlilik süresi")
     is_used: bool = Field(..., description="QR kod kullanıldı mı?")
+    qr_content: str = Field(..., description="Frontend QR render için: token:commitment_id:signature")
 
 
 class CommitmentResponse(BaseSchema):

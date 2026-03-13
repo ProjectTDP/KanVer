@@ -1652,29 +1652,28 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `donation_service.py`'ye ekle:
-  - [ ] `generate_qr_for_commitment(db, commitment_id) -> QRCode`:
-    - [ ] Commitment status ARRIVED olmalı
-    - [ ] Zaten QR varsa mevcut olanı döndür (unique constraint)
-    - [ ] Token + Signature oluştur
-    - [ ] QR kaydı oluştur (expires_at: 2 saat)
-    - [ ] QR verisini döndür
-- [ ] Commitment ARRIVED olduğunda otomatik QR oluştur
-- [ ] `schemas.py`'ye QR şemaları ekle:
-  - [ ] `QRCodeResponse`:
-    - [ ] qr_id, token, signature, expires_at, is_used
-    - [ ] commitment bilgisi
-    - [ ] qr_content: `{token}:{commitment_id}:{signature}` (frontend QR render için)
-- [ ] Unit test yaz (`tests/test_qr_generation.py`):
-  - [ ] test_qr_generated_on_arrived_status
-  - [ ] test_qr_not_generated_if_not_arrived
-  - [ ] test_qr_reuse_existing (duplicate guard)
-  - [ ] test_qr_content_format (token:commitment_id:signature)
-  - [ ] test_qr_expires_in_2_hours
-  - [ ] test_qr_schema_response_fields
+- [x] `donation_service.py`'ye ekle:
+  - [x] `update_commitment_status()` içinde ARRIVED bloğuna QR üretimi:
+    - [x] Commitment status ARRIVED olmalı
+    - [x] Zaten QR varsa mevcut olanı döndür (duplicate guard)
+    - [x] Token + Signature oluştur (create_qr_data)
+    - [x] QR kaydı oluştur (expires_at: 2 saat)
+- [x] `schemas.py` güncelle:
+  - [x] `QRCodeInfo` şemasına `qr_content` field'ı ekle:
+    - [x] Format: `{token}:{commitment_id}:{signature}` (frontend QR render için)
+- [x] `donors.py` router helper güncelle:
+  - [x] `_build_commitment_response()` içinde QRCodeInfo oluştururken `qr_content` ekle
+- [x] Unit test yaz (`tests/test_qr_generation.py`):
+  - [x] test_qr_generated_on_arrived_status
+  - [x] test_qr_not_generated_on_cancelled
+  - [x] test_qr_reuse_existing (duplicate guard)
+  - [x] test_qr_content_format (token:commitment_id:signature)
+  - [x] test_qr_expires_in_2_hours
+  - [x] test_qr_schema_has_qr_content
+  - [x] test_arrived_without_duplication
 
 ---
 

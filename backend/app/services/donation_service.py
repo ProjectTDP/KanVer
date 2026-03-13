@@ -20,9 +20,10 @@ from app.core.exceptions import (
     ActiveCommitmentExistsException,
     SlotFullException,
 )
-from app.models import DonationCommitment, BloodRequest, User
+from app.models import DonationCommitment, BloodRequest, User, QRCode
 from app.utils.cooldown import is_in_cooldown
 from app.utils.validators import can_donate_to
+from app.utils.qr_code import create_qr_data
 
 
 # =============================================================================
@@ -315,7 +316,20 @@ async def update_commitment_status(
     if status == CommitmentStatus.ARRIVED.value:
         commitment.status = CommitmentStatus.ARRIVED.value
         commitment.arrived_at = datetime.now(timezone.utc)
-        # QR kod oluşturma Task 9.2'de implement edilecek
+
+        # QR kod oluştur (duplicate korumalı)
+        existing_qr = await db.execute(
+            select(QRCode).where(QRCode.commitment_id == commitment.id)
+        )
+        if not existing_qr.scalar_one_or_none():
+            qr_data = create_qr_data(str(commitment.id))
+            qr_code = QRCode(
+                commitment_id=commitment.id,
+                token=qr_data["token"],
+                signature=qr_data["signature"],
+                expires_at=qr_data["expires_at"],
+            )
+            db.add(qr_code)
 
     elif status == CommitmentStatus.CANCELLED.value:
         commitment.status = CommitmentStatus.CANCELLED.value
