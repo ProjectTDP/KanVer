@@ -11,7 +11,7 @@ from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, computed_field
 
 from app.constants.blood_types import BloodType
-from app.constants.status import RequestStatus, RequestType, Priority
+from app.constants.status import RequestStatus, RequestType, Priority, CommitmentStatus
 
 
 # =============================================================================
@@ -607,3 +607,164 @@ class BloodRequestListResponse(BaseSchema):
     filtered_by_request_type: Optional[str] = Field(None, description="Uygulanan bağış türü filtresi")
     filtered_by_hospital_id: Optional[str] = Field(None, description="Uygulanan hastane ID filtresi")
     filtered_by_city: Optional[str] = Field(None, description="Uygulanan şehir filtresi")
+
+
+# =============================================================================
+# DONATION COMMITMENT SCHEMAS
+# =============================================================================
+
+class CommitmentCreateRequest(BaseSchema):
+    """
+    Bağış taahhüdü oluşturma request şeması.
+
+    Bağışçı "Geliyorum" dediğinde bu şema kullanılır.
+    """
+    request_id: str = Field(..., description="Hangi talep için taahhüt veriliyor (UUID)")
+
+
+class CommitmentDonorInfo(BaseSchema):
+    """
+    Taahhüt response'unda dönen bağışçı özet bilgisi.
+
+    UserResponse'dan daha hafif bir versiyon.
+    """
+    id: str = Field(..., description="Kullanıcı ID'si")
+    full_name: str = Field(..., description="Ad Soyad")
+    blood_type: str = Field(..., description="Kan grubu")
+    phone_number: str = Field(..., description="Telefon numarası")
+
+
+class CommitmentRequestInfo(BaseSchema):
+    """
+    Taahhüt response'unda dönen kan talebi özet bilgisi.
+
+    BloodRequestResponse'dan daha hafif bir versiyon.
+    """
+    id: str = Field(..., description="Talep ID'si")
+    request_code: str = Field(..., description="Talep kodu (#KAN-XXX formatında)")
+    blood_type: str = Field(..., description="İhtiyaç duyulan kan grubu")
+    request_type: str = Field(..., description="Bağış türü (WHOLE_BLOOD veya APHERESIS)")
+    hospital_name: str = Field(..., description="Hastane adı")
+    hospital_district: str = Field(..., description="Hastane ilçesi")
+    hospital_city: str = Field(..., description="Hastane şehri")
+
+
+class QRCodeInfo(BaseSchema):
+    """
+    QR kod bilgisi şeması.
+
+    Bağışçı hastaneye vardığında (ARRIVED) oluşturulan QR kod bilgisi.
+    signature alanı Task 9.1 için hazırdır (HMAC-SHA256 imzası).
+    """
+    token: str = Field(..., description="QR kod token'ı (benzersiz)")
+    signature: str = Field(..., description="HMAC-SHA256 imzası")
+    expires_at: datetime = Field(..., description="QR kod geçerlilik süresi")
+    is_used: bool = Field(..., description="QR kod kullanıldı mı?")
+
+
+class CommitmentResponse(BaseSchema):
+    """
+    Bağış taahhüdü response şeması.
+
+    Tüm taahhüt bilgilerini, bağışçı ve talep özetini içerir.
+    Not: committed_at, model'deki created_at'tan türetilir.
+    """
+    id: str = Field(..., description="Taahhüt ID'si")
+    donor: CommitmentDonorInfo = Field(..., description="Bağışçı özet bilgisi")
+    blood_request: CommitmentRequestInfo = Field(..., description="Kan talebi özet bilgisi")
+    status: str = Field(..., description="Taahhüt durumu (ON_THE_WAY, ARRIVED, COMPLETED, CANCELLED, TIMEOUT)")
+    timeout_minutes: int = Field(..., description="Timeout süresi (dakika)")
+    committed_at: datetime = Field(..., description="Taahhüt verme tarihi (created_at ile aynı)")
+    arrived_at: Optional[datetime] = Field(None, description="Hastaneye varış tarihi")
+    qr_code: Optional[QRCodeInfo] = Field(None, description="QR kod bilgisi (ARRIVED sonrası)")
+    created_at: datetime = Field(..., description="Kayıt tarihi")
+    updated_at: datetime = Field(..., description="Son güncelleme tarihi")
+
+    @computed_field
+    @property
+    def expected_arrival_time(self) -> datetime:
+        """
+        Beklenen varış zamanını hesaplar.
+
+        committed_at + timeout_minutes formülü ile hesaplanır.
+        """
+        committed = self.committed_at
+        if committed.tzinfo is None:
+            committed = committed.replace(tzinfo=timezone.utc)
+        return committed + timedelta(minutes=self.timeout_minutes)
+
+    @computed_field
+    @property
+    def remaining_time_minutes(self) -> Optional[int]:
+        """
+        Kalan süreyi dakika cinsinden hesaplar.
+
+        Sadece ON_THE_WAY durumunda hesaplanır.
+        Diğer durumlarda None döner.
+        """
+        if self.status != CommitmentStatus.ON_THE_WAY.value:
+            return None
+
+        now = datetime.now(timezone.utc)
+        expected = self.expected_arrival_time
+
+        if expected.tzinfo is None:
+            expected = expected.replace(tzinfo=timezone.utc)
+
+        remaining = expected - now
+        remaining_seconds = remaining.total_seconds()
+
+        # Negatif süre olamaz, minimum 0
+        return max(0, int(remaining_seconds // 60))
+
+
+class CommitmentStatusUpdateRequest(BaseSchema):
+    """
+    Taahhüt durumu güncelleme request şeması.
+
+    Bağışçı varış bildirimi veya iptal için kullanılır.
+    Sadece ARRIVED veya CANCELLED durumlarına geçiş yapılabilir.
+    """
+    status: str = Field(..., description="Yeni durum (ARRIVED veya CANCELLED)")
+    cancel_reason: Optional[str] = Field(None, max_length=500, description="İptal nedeni (CANCELLED için)")
+
+    @field_validator('status')
+    @classmethod
+    def validate_status(cls, v: str) -> str:
+        """
+        Durum doğrulaması - sadece ARRIVED veya CANCELLED kabul edilir.
+        """
+        allowed_statuses = [CommitmentStatus.ARRIVED.value, CommitmentStatus.CANCELLED.value]
+        v_upper = v.upper() if v else v
+        if v_upper not in allowed_statuses:
+            raise ValueError(f'Status yalnızca ARRIVED veya CANCELLED olabilir. Geçerli değerler: {", ".join(allowed_statuses)}')
+        return v_upper
+
+    @model_validator(mode='after')
+    def validate_cancel_reason(self) -> 'CommitmentStatusUpdateRequest':
+        """
+        CANCELLED durumunda cancel_reason zorunludur.
+        ARRIVED durumunda cancel_reason ignore edilir (None yapılır).
+        """
+        if self.status == CommitmentStatus.CANCELLED.value:
+            if not self.cancel_reason or not self.cancel_reason.strip():
+                raise ValueError('CANCELLED durumu için iptal nedeni (cancel_reason) zorunludur')
+
+        # ARRIVED durumunda cancel_reason'u None yap
+        if self.status == CommitmentStatus.ARRIVED.value:
+            object.__setattr__(self, 'cancel_reason', None)
+
+        return self
+
+
+class CommitmentListResponse(BaseSchema):
+    """
+    Taahhüt listesi response şeması.
+
+    Pagination metadata ile birlikte taahhüt listesi döner.
+    """
+    items: List[CommitmentResponse] = Field(..., description="Taahhüt listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Mevcut sayfa numarası (1'den başlar)")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")

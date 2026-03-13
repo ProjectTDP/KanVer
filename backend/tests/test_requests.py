@@ -805,17 +805,21 @@ class TestRequestEndpoints:
         assert "total" in data
 
     async def test_list_requests_total_and_pages_metadata(self, client: AsyncClient, db_session):
-        """Ek güvenlik testi: total/pages metadata doğru dönmeli."""
+        """Ek güvenlik testi: total/pages metadata doğru dönmeli.
+
+        Not: Benzersiz kan grubu (AB-) kullanılarak diğer testlerden etkilenmemesi sağlanır.
+        """
         hospital = await self.create_hospital(db_session)
         token = await self.register_and_login(client, self.get_test_phone())
 
+        # Benzersiz kan grubu ile 3 talep oluştur (diğer testlerden etkilenmemek için)
         for _ in range(3):
             create_resp = await client.post(
                 "/api/requests",
                 headers={"Authorization": f"Bearer {token}"},
                 json={
                     "hospital_id": hospital.id,
-                    "blood_type": "A+",
+                    "blood_type": "AB-",  # Benzersiz kan grubu
                     "units_needed": 2,
                     "request_type": "WHOLE_BLOOD",
                     "priority": "NORMAL",
@@ -825,8 +829,9 @@ class TestRequestEndpoints:
             )
             assert create_resp.status_code == 201
 
+        # Sadece bu kan grubuna göre filtrele
         response = await client.get(
-            "/api/requests?page=1&size=2",
+            "/api/requests?blood_type=AB-&page=1&size=2",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200

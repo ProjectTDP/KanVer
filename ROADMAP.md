@@ -1469,20 +1469,26 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `schemas.py`'ye commitment şemaları ekle:
-  - [ ] `CommitmentCreateRequest`:
-    - [ ] request_id (UUID)
-  - [ ] `CommitmentResponse`:
-    - [ ] commitment_id, request info, donor info
-    - [ ] status, committed_at, expected_arrival_time
-    - [ ] timeout_minutes, remaining_time
-    - [ ] qr_code (varsa)
-  - [ ] `CommitmentStatusUpdate`:
-    - [ ] status (ARRIVED / CANCELLED)
-    - [ ] cancel_reason (optional)
+**Yapılanlar:**
+- [x] `schemas.py`'ye commitment şemaları eklendi:
+  - [x] `CommitmentCreateRequest`: request_id (UUID)
+  - [x] `CommitmentDonorInfo`: id, full_name, blood_type, phone_number
+  - [x] `CommitmentRequestInfo`: id, request_code, blood_type, request_type, hospital_name, hospital_district, hospital_city
+  - [x] `QRCodeInfo`: token, signature (HMAC-SHA256), expires_at, is_used
+  - [x] `CommitmentResponse`:
+    - [x] commitment_id, request info, donor info (nested)
+    - [x] status, committed_at, arrived_at
+    - [x] timeout_minutes, qr_code (varsa)
+    - [x] Computed fields: expected_arrival_time, remaining_time_minutes
+  - [x] `CommitmentStatusUpdateRequest`:
+    - [x] status (sadece ARRIVED / CANCELLED)
+    - [x] cancel_reason (CANCELLED için zorunlu)
+    - [x] model_validator: ARRIVED'de cancel_reason ignore edilir
+  - [x] `CommitmentListResponse`: pagination ile liste
+- [x] Unit test yazıldı (`tests/test_commitment_schemas.py`): 39 test PASS
+- [x] Mevcut testler doğrulandı: 611 test PASS
 
 ---
 

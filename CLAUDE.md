@@ -81,7 +81,7 @@
 
 | Tablo | Birincil Amaç | Kritik Alanlar |
 |-------|--------------|----------------|
-| **users** | Kullanıcı bilgileri | hero_points, trust_score, next_available_date (cooldown) |
+| **users** | Kullanıcı bilgileri | hero_points, trust_score, last_donation_date, next_available_date (cooldown) |
 | **hospitals** | Hastane bilgileri | geofence_radius_meters, location (PostGIS) |
 | **hospital_staff** | Personel atamaları | user_id + hospital_id unique |
 | **blood_requests** | Kan talepleri | request_code (#KAN-XXX), status, units_needed |
@@ -377,11 +377,11 @@ DELETE /api/requests/{id}         # Talep iptal
 
 ### Donors
 ```
-GET    /api/donors/nearby         # Yakındaki talepler (bağışçı için)
-POST   /api/donors/accept         # "Geliyorum" taahhüdü
-GET    /api/donors/me/commitment  # Aktif taahhüdüm
+GET    /api/donors/nearby              # Yakındaki talepler (bağışçı için)
+POST   /api/donors/accept              # "Geliyorum" taahhüdü
+GET    /api/donors/me/commitment       # Aktif taahhüdüm
 PATCH  /api/donors/me/commitment/{id}  # Durum güncelle (ARRIVED/CANCELLED)
-GET    /api/donors/history        # Bağış geçmişi
+GET    /api/donors/history             # Bağış geçmişi
 ```
 
 ### Donations (Hemşire)
@@ -422,10 +422,13 @@ GET /api/admin/users              # Kullanıcı listesi
 - Password hash **her zaman** response'ta hariç tutulur
 - Firebase credentials dosyaları `.gitignore`'da olmalı
 
-### Cooldown (Biolojik Kısıtlama)
-- Tam kan: 90 gün
-- Aferez: 48 saat
+### Cooldown (Biyolojik Kısıtlama)
+- Tam kan (WHOLE_BLOOD): 90 gün
+- Aferez (APHERESIS): 48 saat
+- `last_donation_date`: Son bağış tarihi (Phase 4'te eklendi)
+- `next_available_date`: Bir sonraki uygun bağış tarihi
 - `next_available_date > now` olan kullanıcı "Geliyorum" diyemez
+- `app/utils/cooldown.py` modülü hesaplamaları yapar
 
 ### Single Commitment Kuralı
 - Bir kullanıcı aynı anda sadece **1 aktif** taahhüde sahip olabilir
@@ -444,118 +447,66 @@ GET /api/admin/users              # Kullanıcı listesi
 ## 📋 Şu Anki Durum
 
 ### Tamamlanan Phase'ler
-- ✅ **Phase 1 - Task 1.1:** Project Directory Structure
-- ✅ **Phase 1 - Task 1.2:** Environment Configuration
-- ✅ **Phase 1 - Task 1.3:** Docker Setup
-- ✅ **Phase 1 - Task 1.4:** FastAPI Application Foundation
-- ✅ **Phase 1 - Task 1.5:** Database Connection Setup
-  - Async SQLAlchemy engine ve session factory
-  - PostGIS extension verification
-  - Database unit tests
-  - Alembic configuration (alembic.ini, env.py)
-  - İlk migration: PostGIS activation
-- ✅ **Phase 1 - Task 1.6:** Logging Infrastructure
-  - Logging configuration with hybrid format (text/JSON)
-  - Custom exceptions (KanVerException base + 8 specific exceptions)
-  - LoggingMiddleware with request ID tracking
-  - Global exception handler in main.py
-  - Exception tests (23 tests passing)
-- ✅ **Phase 1 - Task 1.7:** Test Infrastructure Bug Fixes
-  - `test_db_connection` import alias fix (pytest collection conflict)
-  - `conftest.py` mock settings ile env bağımsız test
-  - `test_get_db_dependency_lifecycle` async generator contract testi
-  - `get_current_user` NotImplementedError stub fonksiyonu
-  - **Pytest Async Event Loop sorunu çözümü:**
-    - `pytest.ini` oluşturuldu - `asyncio_default_fixture_loop_scope = session`
-    - Session-scoped event loop fixture eklendi
-    - NullPool ile test engine yapılandırması
-    - Sorumlu testler için fresh engine kullanımı
-    - Tüm 37 test geçiyor (9 database + 23 exceptions + 5 main)
-- ✅ **Phase 1 - Task 2.1:** Constants & Enums
-  - BloodType enum + DONATION_COMPATIBILITY matrix
-  - UserRole enum (USER, NURSE, ADMIN)
-  - 6 status enum (RequestStatus, RequestType, Priority, CommitmentStatus, DonationStatus, NotificationType)
-  - 37 constant tests passing
-- ✅ **Phase 1 - Task 2.2-2.9:** SQLAlchemy Models
-  - TimestampMixin ile created_at/updated_at tüm modellere uygulandı
-  - 8 model oluşturuldu (User, Hospital, HospitalStaff, BloodRequest, DonationCommitment, QRCode, Donation, Notification)
-  - PostGIS Geography kolonları eklendi
-  - Check constraints tanımlandı
-  - Relationships tanımlandı
-  - 13 model tests passing
-- ✅ **Phase 1 - Task 2.10:** Alembic Migration
-  - 20250220_0001_create_tables.py migration oluşturuldu
-  - 7 ENUM type, 8 tablo, tüm index'ler oluşturuldu
-  - PostGIS GIST indexes, partial unique indexes
-  - `idx_single_active_commitment` model'e eklendi (unique=True ile)
-  - Tüm 87 test geçiyor (50 constants + 13 models + 24 others)
-- ✅ **Phase 1 - Task 2.11:** Seed Data Script
-  - `backend/scripts/seed_data.py` oluşturuldu
-  - `backend/scripts/cleanup_db.py` oluşturuldu
-  - `app/core/security.py` oluşturuldu (hash_password, verify_password)
-  - 5 Antalya hastanesi (gerçek koordinatlarla)
-  - 10 test kullanıcısı (her kan grubundan + 1 NURSE + 1 ADMIN)
-  - Hospital staff atamaları
-  - 2 örnek blood_request (ACTIVE durumunda)
-  - Idempotent tasarım (tekrar çalıştırılabilir)
-  - Integration test'ler yazıldı
-- ✅ **Phase 2 - Task 3.1:** Password Hashing & Security Utilities
-  - `validate_password_strength()` fonksiyonu eklendi
-  - 12 password test'i geçiyor (hash + strength validation)
-- ✅ **Phase 2 - Task 3.2:** JWT Token Service
-  - `app/auth.py` oluşturuldu (create_access_token, create_refresh_token, decode_token)
-  - `app/dependencies.py` güncellendi (get_current_user, get_current_active_user, require_role)
-  - OAuth2PasswordBearer scheme tanımlandı
-  - 18 JWT test'i geçiyor (token + dependency tests)
-- ✅ **Phase 2 - Task 3.3:** Pydantic Schemas - Auth
-  - `app/schemas.py` oluşturuldu
-  - UserRegisterRequest (phone, password, full_name, email, date_of_birth, blood_type)
-  - UserLoginRequest, RefreshTokenRequest, UserUpdateRequest
-  - TokenResponse, UserResponse, RegisterResponse
-  - Custom validators (phone format, blood type, age 18+, email format)
-  - 32 schema test'i geçiyor
-- ✅ **Phase 2 - Task 3.4:** Auth Router - Register
-  - `app/routers/auth.py` oluşturuldu
-  - POST /api/auth/register endpoint'i
-  - Phone/email unique kontrolü, password hash'leme, phone normalization
-  - Token üretimi (access + refresh)
-  - main.py'e auth router eklendi (prefix: /api/auth)
-- ✅ **Phase 2 - Task 3.5:** Auth Router - Login & Refresh
-  - POST /api/auth/login endpoint'i (wrong password, deleted user handling)
-  - POST /api/auth/refresh endpoint'i (token validation, new token generation, is_active + deleted_at kontrolü)
-  - 18 auth endpoint test'i geçiyor
-  - User modeline date_of_birth alanı eklendi (migration 442f47db67bf)
-  - **Toplam:** 173 test geçiyor
-- ✅ **Phase 2 - Task 4.1:** User Service Implementation
-  - `app/utils/location.py` oluşturuldu (create_point_wkt with validation)
-  - `app/services/user_service.py` oluşturuldu
-  - 6 service function: get_user_by_id, get_user_by_phone, update_user_profile, update_user_location, soft_delete_user, get_user_stats
-  - `app/schemas.py` güncellendi (LocationUpdateRequest, UserStatsResponse)
-  - 31 user_service test'i geçiyor
-  - **Toplam:** 204 test geçiyor
-- ✅ **Phase 2 - Task 4.2:** User Router Implementation
-  - `backend/app/routers/users.py` oluşturuldu (5 endpoint)
-  - GET /me, PATCH /me, DELETE /me, PATCH /me/location, GET /me/stats
-  - `main.py` ve `routers/__init__.py` güncellendi
-  - `UserResponse` şemasına `fcm_token` alanı eklendi
-  - 18 user endpoint test'i yazıldı
-  - **Toplam:** 222 test geçiyor
-- ✅ **Phase 2 - Task 4.3:** Auth Unit Tests
-  - `backend/tests/conftest.py` güncellendi (test_user, auth_headers, expired_token_headers, refresh_token_headers fixtures)
-  - `backend/tests/test_auth.py` oluşturuldu (17 test)
-    - TestLoginEndpoint: nonexistent_user, deleted_user, phone_normalization (2)
-    - TestRefreshTokenEndpoint: expired, invalid, wrong_type, deleted_user (4)
-    - TestProtectedEndpoints: no_token, invalid_token, expired_token, deleted_user (4)
-    - TestTokenGeneration: access/refresh claims & expiration (4)
-    - TestPasswordNormalization: login_with_normalized_phone (1)
-  - `backend/tests/test_auth_endpoints.py` genişletildi (7 yeni test)
-    - test_register_duplicate_phone, duplicate_email
-    - test_register_invalid_blood_type, underage, weak_password
-    - test_register_phone_normalization (2)
-  - **Toplam:** 246 test geçiyor
+
+#### ✅ Phase 1: Infrastructure & Database
+- **Task 1.1:** Project Directory Structure
+- **Task 1.2:** Environment Configuration
+- **Task 1.3:** Docker Setup
+- **Task 1.4:** FastAPI Application Foundation
+- **Task 1.5:** Database Connection Setup (Async SQLAlchemy, PostGIS, Alembic)
+- **Task 1.6:** Logging Infrastructure (Custom exceptions, LoggingMiddleware)
+- **Task 1.7:** Test Infrastructure Bug Fixes (pytest-asyncio, NullPool)
+- **Task 2.1:** Constants & Enums (BloodType, UserRole, Status enums)
+- **Task 2.2-2.9:** SQLAlchemy Models (8 model: User, Hospital, HospitalStaff, BloodRequest, DonationCommitment, QRCode, Donation, Notification)
+- **Task 2.10:** Alembic Migration (7 ENUM, 8 tablo, GIST indexes, partial unique indexes)
+- **Task 2.11:** Seed Data Script (5 hastane, 10 kullanıcı, staff atamaları)
+
+#### ✅ Phase 2: Authentication & User Management
+- **Task 3.1:** Password Hashing & Security Utilities
+- **Task 3.2:** JWT Token Service (access + refresh tokens)
+- **Task 3.3:** Pydantic Schemas - Auth
+- **Task 3.4:** Auth Router - Register
+- **Task 3.5:** Auth Router - Login & Refresh
+- **Task 4.1:** User Service Implementation
+- **Task 4.2:** User Router Implementation (5 endpoint)
+- **Task 4.3:** Auth Unit Tests
+- **Task 4.4:** Location & PostGIS Utilities
+
+#### ✅ Phase 3: Hospital & Staff Management
+- **Task 5.1:** Hospital Schemas
+- **Task 5.2:** Hospital Service Implementation
+- **Task 5.3:** Hospital Router Implementation
+- **Task 5.4:** Location & PostGIS Utilities (refined)
+- **Task 6.1:** Hospital Tests
+
+#### ✅ Phase 4: Blood Request System
+- **Task 6.2:** Blood Request Schemas
+- **Task 6.3:** Request Code Generation (PostgreSQL sequence)
+- **Task 6.4:** Blood Request Service Implementation
+- **Task 6.5:** Request Router Implementation
+- **Task 7.1:** Cooldown Utility (90 gün / 48 saat hesaplama)
+- **Task 7.2:** Blood Type Compatibility (validators.py)
+- **Task 7.3:** Nearby Donor Search Service
+- **Task 7.4:** Blood Request Tests
+- **Migration:** `last_donation_date` users tablosuna eklendi
+- **Migration:** `blood_request_code_seq` sequence oluşturuldu
+
+#### ✅ Phase 5: Donation Commitment & QR Workflow (Başladı)
+- **Task 8.1:** Donation Commitment Schemas
+  - 7 yeni şema: CommitmentCreateRequest, CommitmentDonorInfo, CommitmentRequestInfo, QRCodeInfo, CommitmentResponse, CommitmentStatusUpdateRequest, CommitmentListResponse
+  - Computed fields: expected_arrival_time, remaining_time_minutes
+  - 39 yeni test eklendi
+
+### Test Durumu
+- **Toplam Test:** 611 test geçiyor
 
 ### Sırada
-- ⏳ **Phase 2 - Task 4.4:** Location & PostGIS Utilities
+- ⏳ **Phase 5 - Task 8.2:** Donation Service - Commitment Logic
+- ⏳ **Phase 5 - Task 8.3:** Commitment Router
+- ⏳ **Phase 5 - Task 8.4:** Background Task - Timeout Checker
+- ⏳ **Phase 5 - Task 9.1:** QR Code Utility
+- ⏳ **Phase 5 - Task 9.2:** QR Code Generation Flow
+- ⏳ **Phase 5 - Task 9.3:** Donation Verification & Completion
 
 ---
 
