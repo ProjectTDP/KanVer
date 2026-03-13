@@ -1609,38 +1609,42 @@ Phase 5 tamamlanmış sayılır eğer:
 
 ---
 
-### Task 9.1: QR Code Utility
+### Task 9.1: QR Code Utility ✅ TAMAMLANDI
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/utils/qr_code.py` oluştur:
-  - [ ] `generate_qr_token() -> str`:
-    - [ ] 32 byte random token (secrets.token_urlsafe)
-  - [ ] `generate_signature(token: str, commitment_id: str) -> str`:
-    - [ ] HMAC-SHA256 imza
-    - [ ] Key: SECRET_KEY from config
-    - [ ] Message: `{token}:{commitment_id}`
-  - [ ] `verify_signature(token: str, commitment_id: str, signature: str) -> bool`:
-    - [ ] İmza doğrulaması (hmac.compare_digest)
-  - [ ] `create_qr_data(commitment_id: str) -> dict`:
-    - [ ] Token üret
-    - [ ] Signature oluştur
-    - [ ] Expires_at hesapla (commitment + 2 saat)
-    - [ ] Return: {token, signature, expires_at}
-  - [ ] `validate_qr(db, token: str) -> QRCode`:
-    - [ ] Token'ı bul
-    - [ ] Expire kontrolü
-    - [ ] is_used kontrolü
-    - [ ] Signature doğrula
-    - [ ] Return: QRCode objesi
-- [ ] Unit test:
-  - [ ] test_generate_and_verify_signature
-  - [ ] test_invalid_signature_rejected
-  - [ ] test_expired_qr_rejected
-  - [ ] test_used_qr_rejected
+- [x] `backend/app/utils/qr_code.py` oluştur:
+  - [x] `generate_qr_token() -> str`:
+    - [x] 32 byte random token (secrets.token_urlsafe)
+  - [x] `generate_signature(token: str, commitment_id: str) -> str`:
+    - [x] HMAC-SHA256 imza
+    - [x] Key: SECRET_KEY from config
+    - [x] Message: `{token}:{commitment_id}`
+  - [x] `verify_signature(token: str, commitment_id: str, signature: str) -> bool`:
+    - [x] İmza doğrulaması (hmac.compare_digest)
+  - [x] `create_qr_data(commitment_id: str) -> dict`:
+    - [x] Token üret
+    - [x] Signature oluştur
+    - [x] Expires_at hesapla (commitment + 2 saat)
+    - [x] Return: {token, signature, expires_at}
+  - [x] `validate_qr(db, token: str) -> QRCode`:
+    - [x] Token'ı bul
+    - [x] Expire kontrolü
+    - [x] is_used kontrolü
+    - [x] Signature doğrula
+    - [x] Return: QRCode objesi
+  - [x] `format_qr_content()` ve `parse_qr_content()` helper fonksiyonları
+- [x] Unit test (30 test):
+  - [x] test_generate_qr_token (length, uniqueness, URL-safe)
+  - [x] test_generate_and_verify_signature (valid, invalid, timing-safe)
+  - [x] test_create_qr_data (structure, expiry, valid signature)
+  - [x] test_validate_qr (success, not found, expired, used, invalid signature)
+  - [x] test_format_and_parse_qr_content
+  - [x] test_full_qr_workflow (integration)
+  - [x] test_signature_tampering_detected
 
 ---
 
