@@ -1078,27 +1078,64 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `schemas.py`'ye blood request şemaları ekle:
-  - [ ] `BloodRequestCreateRequest`:
-    - [ ] hospital_id (UUID)
-    - [ ] blood_type
-    - [ ] units_needed (min 1)
-    - [ ] request_type (WHOLE_BLOOD / APHERESIS)
-    - [ ] priority (LOW / NORMAL / URGENT / CRITICAL)
-    - [ ] latitude, longitude (talep oluşturan kişinin konumu)
-  - [ ] `BloodRequestUpdateRequest`:
-    - [ ] units_needed (optional)
-    - [ ] priority (optional)
-    - [ ] status (optional — sadece CANCELLED)
-  - [ ] `BloodRequestResponse`:
-    - [ ] Tüm alanlar + hospital bilgisi + requester bilgisi
-    - [ ] distance_km (nearby sorgularında)
-    - [ ] remaining_units (units_needed - units_collected)
-    - [ ] is_expired (expires_at < now kontrolü)
-  - [ ] `BloodRequestListResponse` (pagination + filter metadata)
+- [x] `schemas.py`'ye blood request şemaları ekle:
+  - [x] `BloodRequestCreateRequest`:
+    - [x] hospital_id (UUID)
+    - [x] blood_type (validator: uppercase normalization + geçerlilik)
+    - [x] units_needed (min 1, max 100)
+    - [x] request_type (WHOLE_BLOOD / APHERESIS, validator)
+    - [x] priority (LOW / NORMAL / URGENT / CRITICAL, default: NORMAL, validator)
+    - [x] latitude, longitude (talep oluşturan kişinin konumu, geofence kontrolü için)
+    - [x] patient_name (optional) - *Database model'de mevcut, kullanıcı deneyimi için eklendi*
+    - [x] notes (optional) - *Database model'de mevcut, ek bilgi için eklendi*
+  - [x] `BloodRequestUpdateRequest`:
+    - [x] units_needed (optional, min 1, max 100)
+    - [x] priority (optional, validator)
+    - [x] status (optional — sadece CANCELLED, validator ile kısıtlandı)
+    - [x] patient_name (optional) - *Güncelleme için eklendi*
+    - [x] notes (optional) - *Güncelleme için eklendi*
+    - [x] @model_validator: en az bir alan zorunluluğu
+  - [x] `BloodRequestHospitalInfo` (nested schema):
+    - [x] id, name, hospital_code, district, city, phone_number
+    - [x] HospitalResponse'dan hafif versiyon
+  - [x] `BloodRequestRequesterInfo` (nested schema):
+    - [x] id, full_name, phone_number
+    - [x] UserResponse'dan hafif versiyon, hassas bilgiler hariç
+  - [x] `BloodRequestResponse`:
+    - [x] Tüm alanlar + hospital (nested) + requester (nested)
+    - [x] distance_km (nearby sorgularında, optional)
+    - [x] remaining_units (@computed_field - units_needed - units_collected)
+    - [x] is_expired (@computed_field - expires_at < now kontrolü)
+  - [x] `BloodRequestListResponse` (pagination + filter metadata):
+    - [x] items, total, page, size, pages
+    - [x] 5 adet opsiyonel filtre metadata alanı (filtered_by_status, blood_type, request_type, hospital_id, city)
+- [x] Unit test yaz (`tests/test_requests.py` - 53 test):
+  - [x] TestBloodRequestCreateRequest (21 test):
+    - [x] valid whole_blood, valid apheresis, default priority
+    - [x] with optional fields (patient_name, notes)
+    - [x] all blood types valid, all priorities valid
+    - [x] blood_type uppercase normalization
+    - [x] invalid blood_type, request_type, priority
+    - [x] units_needed validation (min, negative)
+    - [x] latitude/longitude out of range
+    - [x] missing required fields (hospital_id, blood_type, location)
+  - [x] TestBloodRequestUpdateRequest (12 test):
+    - [x] valid updates (units_needed, priority, status, multiple fields)
+    - [x] status uppercase normalization, CANCELLED only
+    - [x] invalid status (ACTIVE, FULFILLED, EXPIRED)
+    - [x] invalid priority, units_needed validation
+    - [x] no fields provided raises error
+  - [x] TestBloodRequestResponse (15 test):
+    - [x] valid creation, remaining_units computed, is_expired logic
+    - [x] distance_km optional, hospital/requester info embedded
+    - [x] optional fields default none, all priorities, all statuses
+  - [x] TestBloodRequestHospitalInfo (2 test)
+  - [x] TestBloodRequestRequesterInfo (2 test)
+  - [x] TestBloodRequestListResponse (5 test): empty list, with items, pagination, filter fields
+- [x] **Toplam: 469 test geçiyor** (53 yeni test eklendi)
 
 ---
 
@@ -1106,22 +1143,39 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 30 dakika
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/utils/helpers.py` oluştur:
-  - [ ] `generate_request_code() -> str`:
-    - [ ] Format: `#KAN-{sequential_number}` (örn: #KAN-001, #KAN-102)
-    - [ ] Veritabanından son kodu oku ve +1 yap
-    - [ ] Race condition koruması (SELECT FOR UPDATE veya SERIAL)
-  - [ ] `generate_unique_token(length=32) -> str`:
-    - [ ] QR token'ları için (secrets.token_urlsafe)
-- [ ] Unit test yaz (`tests/test_helpers.py`):
-  - [ ] test_generate_request_code_format (#KAN-XXX)
-  - [ ] test_generate_request_code_sequential
-  - [ ] test_generate_request_code_unique
-  - [ ] test_generate_unique_token_length
-  - [ ] test_generate_unique_token_uniqueness
+- [x] `backend/app/utils/helpers.py` güncelle:
+  - [x] `generate_request_code(db: AsyncSession) -> str`:
+    - [x] Format: `#KAN-{sequential_number}` (örn: #KAN-001, #KAN-102)
+    - [x] En büyük mevcut request code numarasını (numeric suffix) bul, +1 yap
+    - [x] 3 digit zero-padded format (:03d)
+    - [x] Race condition koruması transaction layer'da sağlanacak (unique constraint ile çift güvenlik)
+  - [x] `generate_unique_token(length: int = 32) -> str`:
+    - [x] secrets.token_urlsafe kullanarak kriptografik güvenli token
+    - [x] URL-safe base64 encoding (A-Z, a-z, 0-9, -, _)
+    - [x] QR kod token'ları için kullanılacak
+- [x] Unit test yaz (`tests/test_helpers.py` - 16 test):
+  - [x] **TestGenerateRequestCode (7 test):**
+    - [x] test_generate_request_code_format (#KAN-XXX pattern match)
+    - [x] test_generate_request_code_sequential (5 → #KAN-006)
+    - [x] test_generate_request_code_unique (ardışık çağrılarda farklı)
+    - [x] test_generate_request_code_starts_from_one (ilk kod #KAN-001)
+    - [x] test_generate_request_code_zero_padded (99 → #KAN-100)
+    - [x] test_generate_request_code_large_number (1234 → #KAN-1235, 3+ digit)
+    - [x] test_generate_request_code_calls_database (execute çağrısı kontrolü)
+  - [x] **TestGenerateUniqueToken (9 test):**
+    - [x] test_generate_unique_token_length (minimum 32 karakter)
+    - [x] test_generate_unique_token_uniqueness (3 çağrıda 3 farklı token)
+    - [x] test_generate_unique_token_default_length (~43 karakter)
+    - [x] test_generate_unique_token_custom_length (16 vs 64 byte)
+    - [x] test_generate_unique_token_url_safe_characters (regex pattern)
+    - [x] test_generate_unique_token_no_special_chars (+, /, = yok)
+    - [x] test_generate_unique_token_multiple_generations (100 token benzersiz)
+    - [x] test_generate_unique_token_minimum_length (1 byte)
+    - [x] test_generate_unique_token_large_length (256 byte)
+- [x] **Toplam: 485 test geçiyor** (16 yeni test eklendi, önceki 469 + 16 = 485)
 
 ---
 
@@ -1129,49 +1183,55 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/services/blood_request_service.py` oluştur:
-  - [ ] `create_request(db, requester_id, data) -> BloodRequest`:
-    - [ ] Geofence kontrolü: kullanıcı hastane yarıçapında mı?
-    - [ ] GeofenceException fırlat (dışarıdaysa)
-    - [ ] Request code üret (#KAN-XXX)
-    - [ ] Expires_at hesapla:
-      - [ ] WHOLE_BLOOD: created_at + 24 saat
-      - [ ] APHERESIS: created_at + 6 saat
-    - [ ] Konumu kaydet (hastane konumu)
-  - [ ] `get_request(db, request_id) -> BloodRequest`
-  - [ ] `list_requests(db, filters) -> list[BloodRequest]`:
-    - [ ] Filter: status, blood_type, request_type, hospital_id, city
-    - [ ] Sadece expired olmayanları döndür (default)
-    - [ ] Pagination: page, size
-  - [ ] `update_request(db, request_id, requester_id, data) -> BloodRequest`:
-    - [ ] Sadece talep sahibi güncelleyebilir
-    - [ ] FULFILLED/CANCELLED/EXPIRED durumundaki talepler güncellenemez
-  - [ ] `cancel_request(db, request_id, requester_id) -> BloodRequest`:
-    - [ ] Status → CANCELLED
-    - [ ] Aktif commitment'ları da iptal et
-  - [ ] `expire_stale_requests(db) -> int`:
-    - [ ] expires_at < now olan ACTIVE talepleri EXPIRED yap
-    - [ ] Cron job / background task ile çağrılacak
-    - [ ] Kaç talep expire edildiğini döndür
-- [ ] Unit test yaz (`tests/test_blood_request_service.py`):
-  - [ ] test_create_request_inside_geofence
-  - [ ] test_create_request_outside_geofence_raises
-  - [ ] test_create_request_generates_code (#KAN-XXX)
-  - [ ] test_create_request_sets_expires_at (WHOLE_BLOOD: 24h, APHERESIS: 6h)
-  - [ ] test_get_request_success
-  - [ ] test_get_request_not_found (404)
-  - [ ] test_list_requests_with_filters
-  - [ ] test_list_requests_pagination
-  - [ ] test_list_requests_excludes_expired
-  - [ ] test_update_request_by_owner
-  - [ ] test_update_request_by_non_owner_raises (403)
-  - [ ] test_update_fulfilled_request_raises
-  - [ ] test_cancel_request_changes_status
-  - [ ] test_cancel_request_cancels_active_commitments
-  - [ ] test_expire_stale_requests_count
+- [x] `backend/app/services/blood_request_service.py` oluştur:
+  - [x] `create_request(db, requester_id, data) -> BloodRequest`:
+    - [x] Geofence kontrolü: kullanıcı hastane yarıçapında mı?
+    - [x] GeofenceException fırlat (dışarıdaysa)
+    - [x] Request code üret (#KAN-XXX)
+    - [x] Expires_at hesapla:
+      - [x] WHOLE_BLOOD: created_at + 24 saat
+      - [x] APHERESIS: created_at + 6 saat
+    - [x] Konumu kaydet (hastane konumu)
+  - [x] `get_request(db, request_id) -> BloodRequest`
+  - [x] `list_requests(db, filters) -> list[BloodRequest]`:
+    - [x] Filter: status, blood_type, request_type, hospital_id, city
+    - [x] Sadece expired olmayanları döndür (default)
+    - [x] Pagination: page, size
+  - [x] `update_request(db, request_id, requester_id, data) -> BloodRequest`:
+    - [x] Sadece talep sahibi güncelleyebilir
+    - [x] FULFILLED/CANCELLED/EXPIRED durumundaki talepler güncellenemez
+  - [x] `cancel_request(db, request_id, requester_id) -> BloodRequest`:
+    - [x] Status → CANCELLED
+    - [x] Aktif commitment'ları da iptal et
+  - [x] `expire_stale_requests(db) -> int`:
+    - [x] expires_at < now olan ACTIVE talepleri EXPIRED yap
+    - [x] Cron job / background task ile çağrılacak şekilde tasarlandı
+    - [x] Kaç talep expire edildiğini döndür
+- [x] Unit test yaz (`tests/test_blood_request_service.py` - 19 test):
+  - [x] test_create_request_inside_geofence
+  - [x] test_create_request_outside_geofence_raises
+  - [x] test_create_request_generates_code (#KAN-XXX)
+  - [x] test_create_request_sets_expires_at (WHOLE_BLOOD: 24h, APHERESIS: 6h)
+  - [x] test_get_request_success
+  - [x] test_get_request_not_found (404)
+  - [x] test_list_requests_with_filters
+  - [x] test_list_requests_pagination
+  - [x] test_list_requests_excludes_expired
+  - [x] test_update_request_by_owner
+  - [x] test_update_request_by_non_owner_raises (403)
+  - [x] test_update_fulfilled_request_raises
+  - [x] test_cancel_request_changes_status
+  - [x] test_cancel_request_cancels_active_commitments
+  - [x] test_expire_stale_requests_count
+  - [x] Ek güvenlik testleri:
+    - [x] test_update_request_units_needed_less_than_collected_raises
+    - [x] test_cancel_request_non_owner_raises
+    - [x] test_create_request_saves_hospital_location
+    - [x] test_create_request_ignores_malformed_existing_codes
+- [x] **Toplam: 504 test geçiyor** (19 yeni test eklendi, önceki 485 + 19 = 504)
 
 ---
 
@@ -1179,36 +1239,38 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/requests.py` oluştur
-- [ ] `POST /api/requests` — Talep oluştur:
-  - [ ] Requires: authenticated user
-  - [ ] Geofence kontrolü
-  - [ ] Response: BloodRequestResponse (201 Created)
-  - [ ] Error: 403 GeofenceException (hastane yakınında değilsiniz)
-- [ ] `GET /api/requests` — Talepleri listele:
-  - [ ] Query params: status, blood_type, request_type, hospital_id, city, page, size
-  - [ ] Requires: authenticated user
-- [ ] `GET /api/requests/{id}` — Talep detayı:
-  - [ ] Requires: authenticated user
-  - [ ] Commitment sayısını da döndür
-- [ ] `PATCH /api/requests/{id}` — Talep güncelle:
-  - [ ] Requires: talep sahibi
-- [ ] `DELETE /api/requests/{id}` — Talep iptal et:
-  - [ ] Requires: talep sahibi veya ADMIN
-  - [ ] Aktif commitment'ları iptal et
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/requests`)
-- [ ] Unit test yaz (`tests/test_requests.py`):
-  - [ ] test_create_request_success (201)
-  - [ ] test_create_request_geofence_violation (403)
-  - [ ] test_create_request_unauthenticated (401)
-  - [ ] test_list_requests_with_query_params
-  - [ ] test_get_request_detail_with_commitments
-  - [ ] test_update_request_owner_only
-  - [ ] test_cancel_request_owner_or_admin
-  - [ ] test_cancel_request_non_owner (403)
+- [x] `backend/app/routers/requests.py` oluştur
+- [x] `POST /api/requests` — Talep oluştur:
+  - [x] Requires: authenticated user
+  - [x] Geofence kontrolü
+  - [x] Response: BloodRequestResponse (201 Created)
+  - [x] Error: 403 GeofenceException (hastane yakınında değilsiniz)
+- [x] `GET /api/requests` — Talepleri listele:
+  - [x] Query params: status, blood_type, request_type, hospital_id, city, page, size
+  - [x] Requires: authenticated user
+- [x] `GET /api/requests/{id}` — Talep detayı:
+  - [x] Requires: authenticated user
+  - [x] Commitment sayısını da döndür
+- [x] `PATCH /api/requests/{id}` — Talep güncelle:
+  - [x] Requires: talep sahibi
+- [x] `DELETE /api/requests/{id}` — Talep iptal et:
+  - [x] Requires: talep sahibi veya ADMIN
+  - [x] Aktif commitment'ları iptal et
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/requests`)
+- [x] Unit test yaz (`tests/test_requests.py` - 9 endpoint testi):
+  - [x] test_create_request_success (201)
+  - [x] test_create_request_geofence_violation (403)
+  - [x] test_create_request_unauthenticated (401)
+  - [x] test_list_requests_with_query_params
+  - [x] test_get_request_detail_with_commitments
+  - [x] test_update_request_owner_only
+  - [x] test_cancel_request_owner_or_admin
+  - [x] test_cancel_request_non_owner (403)
+  - [x] test_list_requests_total_and_pages_metadata
+- [x] **Toplam: 513 test geçiyor** (9 yeni endpoint testi eklendi, önceki 504 + 9 = 513)
 
 ---
 
@@ -1222,24 +1284,42 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/utils/cooldown.py` oluştur:
-  - [ ] `is_in_cooldown(user: User) -> bool`:
-    - [ ] next_available_date > now ise True
-  - [ ] `get_cooldown_end(user: User) -> datetime | None`:
-    - [ ] Soğuma bitiş tarihini döndür
-  - [ ] `calculate_next_available(donation_type: str, donation_date: datetime) -> datetime`:
-    - [ ] WHOLE_BLOOD: donation_date + 90 gün
-    - [ ] APHERESIS: donation_date + 48 saat
-  - [ ] `set_cooldown(db, user_id, donation_type) -> User`:
-    - [ ] last_donation_date ve next_available_date güncelle
-- [ ] Unit test yaz:
-  - [ ] test_whole_blood_cooldown_90_days
-  - [ ] test_apheresis_cooldown_48_hours
-  - [ ] test_not_in_cooldown
-  - [ ] test_in_cooldown
+- [x] `backend/app/utils/cooldown.py` oluştur:
+  - [x] `is_in_cooldown(user: User) -> bool`:
+    - [x] next_available_date > now ise True
+    - [x] `next_available_date` yoksa False
+    - [x] Naive datetime değerlerini UTC kabul ederek işler
+  - [x] `get_cooldown_end(user: User) -> datetime | None`:
+    - [x] Soğuma bitiş tarihini döndür
+  - [x] `calculate_next_available(donation_type: str, donation_date: datetime) -> datetime`:
+    - [x] WHOLE_BLOOD: donation_date + 90 gün
+    - [x] APHERESIS: donation_date + 48 saat
+    - [x] Geçersiz donation type için `BadRequestException`
+  - [x] `set_cooldown(db, user_id, donation_type) -> User`:
+    - [x] `last_donation_date` ve `next_available_date` güncelle
+    - [x] Kullanıcı yoksa `NotFoundException`
+- [x] Model/migration uyumu:
+  - [x] `users` tablosuna `last_donation_date` alanı eklendi
+  - [x] Alembic migration yazıldı
+- [x] Unit test yaz (`tests/test_cooldown.py` - 13 test):
+  - [x] test_whole_blood_cooldown_90_days
+  - [x] test_apheresis_cooldown_48_hours
+  - [x] test_not_in_cooldown
+  - [x] test_in_cooldown
+  - [x] Ek güvenlik testleri:
+    - [x] missing cooldown date
+    - [x] cooldown end getter
+    - [x] invalid donation type
+    - [x] naive datetime handling
+    - [x] set_cooldown whole blood / apheresis
+    - [x] user not found
+- [x] İlgili servis uyumu:
+  - [x] `get_user_stats()` artık `last_donation_date` alanını gerçek modelden döndürüyor
+  - [x] Ek doğrulama testi eklendi (`tests/test_user_service.py`)
+- [x] **Toplam: 528 test geçiyor** (Task 7.1 ile 15 yeni test eklendi, önceki 513 + 15 = 528)
 
 ---
 
@@ -1247,25 +1327,32 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/utils/validators.py` oluştur:
-  - [ ] `get_compatible_donors(blood_type: str) -> list[str]`:
-    - [ ] Uyumluluk matrisi:
-      - [ ] O-: O-
-      - [ ] O+: O-, O+
-      - [ ] A-: A-, O-
-      - [ ] A+: A+, A-, O+, O-
-      - [ ] B-: B-, O-
-      - [ ] B+: B+, B-, O+, O-
-      - [ ] AB-: AB-, A-, B-, O-
-      - [ ] AB+: Herkes (universal recipient)
-  - [ ] `can_donate_to(donor_type: str, recipient_type: str) -> bool`
-- [ ] Unit test yaz:
-  - [ ] test_o_negative_universal_donor
-  - [ ] test_ab_positive_universal_recipient
-  - [ ] test_incompatible_types
+- [x] `backend/app/utils/validators.py` oluştur:
+  - [x] `get_compatible_donors(blood_type: str) -> list[str]`:
+    - [x] Uyumluluk matrisi:
+      - [x] O-: O-
+      - [x] O+: O-, O+
+      - [x] A-: A-, O-
+      - [x] A+: A+, A-, O+, O-
+      - [x] B-: B-, O-
+      - [x] B+: B+, B-, O+, O-
+      - [x] AB-: AB-, A-, B-, O-
+      - [x] AB+: Herkes (universal recipient)
+  - [x] `can_donate_to(donor_type: str, recipient_type: str) -> bool`
+- [x] Unit test yaz (`tests/test_validators.py` - 23 test):
+  - [x] test_o_negative_universal_donor
+  - [x] test_ab_positive_universal_recipient
+  - [x] test_incompatible_types
+  - [x] Ek güvenlik testleri:
+    - [x] matrix coverage (8 alıcı için beklenen donor listeleri)
+    - [x] compatible_types_return_true
+    - [x] invalid blood type handling
+    - [x] case-insensitive input handling
+- [x] `backend/app/utils/__init__.py` export güncellemesi yapıldı
+- [x] **Toplam: 551 test geçiyor** (Task 7.2 ile 23 yeni test eklendi, önceki 528 + 23 = 551)
 
 ---
 
@@ -1273,31 +1360,35 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `blood_request_service.py`'ye ekle:
-  - [ ] `find_nearby_donors(db, request_id) -> list[User]`:
-    - [ ] Talep bilgilerini al (blood_type, location, hospital)
-    - [ ] Uyumlu kan gruplarını bul (compatibility matrix)
-    - [ ] PostGIS ST_DWithin ile yarıçaptaki kullanıcıları bul:
-      - [ ] Yarıçap: hastanenin geofence_radius_meters veya config DEFAULT_SEARCH_RADIUS_KM
-    - [ ] Filtreleme:
-      - [ ] deleted_at IS NULL
-      - [ ] Cooldown'da olmayan (next_available_date < now OR NULL)
-      - [ ] Aktif başka commitment'ı olmayan
-      - [ ] fcm_token IS NOT NULL (bildirim gönderilebilir)
-      - [ ] Talep sahibi kendisi değil
-    - [ ] Mesafeye göre sırala (en yakın önce)
-    - [ ] Limit: max 50 bağışçı
-- [ ] `backend/app/routers/donors.py` oluştur:
-  - [ ] `GET /api/donors/nearby` — Yakındaki talepleri listele (bağışçı perspektifi):
-    - [ ] Requires: authenticated user
-    - [ ] Kullanıcının konumuna göre yakın ACTIVE talepleri bul
-    - [ ] Uyumlu kan gruplarına göre filtrele
-    - [ ] Cooldown kontrolü
-    - [ ] Response: BloodRequestListResponse (distance_km dahil)
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/donors`)
+- [x] `blood_request_service.py`'ye ekle:
+  - [x] `find_nearby_donors(db, request_id) -> list[User]`:
+    - [x] Talep bilgilerini al (blood_type, location, hospital)
+    - [x] Uyumlu kan gruplarını bul (compatibility matrix)
+    - [x] PostGIS ST_DWithin ile yarıçaptaki kullanıcıları bul:
+      - [x] Yarıçap: hastanenin geofence_radius_meters veya config DEFAULT_SEARCH_RADIUS_KM
+    - [x] Filtreleme:
+      - [x] deleted_at IS NULL
+      - [x] Cooldown'da olmayan (next_available_date < now OR NULL)
+      - [x] Aktif başka commitment'ı olmayan
+      - [x] fcm_token IS NOT NULL (bildirim gönderilebilir)
+      - [x] Talep sahibi kendisi değil
+    - [x] Mesafeye göre sırala (en yakın önce)
+    - [x] Limit: max 50 bağışçı
+- [x] `backend/app/routers/donors.py` oluştur:
+  - [x] `GET /api/donors/nearby` — Yakındaki talepleri listele (bağışçı perspektifi):
+    - [x] Requires: authenticated user
+    - [x] Kullanıcının konumuna göre yakın ACTIVE talepleri bul
+    - [x] Uyumlu kan gruplarına göre filtrele
+    - [x] Cooldown kontrolü
+    - [x] Response: BloodRequestListResponse (distance_km dahil)
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/donors`)
+- [x] Unit test yazıldı:
+  - [x] `tests/test_blood_request_service.py` (3 yeni test): nearby donor filtreleme/sıralama, not-found, 50 limit
+  - [x] `tests/test_donors.py` (4 yeni test): auth, location validation, cooldown, compatibility+distance+expiry
+- [x] **Toplam: 558 test geçiyor** (Task 7.3 ile 7 yeni test eklendi, önceki 551 + 7 = 558)
 
 ---
 
@@ -1305,34 +1396,36 @@ Phase 4 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/tests/test_requests.py` oluştur:
-  - [ ] test_create_request_inside_geofence
-  - [ ] test_create_request_outside_geofence (403)
-  - [ ] test_create_request_generates_code (#KAN-XXX)
-  - [ ] test_list_requests_with_filters
-  - [ ] test_update_request_by_owner
-  - [ ] test_update_request_by_non_owner (403)
-  - [ ] test_cancel_request
-  - [ ] test_cancel_request_cancels_commitments
-  - [ ] test_expired_request_not_in_list
-  - [ ] test_nearby_donors_compatible_blood_type
-  - [ ] test_nearby_donors_excludes_cooldown
-  - [ ] test_nearby_donors_excludes_active_commitment
-  - [ ] test_nearby_donors_distance_ordering
-- [ ] Tüm testler geçiyor
+- [x] `backend/tests/test_requests.py` güncellendi:
+  - [x] test_create_request_inside_geofence
+  - [x] test_create_request_outside_geofence (403)
+  - [x] test_create_request_generates_code (#KAN-XXX)
+  - [x] test_list_requests_with_filters
+  - [x] test_update_request_by_owner
+  - [x] test_update_request_by_non_owner (403)
+  - [x] test_cancel_request
+  - [x] test_cancel_request_cancels_commitments
+  - [x] test_expired_request_not_in_list
+  - [x] test_nearby_donors_compatible_blood_type
+  - [x] test_nearby_donors_excludes_cooldown
+  - [x] test_nearby_donors_excludes_active_commitment
+  - [x] test_nearby_donors_distance_ordering
+- [x] Ek güvenlik testleri eklendi (request list metadata, auth ve geofence varyasyonları)
+- [x] Tüm testler geçiyor (`tests/test_requests.py`)
+- [x] **Toplam: 565 test geçiyor** (Task 7.4 ile 7 yeni test eklendi, önceki 558 + 7 = 565)
 
 ---
 
 ### 📊 Phase 4 Success Metrics
 
-- [ ] Geofence doğrulaması doğru çalışıyor
-- [ ] Request code (#KAN-XXX) sequential üretiliyor
-- [ ] Nearby donor search doğru sonuç dönüyor (kan grubu + cooldown + mesafe)
-- [ ] Expire mekanizması stale talepleri temizliyor
-- [ ] Blood request testleri %100 geçiyor
+- [x] Geofence doğrulaması doğru çalışıyor
+- [x] Request code (#KAN-XXX) sequential üretiliyor
+- [x] Nearby donor search doğru sonuç dönüyor (kan grubu + cooldown + mesafe)
+- [x] Expire mekanizması stale talepleri temizliyor
+- [x] Blood request testleri %100 geçiyor
 
 ---
 

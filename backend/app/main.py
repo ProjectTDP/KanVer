@@ -7,7 +7,7 @@ from app.database import test_db_connection, verify_postgis_extension, engine
 from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import KanVerException
 from app.middleware.logging_middleware import LoggingMiddleware
-from app.routers import auth, users, hospitals
+from app.routers import auth, users, hospitals, requests, donors
 import logging
 
 # Setup application logging
@@ -126,3 +126,9 @@ app.include_router(users.router, prefix="/api/users")
 
 # Hospitals router - /api/hospitals/*
 app.include_router(hospitals.router, prefix="/api/hospitals")
+
+# Requests router - /api/requests/*
+app.include_router(requests.router, prefix="/api/requests")
+
+# Donors router - /api/donors/*
+app.include_router(donors.router, prefix="/api/donors")

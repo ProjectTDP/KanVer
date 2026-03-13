@@ -111,6 +111,10 @@ class User(Base, TimestampMixin):
     trust_score: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
 
     # Cooldown (biyolojik kısıtlama)
+    last_donation_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     next_available_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,

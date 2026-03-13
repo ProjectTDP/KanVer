@@ -6,11 +6,12 @@ Bu dosya, tüm request ve response şemalarını içerir.
 """
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, List
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, computed_field
 
 from app.constants.blood_types import BloodType
+from app.constants.status import RequestStatus, RequestType, Priority
 
 
 # =============================================================================
@@ -410,3 +411,199 @@ class StaffResponse(BaseSchema):
     staff_role: str = Field(..., description="Personel rolü")
     department: Optional[str] = Field(None, description="Departman adı")
     assigned_at: datetime = Field(..., description="Atama tarihi")
+
+
+# =============================================================================
+# BLOOD REQUEST SCHEMAS
+# =============================================================================
+
+class BloodRequestCreateRequest(BaseSchema):
+    """
+    Kan talebi oluşturma request şeması.
+
+    Talep oluşturabilmek için kullanıcının hastane geofence'ı içinde olması gerekir.
+    Konum bilgisi (latitude/longitude) geofence kontrolü için zorunludur.
+    """
+    hospital_id: str = Field(..., description="Hangi hastane için talep oluşturuluyor (UUID)")
+    blood_type: str = Field(..., description="İhtiyaç duyulan kan grubu (A+, A-, B+, B-, AB+, AB-, O+, O-)")
+    units_needed: int = Field(..., ge=1, le=100, description="İhtiyaç duyulan ünite sayısı (en az 1)")
+    request_type: str = Field(..., description="Bağış türü (WHOLE_BLOOD veya APHERESIS)")
+    priority: str = Field(default="NORMAL", description="Aciliyet seviyesi (LOW, NORMAL, URGENT, CRITICAL)")
+    latitude: float = Field(..., ge=-90, le=90, description="Talep sahibinin enlemi — geofence kontrolü için")
+    longitude: float = Field(..., ge=-180, le=180, description="Talep sahibinin boylamı — geofence kontrolü için")
+    patient_name: Optional[str] = Field(None, max_length=255, description="Hasta adı (opsiyonel)")
+    notes: Optional[str] = Field(None, description="Ek notlar (opsiyonel)")
+
+    @field_validator('blood_type')
+    @classmethod
+    def validate_blood_type(cls, v: str) -> str:
+        """Kan grubunu doğrular ve büyük harfe çevirir."""
+        v_upper = v.upper() if v else v
+        if not BloodType.is_valid(v_upper):
+            raise ValueError(f'Geçersiz kan grubu. Geçerli değerler: {", ".join(BloodType.all_values())}')
+        return v_upper
+
+    @field_validator('request_type')
+    @classmethod
+    def validate_request_type(cls, v: str) -> str:
+        """Bağış türünü doğrular."""
+        if not RequestType.is_valid(v):
+            raise ValueError(f'Geçersiz bağış türü. Geçerli değerler: {", ".join(RequestType.all_values())}')
+        return v.upper()
+
+    @field_validator('priority')
+    @classmethod
+    def validate_priority(cls, v: str) -> str:
+        """Aciliyet seviyesini doğrular."""
+        if not Priority.is_valid(v):
+            raise ValueError(f'Geçersiz aciliyet seviyesi. Geçerli değerler: {", ".join(Priority.all_values())}')
+        return v.upper()
+
+
+class BloodRequestUpdateRequest(BaseSchema):
+    """
+    Kan talebi güncelleme request şeması.
+
+    Tüm alanlar opsiyoneldir. Sadece talep sahibi güncelleyebilir.
+    Status yalnızca CANCELLED değerine güncellenebilir.
+    FULFILLED / CANCELLED / EXPIRED durumundaki talepler güncellenemez.
+    """
+    units_needed: Optional[int] = Field(None, ge=1, le=100, description="İhtiyaç duyulan ünite sayısı")
+    priority: Optional[str] = Field(None, description="Aciliyet seviyesi (LOW, NORMAL, URGENT, CRITICAL)")
+    status: Optional[str] = Field(None, description="Talep durumu (yalnızca CANCELLED olarak değiştirilebilir)")
+    patient_name: Optional[str] = Field(None, max_length=255, description="Hasta adı")
+    notes: Optional[str] = Field(None, description="Ek notlar")
+
+    @field_validator('priority')
+    @classmethod
+    def validate_priority(cls, v: Optional[str]) -> Optional[str]:
+        """Aciliyet seviyesini doğrular (eğer sağlanmışsa)."""
+        if v is None:
+            return v
+        if not Priority.is_valid(v):
+            raise ValueError(f'Geçersiz aciliyet seviyesi. Geçerli değerler: {", ".join(Priority.all_values())}')
+        return v.upper()
+
+    @field_validator('status')
+    @classmethod
+    def validate_status(cls, v: Optional[str]) -> Optional[str]:
+        """
+        Durum doğrulaması — yalnızca CANCELLED değerine değiştirilebilir.
+
+        Talep sahibi talep durumunu yalnızca CANCELLED yapabilir.
+        FULFILLED/EXPIRED gibi terminal durumlar sistem tarafından belirlenir.
+        """
+        if v is None:
+            return v
+        if v.upper() != RequestStatus.CANCELLED.value:
+            raise ValueError('Status yalnızca CANCELLED olarak değiştirilebilir')
+        return v.upper()
+
+    @model_validator(mode='after')
+    def validate_at_least_one_field(self) -> 'BloodRequestUpdateRequest':
+        """En az bir alan sağlanmış olmalı."""
+        if all(val is None for val in [self.units_needed, self.priority, self.status, self.patient_name, self.notes]):
+            raise ValueError('Güncelleme için en az bir alan sağlanmalıdır')
+        return self
+
+
+# =============================================================================
+# BLOOD REQUEST RESPONSE NESTED SCHEMAS
+# =============================================================================
+
+class BloodRequestHospitalInfo(BaseSchema):
+    """
+    Kan talebi response'unda dönen hastane özet bilgisi.
+
+    HospitalResponse'dan daha hafif bir versiyon.
+    """
+    id: str = Field(..., description="Hastane ID'si")
+    name: str = Field(..., description="Hastane adı")
+    hospital_code: str = Field(..., description="Hastane kodu")
+    district: str = Field(..., description="İlçe")
+    city: str = Field(..., description="Şehir")
+    phone_number: str = Field(..., description="Hastane telefon numarası")
+
+
+class BloodRequestRequesterInfo(BaseSchema):
+    """
+    Kan talebi response'unda dönen talep sahibi özet bilgisi.
+
+    UserResponse'dan daha hafif bir versiyon; hassas bilgiler dahil edilmez.
+    """
+    id: str = Field(..., description="Kullanıcı ID'si")
+    full_name: str = Field(..., description="Ad Soyad")
+    phone_number: str = Field(..., description="Telefon numarası")
+
+
+class BloodRequestResponse(BaseSchema):
+    """
+    Kan talebi response şeması.
+
+    Tüm talep bilgilerini, hastane ve talep sahibi özetini içerir.
+    Yakındaki talep sorgularında distance_km de döner.
+    """
+    id: str = Field(..., description="Talep ID'si")
+    request_code: str = Field(..., description="Talep kodu (#KAN-XXX formatında)")
+    blood_type: str = Field(..., description="İhtiyaç duyulan kan grubu")
+    request_type: str = Field(..., description="Bağış türü (WHOLE_BLOOD veya APHERESIS)")
+    priority: str = Field(..., description="Aciliyet seviyesi")
+    units_needed: int = Field(..., description="İhtiyaç duyulan ünite sayısı")
+    units_collected: int = Field(..., description="Toplanmış ünite sayısı")
+    status: str = Field(..., description="Talep durumu (ACTIVE, FULFILLED, CANCELLED, EXPIRED)")
+    expires_at: Optional[datetime] = Field(None, description="Son kullanma tarihi")
+    patient_name: Optional[str] = Field(None, description="Hasta adı")
+    notes: Optional[str] = Field(None, description="Ek notlar")
+    hospital: BloodRequestHospitalInfo = Field(..., description="Hastane özet bilgisi")
+    requester: BloodRequestRequesterInfo = Field(..., description="Talep sahibi özet bilgisi")
+    distance_km: Optional[float] = Field(None, description="Kullanıcıya olan uzaklık (km) — yakındaki sorgularda")
+    created_at: datetime = Field(..., description="Talep oluşturulma tarihi")
+    updated_at: datetime = Field(..., description="Son güncelleme tarihi")
+
+    @computed_field
+    @property
+    def remaining_units(self) -> int:
+        """
+        Kalan ünite sayısını hesaplar.
+
+        units_needed - units_collected formülü ile hesaplanır.
+        SQLAlchemy modelinden otomatik türetilir, ayrıca geçirilmesine gerek yoktur.
+        """
+        return self.units_needed - self.units_collected
+
+    @computed_field
+    @property
+    def is_expired(self) -> bool:
+        """
+        Talebin süresinin dolup dolmadığını kontrol eder.
+
+        expires_at < şimdiki zaman ise True döner.
+        expires_at None ise False döner.
+        SQLAlchemy modelinden otomatik türetilir, ayrıca geçirilmesine gerek yoktur.
+        """
+        if self.expires_at is None:
+            return False
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        return expires < now
+
+
+class BloodRequestListResponse(BaseSchema):
+    """
+    Kan talebi listesi response şeması.
+
+    Pagination metadata ve uygulanan filtrelerle birlikte talep listesi döner.
+    """
+    items: List[BloodRequestResponse] = Field(..., description="Talep listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı (filtre uygulandıktan sonra)")
+    page: int = Field(..., description="Mevcut sayfa numarası (1'den başlar)")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")
+    # Uygulanan filtreler (isteğe bağlı — şeffaflık için)
+    filtered_by_status: Optional[str] = Field(None, description="Uygulanan durum filtresi")
+    filtered_by_blood_type: Optional[str] = Field(None, description="Uygulanan kan grubu filtresi")
+    filtered_by_request_type: Optional[str] = Field(None, description="Uygulanan bağış türü filtresi")
+    filtered_by_hospital_id: Optional[str] = Field(None, description="Uygulanan hastane ID filtresi")
+    filtered_by_city: Optional[str] = Field(None, description="Uygulanan şehir filtresi")
