@@ -770,3 +770,70 @@ class CommitmentListResponse(BaseSchema):
     page: int = Field(..., description="Mevcut sayfa numarası (1'den başlar)")
     size: int = Field(..., description="Sayfa başına kayıt sayısı")
     pages: int = Field(..., description="Toplam sayfa sayısı")
+
+
+# =============================================================================
+# DONATION SCHEMAS
+# =============================================================================
+
+class DonationVerifyRequest(BaseSchema):
+    """
+    QR ile bağış doğrulama request şeması.
+
+    Hemşire QR kod okuttuğunda bu şema kullanılır.
+    """
+    qr_token: str = Field(..., min_length=10, description="QR kod token'ı")
+
+
+class DonationHospitalInfo(BaseSchema):
+    """
+    Donation response'da hastane bilgisi.
+
+    HospitalResponse'dan daha hafif bir versiyon.
+    """
+    id: str = Field(..., description="Hastane ID'si")
+    name: str = Field(..., description="Hastane adı")
+    district: str = Field(..., description="İlçe")
+    city: str = Field(..., description="Şehir")
+
+
+class DonationDonorInfo(BaseSchema):
+    """
+    Donation response'da bağışçı bilgisi.
+
+    UserResponse'dan daha hafif bir versiyon.
+    """
+    id: str = Field(..., description="Kullanıcı ID'si")
+    full_name: str = Field(..., description="Ad Soyad")
+    blood_type: str = Field(..., description="Kan grubu")
+    phone_number: str = Field(..., description="Telefon numarası")
+
+
+class DonationResponse(BaseSchema):
+    """
+    Bağış response şeması.
+
+    Tamamlanan bağışın tüm bilgilerini içerir.
+    """
+    id: str = Field(..., description="Bağış ID'si")
+    donor: DonationDonorInfo = Field(..., description="Bağışçı bilgisi")
+    hospital: DonationHospitalInfo = Field(..., description="Hastane bilgisi")
+    donation_type: str = Field(..., description="Bağış türü (WHOLE_BLOOD veya APHERESIS)")
+    blood_type: str = Field(..., description="Kan grubu")
+    hero_points_earned: int = Field(..., description="Kazanılan kahramanlık puanı")
+    status: str = Field(..., description="Bağış durumu")
+    verified_at: datetime = Field(..., description="Doğrulama tarihi")
+    created_at: datetime = Field(..., description="Kayıt tarihi")
+
+
+class DonationListResponse(BaseSchema):
+    """
+    Bağış listesi response şeması.
+
+    Pagination metadata ile birlikte bağış listesi döner.
+    """
+    items: List[DonationResponse] = Field(..., description="Bağış listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Mevcut sayfa numarası (1'den başlar)")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")

@@ -9,9 +9,10 @@ from typing import Optional, List
 
 from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
-from app.constants import CommitmentStatus, RequestStatus
+from app.constants import CommitmentStatus, RequestStatus, RequestType, DonationStatus
 from app.core.exceptions import (
     NotFoundException,
     ForbiddenException,
@@ -20,10 +21,10 @@ from app.core.exceptions import (
     ActiveCommitmentExistsException,
     SlotFullException,
 )
-from app.models import DonationCommitment, BloodRequest, User, QRCode
-from app.utils.cooldown import is_in_cooldown
+from app.models import DonationCommitment, BloodRequest, User, QRCode, Donation, HospitalStaff
+from app.utils.cooldown import is_in_cooldown, set_cooldown
 from app.utils.validators import can_donate_to
-from app.utils.qr_code import create_qr_data
+from app.utils.qr_code import create_qr_data, validate_qr
 
 
 # =============================================================================
@@ -470,3 +471,172 @@ async def redirect_excess_donors(
         await db.flush()
 
     return redirected
+
+
+# =============================================================================
+# DONATION VERIFICATION & COMPLETION
+# =============================================================================
+
+async def verify_and_complete_donation(
+    db: AsyncSession,
+    nurse_id: str,
+    qr_token: str
+) -> Donation:
+    """
+    QR kod ile bağış doğrular ve tamamlar.
+
+    İş Akışı:
+    1. QR token'ı doğrula (validate_qr)
+    2. Hemşire rolü kontrolü (NURSE)
+    3. Hemşire bu hastanede çalışıyor mu?
+    4. QR'ı used olarak işaretle
+    5. Commitment status → COMPLETED
+    6. Donation kaydı oluştur
+    7. Blood request güncelle (units_collected +1, FULFILLED kontrolü)
+    8. Bağışçı bilgilerini güncelle
+    9. Cooldown başlat
+
+    Args:
+        db: AsyncSession
+        nurse_id: Hemşire kullanıcı ID'si
+        qr_token: QR kod token'ı
+
+    Returns:
+        Oluşturulan Donation objesi
+
+    Raises:
+        NotFoundException: QR kod veya hemşire bulunamadı
+        ForbiddenException: Hemşire bu hastanede çalışmıyor
+        BadRequestException: QR geçersiz/expired/used
+    """
+    # 1. QR token'ı doğrula (NotFoundException, BadRequestException fırlatabilir)
+    qr_code = await validate_qr(db, qr_token)
+
+    # 2. İlişkili kayıtları getir (eager loading)
+    result = await db.execute(
+        select(QRCode)
+        .where(QRCode.id == qr_code.id)
+        .options(
+            selectinload(QRCode.commitment).selectinload(DonationCommitment.donor),
+            selectinload(QRCode.commitment).selectinload(DonationCommitment.blood_request)
+                .selectinload(BloodRequest.hospital),
+        )
+    )
+    qr_code = result.scalar_one()
+
+    commitment = qr_code.commitment
+    donor = commitment.donor
+    blood_request = commitment.blood_request
+    hospital = blood_request.hospital
+
+    # 3. Hemşire-hastane kontrolü
+    staff_result = await db.execute(
+        select(HospitalStaff).where(
+            and_(
+                HospitalStaff.user_id == nurse_id,
+                HospitalStaff.hospital_id == hospital.id,
+                HospitalStaff.is_active == True
+            )
+        )
+    )
+    staff = staff_result.scalar_one_or_none()
+
+    if not staff:
+        raise ForbiddenException(
+            "Bu hastanede çalışma yetkiniz yok",
+            detail="Sadece atandığınız hastanede bağış doğrulayabilirsiniz"
+        )
+
+    # 4. QR'ı kullanıldı olarak işaretle
+    qr_code.is_used = True
+    qr_code.used_at = datetime.now(timezone.utc)
+
+    # 5. Commitment status → COMPLETED
+    commitment.status = CommitmentStatus.COMPLETED.value
+    commitment.completed_at = datetime.now(timezone.utc)
+
+    # 6. Hero points hesapla
+    donation_type = blood_request.request_type
+    if donation_type == RequestType.WHOLE_BLOOD.value:
+        hero_points_earned = settings.HERO_POINTS_WHOLE_BLOOD
+    else:
+        hero_points_earned = settings.HERO_POINTS_APHERESIS
+
+    # 7. Donation kaydı oluştur
+    donation = Donation(
+        donor_id=donor.id,
+        hospital_id=hospital.id,
+        blood_request_id=blood_request.id,
+        commitment_id=commitment.id,
+        qr_code_id=qr_code.id,
+        donation_type=donation_type,
+        blood_type=donor.blood_type,
+        verified_by=nurse_id,
+        verified_at=datetime.now(timezone.utc),
+        hero_points_earned=hero_points_earned,
+        status=DonationStatus.COMPLETED.value,
+    )
+    db.add(donation)
+
+    # 8. Blood request güncelle (units_collected +1)
+    blood_request.units_collected += 1
+
+    # FULFILLED kontrolü
+    if blood_request.units_collected >= blood_request.units_needed:
+        blood_request.status = RequestStatus.FULFILLED.value
+
+    # 9. Bağışçı bilgilerini güncelle
+    donor.total_donations += 1
+    donor.hero_points += hero_points_earned
+    donor.last_donation_date = datetime.now(timezone.utc)
+
+    # 10. Cooldown başlat
+    await set_cooldown(db, str(donor.id), donation_type)
+
+    await db.flush()
+    await db.refresh(donation)
+
+    return donation
+
+
+async def get_donor_donations(
+    db: AsyncSession,
+    donor_id: str,
+    page: int = 1,
+    size: int = 20
+) -> tuple[List[Donation], int]:
+    """
+    Bağışçının bağış geçmişini getirir (pagination).
+
+    Args:
+        db: AsyncSession
+        donor_id: Bağışçı ID'si
+        page: Sayfa numarası (1'den başlar)
+        size: Sayfa başına kayıt sayısı
+
+    Returns:
+        (donation listesi, toplam kayıt sayısı)
+    """
+    # Toplam sayı
+    count_result = await db.execute(
+        select(func.count()).select_from(Donation).where(
+            Donation.donor_id == donor_id
+        )
+    )
+    total = count_result.scalar() or 0
+
+    # Pagination ile getir
+    offset = (page - 1) * size
+    result = await db.execute(
+        select(Donation)
+        .where(Donation.donor_id == donor_id)
+        .order_by(Donation.created_at.desc())
+        .offset(offset)
+        .limit(size)
+        .options(
+            selectinload(Donation.hospital),
+        )
+    )
+    donations = list(result.scalars().all())
+
+    return donations, total

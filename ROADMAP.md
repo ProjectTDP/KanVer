@@ -1681,58 +1681,68 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `donation_service.py`'ye ekle:
-  - [ ] `verify_and_complete_donation(db, nurse_id, qr_token) -> Donation`:
-    - [ ] QR token'ı doğrula (validate_qr)
-    - [ ] Hemşire rolü kontrolü (NURSE)
-    - [ ] Hemşire bu hastanede çalışıyor mu? (hospital_staff kontrolü)
-    - [ ] QR'ı used olarak işaretle (is_used=True, used_at=now, used_by=nurse_id)
-    - [ ] Commitment status → COMPLETED
-    - [ ] Donation kaydı oluştur:
-      - [ ] request_id, commitment_id, donor_id, hospital_id
-      - [ ] verified_by: nurse_id
-      - [ ] blood_type, donation_type
-      - [ ] hero_points_earned hesapla (WHOLE_BLOOD:50, APHERESIS:100)
-    - [ ] Blood request güncelle:
-      - [ ] units_collected +1
-      - [ ] Eğer units_collected >= units_needed → status FULFILLED
-    - [ ] Bağışçı bilgilerini güncelle:
-      - [ ] total_donations +1
-      - [ ] hero_points + earned points
-      - [ ] Cooldown başlat (set_cooldown)
-    - [ ] Return: Donation
-- [ ] `backend/app/routers/donations.py` oluştur:
-  - [ ] `POST /api/donations/verify` — QR ile doğrula:
-    - [ ] Requires: NURSE role
-    - [ ] Request: `{ "qr_token": str }`
-    - [ ] Response: DonationResponse
-    - [ ] Errors: 400 (expired QR), 404 (QR not found), 403 (not a nurse)
-  - [ ] `GET /api/donations/history` — Bağış geçmişi:
-    - [ ] Requires: authenticated user
-    - [ ] Kendi bağışlarını listele
-    - [ ] Pagination
-  - [ ] `GET /api/donations/stats` — Bağış istatistikleri:
-    - [ ] Requires: authenticated user
-    - [ ] hero_points, total_donations, trust_score
-    - [ ] Son bağış tarihi, sonraki uygun tarih
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/donations`)
-- [ ] Unit test yaz (`tests/test_donation_verification.py`):
-  - [ ] test_verify_donation_success
-  - [ ] test_verify_invalid_qr_token (404)
-  - [ ] test_verify_expired_qr (400)
-  - [ ] test_verify_used_qr (400)
-  - [ ] test_verify_non_nurse_role (403)
-  - [ ] test_verify_nurse_wrong_hospital (403)
-  - [ ] test_donation_updates_units_collected
-  - [ ] test_donation_fulfills_request (units_collected >= units_needed)
-  - [ ] test_donation_awards_hero_points
-  - [ ] test_donation_starts_cooldown
-  - [ ] test_donation_increments_total_donations
-  - [ ] test_get_donation_history_paginated
-  - [ ] test_get_donation_stats
+- [x] `donation_service.py`'ye ekle:
+  - [x] `verify_and_complete_donation(db, nurse_id, qr_token) -> Donation`:
+    - [x] QR token'ı doğrula (validate_qr)
+    - [x] Hemşire rolü kontrolü (NURSE)
+    - [x] Hemşire bu hastanede çalışıyor mu? (hospital_staff kontrolü)
+    - [x] QR'ı used olarak işaretle (is_used=True, used_at=now, used_by=nurse_id)
+    - [x] Commitment status → COMPLETED
+    - [x] Donation kaydı oluştur:
+      - [x] request_id, commitment_id, donor_id, hospital_id
+      - [x] verified_by: nurse_id
+      - [x] blood_type, donation_type
+      - [x] hero_points_earned hesapla (WHOLE_BLOOD:50, APHERESIS:100)
+    - [x] Blood request güncelle:
+      - [x] units_collected +1
+      - [x] Eğer units_collected >= units_needed → status FULFILLED
+    - [x] Bağışçı bilgilerini güncelle:
+      - [x] total_donations +1
+      - [x] hero_points + earned points
+      - [x] Cooldown başlat (set_cooldown)
+    - [x] Return: Donation
+- [x] `backend/app/routers/donations.py` oluştur:
+  - [x] `POST /api/donations/verify` — QR ile doğrula:
+    - [x] Requires: NURSE role
+    - [x] Request: `{ "qr_token": str }`
+    - [x] Response: DonationResponse
+    - [x] Errors: 400 (expired QR), 404 (QR not found), 403 (not a nurse)
+  - [x] `GET /api/donations/history` — Bağış geçmişi:
+    - [x] Requires: authenticated user
+    - [x] Kendi bağışlarını listele
+    - [x] Pagination
+  - [x] `GET /api/donations/stats` — Bağış istatistikleri:
+    - [x] Requires: authenticated user
+    - [x] hero_points, total_donations, trust_score
+    - [x] Son bağış tarihi, sonraki uygun tarih
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/donations`)
+- [x] Donation Schemas (`schemas.py`):
+  - [x] DonationVerifyRequest
+  - [x] DonationHospitalInfo
+  - [x] DonationDonorInfo
+  - [x] DonationResponse
+  - [x] DonationListResponse
+- [x] Unit test yaz (`tests/test_donation_verification.py`):
+  - [x] test_verify_donation_success
+  - [x] test_verify_invalid_qr_token (404)
+  - [x] test_verify_expired_qr (400)
+  - [x] test_verify_used_qr (400)
+  - [x] test_verify_non_nurse_role (403)
+  - [x] test_verify_nurse_wrong_hospital (403)
+  - [x] test_donation_updates_units_collected
+  - [x] test_donation_fulfills_request (units_collected >= units_needed)
+  - [x] test_donation_awards_hero_points_whole_blood
+  - [x] test_donation_awards_hero_points_apheresis
+  - [x] test_donation_starts_cooldown
+  - [x] test_donation_increments_total_donations
+  - [x] test_get_donation_history_paginated
+  - [x] test_get_donation_stats
+  - [x] test_commitment_status_updated
+  - [x] test_qr_marked_as_used
+  - [x] test_donation_record_created
 
 ---
 
@@ -1740,22 +1750,9 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI (Task 9.3'e dahil edildi)
 
-**Yapılacaklar:**
-- [ ] `schemas.py`'ye donation şemaları ekle:
-  - [ ] `DonationVerifyRequest`:
-    - [ ] qr_token: str
-  - [ ] `DonationResponse`:
-    - [ ] donation_id, donor info, hospital info
-    - [ ] blood_type, donation_type, units_donated
-    - [ ] hero_points_earned, status
-    - [ ] donation_date
-  - [ ] `DonationHistoryResponse` (pagination)
-  - [ ] `DonationStatsResponse`:
-    - [ ] total_donations, hero_points, trust_score
-    - [ ] last_donation_date, next_available_date
-    - [ ] donation_breakdown (WHOLE_BLOOD vs APHERESIS count)
+**Not:** Donation şemaları Task 9.3 kapsamında implement edildi.
 
 ---
 

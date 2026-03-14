@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 import asyncio
 import os
+from datetime import datetime, timezone
 from httpx import AsyncClient, ASGITransport
 from unittest.mock import MagicMock, patch
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -13,9 +14,11 @@ from sqlalchemy import text, event
 def mock_settings():
     """Environment ayarlarını ayarlar ve gerçek Settings instance kullanır."""
     # TEST_DATABASE_URL zaten set edilmişse (Docker içinden) onu kullan,
-    # yoksa local geliştirici için localhost fallback'ini kullan.
+    # yoksa DATABASE_URL'i (Docker Compose'dan gelir) dene,
+    # en son local geliştirici için localhost fallback'ini kullan.
     _db_url = (
         os.environ.get("TEST_DATABASE_URL")
+        or os.environ.get("DATABASE_URL")
         or "postgresql+asyncpg://kanver_user:kanver_pass_2024@localhost:5432/kanver_db"
     )
     os.environ["DATABASE_URL"] = _db_url
@@ -136,6 +139,7 @@ async def test_user(db_session: AsyncSession):
         phone_number="+905551234567",
         password_hash=hash_password("Test1234!"),
         full_name="Test User",
+        date_of_birth=datetime(1995, 1, 1, tzinfo=timezone.utc),
         blood_type="A+",
         role=UserRole.USER.value,
         is_active=True
