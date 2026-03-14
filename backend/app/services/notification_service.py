@@ -113,7 +113,26 @@ async def create_notification(
     await db.flush()
     await db.refresh(notification)
 
-    # TODO: Task 10.3 - FCM push notification gönder
+    # FCM push notification gönder
+    if fcm_token:
+        from app.utils.fcm import send_push_notification
+
+        push_sent = send_push_notification(
+            fcm_token=fcm_token,
+            title=title,
+            body=message,
+            data={
+                "notification_id": str(notification.id),
+                "notification_type": notification_type,
+                "request_id": request_id or "",
+                "donation_id": donation_id or "",
+            }
+        )
+
+        if push_sent:
+            notification.is_push_sent = True
+            notification.push_sent_at = datetime.now(timezone.utc)
+            await db.flush()
 
     return notification
 

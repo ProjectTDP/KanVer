@@ -12,3 +12,4 @@ geoalchemy2>=0.14.0
 httpx>=0.26.0
 psycopg2-binary>=2.9.9
 python-json-logger>=2.0.7
+firebase-admin>=6.0.0

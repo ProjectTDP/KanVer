@@ -1896,31 +1896,35 @@ Phase 6 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/utils/fcm.py` oluştur:
-  - [ ] Firebase Admin SDK initialize (credentials JSON)
-  - [ ] `send_push_notification(fcm_token, title, body, data?) -> bool`:
-    - [ ] Firebase messaging.send()
-    - [ ] Error handling (invalid token, expired token)
-    - [ ] Başarılı/başarısız döndür
-  - [ ] `send_push_to_multiple(fcm_tokens, title, body, data?) -> dict`:
-    - [ ] Toplu bildirim (messaging.send_each)
-    - [ ] Başarılı/başarısız sayılarını döndür
-  - [ ] `send_notification_with_push(db, user_id, type, title, message, ...) -> Notification`:
-    - [ ] In-app notification oluştur
-    - [ ] FCM push gönder (fcm_token varsa)
-    - [ ] is_push_sent güncelle
-- [ ] Firebase credentials yoksa graceful skip (development mode)
-- [ ] Unit test yaz (`tests/test_fcm.py`):
-  - [ ] test_send_push_notification_success (mock Firebase)
-  - [ ] test_send_push_invalid_token_handled
-  - [ ] test_send_push_to_multiple_tokens
-  - [ ] test_send_push_partial_failure_report
-  - [ ] test_graceful_skip_without_credentials
-  - [ ] test_notification_with_push_creates_both (in-app + push)
-  - [ ] test_is_push_sent_flag_updated
+**Yapılanlar:**
+- [x] `backend/app/utils/fcm.py` oluşturuldu:
+  - [x] Firebase Admin SDK initialize (credentials JSON)
+  - [x] `send_push_notification(fcm_token, title, body, data?) -> bool`:
+    - [x] Firebase messaging.send()
+    - [x] Error handling (invalid token, expired token)
+    - [x] Başarılı/başarısız döndür
+  - [x] `send_push_to_multiple(fcm_tokens, title, body, data?) -> dict`:
+    - [x] Toplu bildirim (messaging.send_each)
+    - [x] Başarılı/başarısız sayılarını döndür
+  - [x] `get_firebase_app()` — Singleton pattern ile Firebase init
+  - [x] `reset_firebase_app()` — Test için reset fonksiyonu
+- [x] `notification_service.py`'e FCM entegrasyonu:
+  - [x] `create_notification()` içine push notification gönderimi
+  - [x] is_push_sent ve push_sent_at alanları güncelleniyor
+- [x] `requirements.txt`: firebase-admin>=6.0.0 eklendi
+- [x] Firebase credentials yoksa graceful skip (development mode)
+- [x] Unit test yazıldı (`tests/test_fcm.py`) — 9 test:
+  - [x] test_send_push_notification_success (mock Firebase)
+  - [x] test_send_push_invalid_token_handled
+  - [x] test_send_push_to_multiple_tokens
+  - [x] test_send_push_partial_failure_report
+  - [x] test_graceful_skip_without_credentials
+  - [x] test_firebase_app_singleton
+  - [x] test_notification_with_push_updates_flags
+  - [x] test_notification_without_token_no_push
+  - [x] test_send_push_empty_token_list
 
 ---
 
