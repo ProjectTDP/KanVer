@@ -1760,43 +1760,47 @@ Phase 5 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
+
+> **Not:** `tests/test_donations.py` dosyası boş durumda. ROADMAP'de istenen testler aşağıdaki 4 dosyada zaten mevcut:
 
 **Yapılacaklar:**
-- [ ] `backend/tests/test_donations.py` oluştur:
-  - [ ] test_commit_to_request (Geliyorum)
-  - [ ] test_commit_while_in_cooldown (400)
-  - [ ] test_commit_with_active_commitment (409)
-  - [ ] test_commit_incompatible_blood_type (400)
-  - [ ] test_n_plus_1_rule (slot dolu)
-  - [ ] test_timeout_updates_trust_score
-  - [ ] test_qr_generated_on_arrival
-  - [ ] test_verify_qr_success
-  - [ ] test_verify_expired_qr (400)
-  - [ ] test_verify_used_qr (400)
-  - [ ] test_verify_by_non_nurse (403)
-  - [ ] test_donation_completes_request (units_collected check)
-  - [ ] test_cooldown_starts_after_donation
-  - [ ] test_hero_points_earned
-  - [ ] test_donation_history
-- [ ] `backend/tests/test_qr_code.py` oluştur:
-  - [ ] test_generate_token_uniqueness
-  - [ ] test_signature_generation
-  - [ ] test_signature_verification_success
-  - [ ] test_signature_verification_tampered
-  - [ ] test_qr_expiration
-- [ ] Tüm testler geçiyor
+- [x] `tests/test_commitment_service.py` (30 test) - Commitment service testleri:
+  - [x] test_create_commitment_success → test_commit_to_request
+  - [x] test_create_commitment_donor_in_cooldown → test_commit_while_in_cooldown
+  - [x] test_create_commitment_active_exists → test_commit_with_active_commitment
+  - [x] test_create_commitment_blood_incompatible → test_commit_incompatible_blood_type
+  - [x] test_n_plus_1_rule_accepts_within_limit & test_n_plus_1_rule_rejects_over_limit
+  - [x] test_check_timeouts_penalizes_trust_score → test_timeout_updates_trust_score
+- [x] `tests/test_qr_generation.py` (7 test) - QR generation flow testleri:
+  - [x] test_qr_generated_on_arrived_status → test_qr_generated_on_arrival
+- [x] `tests/test_donation_verification.py` (17 test) - API integration testleri:
+  - [x] test_verify_donation_success → test_verify_qr_success
+  - [x] test_verify_expired_qr
+  - [x] test_verify_used_qr
+  - [x] test_verify_non_nurse_role → test_verify_by_non_nurse
+  - [x] test_donation_fulfills_request → test_donation_completes_request
+  - [x] test_donation_starts_cooldown → test_cooldown_starts_after_donation
+  - [x] test_donation_awards_hero_points_whole_blood → test_hero_points_earned
+  - [x] test_get_donation_history_paginated → test_donation_history
+- [x] `tests/test_qr_code.py` (30 test) - QR utility testleri:
+  - [x] test_generate_qr_token_uniqueness → test_generate_token_uniqueness
+  - [x] test_generate_signature_deterministic → test_signature_generation
+  - [x] test_verify_signature_valid → test_signature_verification_success
+  - [x] test_signature_tampering_detected → test_signature_verification_tampered
+  - [x] test_validate_qr_expired → test_qr_expiration
+- [x] Tüm testler geçiyor (84 test toplam)
 
 ---
 
 ### 📊 Phase 5 Success Metrics
 
-- [ ] Tam "Geliyorum" → Varış → QR → Doğrulama → Bağış Tamamlama akışı çalışıyor
-- [ ] N+1 kuralı doğru çalışıyor
-- [ ] Timeout mekanizması trust score'u düşürüyor
-- [ ] QR imza doğrulaması kriptografik olarak güvenli
-- [ ] Cooldown bağış sonrası otomatik başlıyor
-- [ ] Tüm testler geçiyor
+- [x] Tam "Geliyorum" → Varış → QR → Doğrulama → Bağış Tamamlama akışı çalışıyor
+- [x] N+1 kuralı doğru çalışıyor
+- [x] Timeout mekanizması trust score'u düşürüyor
+- [x] QR imza doğrulaması kriptografik olarak güvenli
+- [x] Cooldown bağış sonrası otomatik başlıyor
+- [x] Tüm testler geçiyor
 
 ---
 
