@@ -1838,17 +1838,19 @@ Phase 6 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 30 dakika
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `schemas.py`'ye notification şemaları ekle:
-  - [ ] `NotificationResponse`:
-    - [ ] notification_id, notification_type, title, message
-    - [ ] request_id (optional), donation_id (optional)
-    - [ ] is_read, read_at, created_at
-  - [ ] `NotificationListResponse` (pagination + unread_count)
-  - [ ] `NotificationMarkReadRequest`:
-    - [ ] notification_ids: list[UUID]
+**Yapılanlar:**
+- [x] `schemas.py`'ye notification şemaları ekle:
+  - [x] `NotificationResponse`:
+    - [x] notification_id, notification_type, title, message
+    - [x] request_id (optional), donation_id (optional)
+    - [x] is_read, read_at, created_at
+  - [x] `NotificationListResponse` (pagination + unread_count)
+  - [x] `NotificationMarkReadRequest`:
+    - [x] notification_ids: list[UUID]
+- [x] `NotificationType` enum'a 3 yeni tip eklendi (DONOR_ARRIVED, REQUEST_FULFILLED, REDIRECT_TO_BANK)
+- [x] `NOTIFICATION_TEMPLATES` dict eklendi (status.py)
 
 ---
 
@@ -1856,36 +1858,37 @@ Phase 6 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] `backend/app/services/notification_service.py` oluştur:
-  - [ ] `create_notification(db, user_id, type, title, message, request_id?, donation_id?) -> Notification`
-  - [ ] `get_user_notifications(db, user_id, page, size, unread_only) -> list[Notification]`
-  - [ ] `get_unread_count(db, user_id) -> int`
-  - [ ] `mark_as_read(db, user_id, notification_ids) -> int`
-  - [ ] `mark_all_as_read(db, user_id) -> int`
-  - [ ] Bildirim şablonları:
-    - [ ] NEW_REQUEST: "Yakınınızda {blood_type} kan ihtiyacı! {hospital_name}"
-    - [ ] DONOR_FOUND: "Talebiniz #{request_code} için bir bağışçı yola çıktı!"
-    - [ ] DONOR_ON_WAY: "Bağışçı yolda — tahmini varış: {eta} dk"
-    - [ ] DONOR_ARRIVED: "Bağışçı hastaneye ulaştı"
-    - [ ] DONATION_COMPLETE: "Bağış tamamlandı! +{points} Hero Points kazandınız"
-    - [ ] REQUEST_FULFILLED: "Talebiniz #{request_code} karşılandı!"
-    - [ ] TIMEOUT_WARNING: "Taahhüt süreniz dolmak üzere ({remaining} dk kaldı)"
-    - [ ] NO_SHOW: "Taahhüdünüz zaman aşımına uğradı. Güven skorunuz düştü."
-    - [ ] REDIRECT_TO_BANK: "Talep karşılandı — bağışınızı genel kan stoğuna yapabilirsiniz"
-- [ ] Unit test yaz (`tests/test_notification_service.py`):
-  - [ ] test_create_notification_success
-  - [ ] test_get_user_notifications_paginated
-  - [ ] test_get_user_notifications_unread_only
-  - [ ] test_get_unread_count
-  - [ ] test_mark_as_read_specific
-  - [ ] test_mark_all_as_read
-  - [ ] test_notification_not_visible_to_other_user
-  - [ ] test_notification_templates_correct_content
-  - [ ] test_notification_with_request_reference
-  - [ ] test_notification_with_donation_reference
+**Yapılanlar:**
+- [x] `backend/app/services/notification_service.py` oluşturuldu:
+  - [x] `render_notification_template()` - Helper fonksiyon
+  - [x] `create_notification(db, user_id, type, context, request_id?, donation_id?) -> Notification`
+  - [x] `get_user_notifications(db, user_id, page, size, unread_only) -> list[Notification]`
+  - [x] `get_unread_count(db, user_id) -> int`
+  - [x] `mark_as_read(db, user_id, notification_ids) -> int`
+  - [x] `mark_all_as_read(db, user_id) -> int`
+  - [x] `get_notification_by_id(db, notification_id) -> Notification`
+  - [x] Bildirim şablonları (NOTIFICATION_TEMPLATES):
+    - [x] NEW_REQUEST, DONOR_FOUND, DONOR_ON_WAY, DONOR_ARRIVED
+    - [x] DONATION_COMPLETE, REQUEST_FULFILLED, TIMEOUT_WARNING
+    - [x] NO_SHOW, REDIRECT_TO_BANK
+- [x] Unit testler yazıldı (`tests/test_notification_service.py`):
+  - [x] test_renders_new_request_template
+  - [x] test_renders_donation_complete_template
+  - [x] test_renders_timeout_warning_template
+  - [x] test_raises_error_for_invalid_type
+  - [x] test_create_notification_success
+  - [x] test_notification_with_request_reference
+  - [x] test_notification_with_donation_reference
+  - [x] test_get_user_notifications_paginated
+  - [x] test_get_user_notifications_unread_only
+  - [x] test_notification_not_visible_to_other_user
+  - [x] test_get_unread_count
+  - [x] test_mark_as_read_specific
+  - [x] test_mark_all_as_read
+  - [x] test_notification_templates_correct_content
+- [x] Alembic migration: CheckConstraint güncellendi (3 yeni tip)
 
 ---
 

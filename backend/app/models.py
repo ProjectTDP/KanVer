@@ -701,7 +701,7 @@ class Notification(Base, TimestampMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "notification_type IN ('NEW_REQUEST', 'DONOR_FOUND', 'DONOR_ON_WAY', 'DONATION_COMPLETE', 'TIMEOUT_WARNING', 'NO_SHOW')",
+            "notification_type IN ('NEW_REQUEST', 'DONOR_FOUND', 'DONOR_ON_WAY', 'DONOR_ARRIVED', 'DONATION_COMPLETE', 'REQUEST_FULFILLED', 'TIMEOUT_WARNING', 'NO_SHOW', 'REDIRECT_TO_BANK')",
             name="check_notification_type_valid"
         ),
         Index("idx_notifications_user", user_id),

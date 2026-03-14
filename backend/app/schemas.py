@@ -837,3 +837,47 @@ class DonationListResponse(BaseSchema):
     page: int = Field(..., description="Mevcut sayfa numarası (1'den başlar)")
     size: int = Field(..., description="Sayfa başına kayıt sayısı")
     pages: int = Field(..., description="Toplam sayfa sayısı")
+
+
+# =============================================================================
+# NOTIFICATION SCHEMAS
+# =============================================================================
+
+class NotificationResponse(BaseSchema):
+    """
+    Bildirim response şeması.
+
+    Kullanıcının aldığı bildirimin tüm bilgilerini içerir.
+    """
+    id: str = Field(..., description="Bildirim ID'si")
+    notification_type: str = Field(..., description="Bildirim türü")
+    title: str = Field(..., description="Bildirim başlığı")
+    message: str = Field(..., description="Bildirim mesajı")
+    request_id: Optional[str] = Field(None, description="İlgili kan talebi ID'si")
+    donation_id: Optional[str] = Field(None, description="İlgili bağış ID'si")
+    is_read: bool = Field(..., description="Okundu mu?")
+    read_at: Optional[datetime] = Field(None, description="Okunma tarihi")
+    created_at: datetime = Field(..., description="Oluşturulma tarihi")
+
+
+class NotificationListResponse(BaseSchema):
+    """
+    Bildirim listesi response şeması.
+
+    Pagination metadata ile birlikte bildirim listesi döner.
+    """
+    items: List[NotificationResponse] = Field(..., description="Bildirim listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Sayfa numarası")
+    size: int = Field(..., description="Sayfa başına kayıt")
+    pages: int = Field(..., description="Toplam sayfa")
+    unread_count: int = Field(..., description="Okunmamış bildirim sayısı")
+
+
+class NotificationMarkReadRequest(BaseSchema):
+    """
+    Bildirim okundu işaretleme request şeması.
+
+    Bir veya daha fazla bildirimi okundu olarak işaretlemek için kullanılır.
+    """
+    notification_ids: List[str] = Field(..., min_length=1, description="Okundu işaretlenecek bildirim ID'leri")

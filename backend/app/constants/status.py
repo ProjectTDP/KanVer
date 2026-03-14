@@ -151,9 +151,12 @@ class NotificationType(str, Enum):
     NEW_REQUEST = "NEW_REQUEST"                     # Yeni kan talebi oluşturuldu
     DONOR_FOUND = "DONOR_FOUND"                     # Bağışçı bulundu
     DONOR_ON_WAY = "DONOR_ON_WAY"                   # Bağışçı yolda
+    DONOR_ARRIVED = "DONOR_ARRIVED"                 # Bağışçı hastaneye ulaştı (YENİ)
     DONATION_COMPLETE = "DONATION_COMPLETE"         # Bağış tamamlandı
+    REQUEST_FULFILLED = "REQUEST_FULFILLED"         # Talep karşılandı (YENİ)
     TIMEOUT_WARNING = "TIMEOUT_WARNING"             # Timeout uyarısı
     NO_SHOW = "NO_SHOW"                             # Bağışçı gelmedi
+    REDIRECT_TO_BANK = "REDIRECT_TO_BANK"           # Genel stoğa yönlendirme (YENİ)
 
     @classmethod
     def all_values(cls) -> List[str]:
@@ -204,7 +207,52 @@ NOTIFICATION_TYPE_DESCRIPTIONS: dict[str, str] = {
     "NEW_REQUEST": "Yeni Talep",
     "DONOR_FOUND": "Bağışçı Bulundu",
     "DONOR_ON_WAY": "Bağışçı Yolda",
+    "DONOR_ARRIVED": "Bağışçı Hastanede",
     "DONATION_COMPLETE": "Bağış Tamamlandı",
+    "REQUEST_FULFILLED": "Talep Karşılandı",
     "TIMEOUT_WARNING": "Süre Uyarısı",
     "NO_SHOW": "Gelmedi",
+    "REDIRECT_TO_BANK": "Genel Stok'a Yönlendirme",
+}
+
+
+# Notification şablonları (FCM push ve in-app bildirimler için)
+# Placeholder'lar: {blood_type}, {hospital_name}, {request_code}, {eta}, {points}, {remaining}
+NOTIFICATION_TEMPLATES: dict[str, dict[str, str]] = {
+    "NEW_REQUEST": {
+        "title": "Yeni Kan Talebi",
+        "message": "Yakınınızda {blood_type} kan ihtiyacı! {hospital_name}"
+    },
+    "DONOR_FOUND": {
+        "title": "Bağışçı Bulundu",
+        "message": "Talebiniz #{request_code} için bir bağışçı yola çıktı!"
+    },
+    "DONOR_ON_WAY": {
+        "title": "Bağışçı Yolda",
+        "message": "Bağışçı yolda — tahmini varış: {eta} dk"
+    },
+    "DONOR_ARRIVED": {
+        "title": "Bağışçı Hastanede",
+        "message": "Bağışçı hastaneye ulaştı"
+    },
+    "DONATION_COMPLETE": {
+        "title": "Bağış Tamamlandı",
+        "message": "Bağış tamamlandı! +{points} Hero Points kazandınız"
+    },
+    "REQUEST_FULFILLED": {
+        "title": "Talep Karşılandı",
+        "message": "Talebiniz #{request_code} karşılandı!"
+    },
+    "TIMEOUT_WARNING": {
+        "title": "Süre Uyarısı",
+        "message": "Taahhüt süreniz dolmak üzere ({remaining} dk kaldı)"
+    },
+    "NO_SHOW": {
+        "title": "Taahhüt Zaman Aşımına Uğradı",
+        "message": "Taahhüdünüz zaman aşımına uğradı. Güven skorunuz düştü."
+    },
+    "REDIRECT_TO_BANK": {
+        "title": "Genel Stok'a Yönlendirme",
+        "message": "Talep karşılandı — bağışınızı genel kan stoğuna yapabilirsiniz"
+    },
 }
