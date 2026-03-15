@@ -9,7 +9,7 @@ from typing import Optional
 from sqlalchemy import select, and_, or_, update, func, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.constants import RequestStatus, RequestType, CommitmentStatus
+from app.constants import RequestStatus, RequestType, CommitmentStatus, NotificationType
 from app.config import settings
 from app.core.exceptions import (
 	NotFoundException,
@@ -21,6 +21,7 @@ from app.models import BloodRequest, Hospital, DonationCommitment, User
 from app.utils.helpers import generate_request_code
 from app.utils.location import validate_geofence, create_point
 from app.utils.validators import get_compatible_donors
+from app.services.notification_service import create_notification
 
 
 async def create_request(db: AsyncSession, requester_id: str, data: dict) -> BloodRequest:
@@ -86,6 +87,23 @@ async def create_request(db: AsyncSession, requester_id: str, data: dict) -> Blo
 	db.add(blood_request)
 	await db.flush()
 	await db.refresh(blood_request)
+
+	# Yakındaki bağışçılara NEW_REQUEST bildirimi
+	nearby_donors = await find_nearby_donors(db, str(blood_request.id))
+
+	for donor in nearby_donors:
+		await create_notification(
+			db=db,
+			user_id=str(donor.id),
+			notification_type=NotificationType.NEW_REQUEST.value,
+			context={
+				"blood_type": blood_request.blood_type,
+				"hospital_name": hospital.name,
+			},
+			request_id=str(blood_request.id),
+			fcm_token=donor.fcm_token,
+		)
+
 	return blood_request
 
 

@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.config import settings
-from app.constants import CommitmentStatus, RequestStatus, RequestType, DonationStatus
+from app.constants import CommitmentStatus, RequestStatus, RequestType, DonationStatus, NotificationType
 from app.core.exceptions import (
     NotFoundException,
     ForbiddenException,
@@ -26,6 +26,7 @@ from app.utils.cooldown import is_in_cooldown, set_cooldown
 from app.utils.validators import can_donate_to
 from app.utils.qr_code import create_qr_data, validate_qr
 from app.services.gamification_service import award_hero_points, penalize_no_show
+from app.services.notification_service import create_notification
 
 
 # =============================================================================
@@ -251,6 +252,31 @@ async def create_commitment(
     await db.flush()
     await db.refresh(commitment)
 
+    # Talep sahibine DONOR_FOUND bildirimi
+    requester_result = await db.execute(
+        select(User).where(User.id == blood_request.requester_id)
+    )
+    requester_user = requester_result.scalar_one_or_none()
+    if requester_user:
+        await create_notification(
+            db=db,
+            user_id=str(requester_user.id),
+            notification_type=NotificationType.DONOR_FOUND.value,
+            context={"request_code": blood_request.request_code},
+            request_id=str(blood_request.id),
+            fcm_token=requester_user.fcm_token,
+        )
+
+    # Bağışçıya DONOR_ON_WAY bildirimi
+    await create_notification(
+        db=db,
+        user_id=str(donor.id),
+        notification_type=NotificationType.DONOR_ON_WAY.value,
+        context={"eta": str(commitment.timeout_minutes)},
+        request_id=str(blood_request.id),
+        fcm_token=donor.fcm_token,
+    )
+
     return commitment
 
 
@@ -333,6 +359,27 @@ async def update_commitment_status(
             )
             db.add(qr_code)
 
+        # Talep sahibine DONOR_ARRIVED bildirimi
+        # commitment.blood_request relationship'ini kullan
+        blood_request_result = await db.execute(
+            select(BloodRequest).where(BloodRequest.id == commitment.blood_request_id)
+        )
+        blood_request = blood_request_result.scalar_one_or_none()
+        if blood_request:
+            requester_result = await db.execute(
+                select(User).where(User.id == blood_request.requester_id)
+            )
+            requester = requester_result.scalar_one_or_none()
+            if requester:
+                await create_notification(
+                    db=db,
+                    user_id=str(requester.id),
+                    notification_type=NotificationType.DONOR_ARRIVED.value,
+                    context={},
+                    request_id=str(blood_request.id),
+                    fcm_token=requester.fcm_token,
+                )
+
     elif status == CommitmentStatus.CANCELLED.value:
         commitment.status = CommitmentStatus.CANCELLED.value
         # Not: cancel_reason'ı şimdilik kaydetmiyoruz çünkü model'de bu alan yok
@@ -393,6 +440,15 @@ async def check_timeouts(db: AsyncSession) -> int:
         if donor:
             # No-show cezası uygula (gamification service)
             await penalize_no_show(db, str(donor.id))
+
+            # Bağışçıya NO_SHOW bildirimi
+            await create_notification(
+                db=db,
+                user_id=str(donor.id),
+                notification_type=NotificationType.NO_SHOW.value,
+                context={},
+                fcm_token=donor.fcm_token,
+            )
 
         timeout_count += 1
 
@@ -461,8 +517,20 @@ async def redirect_excess_donors(
 
         redirected.append(commitment)
 
-        # TODO: Notification gönder (Task 6'da implement edilecek)
-        # "Genel kan stoğuna yönlendirildiniz" mesajı
+        # Bağışçıya REDIRECT_TO_BANK bildirimi
+        donor_result = await db.execute(
+            select(User).where(User.id == commitment.donor_id)
+        )
+        redirect_donor = donor_result.scalar_one_or_none()
+        if redirect_donor:
+            await create_notification(
+                db=db,
+                user_id=str(redirect_donor.id),
+                notification_type=NotificationType.REDIRECT_TO_BANK.value,
+                context={},
+                request_id=str(blood_request.id),
+                fcm_token=redirect_donor.fcm_token,
+            )
 
     if redirected:
         await db.flush()
@@ -593,6 +661,33 @@ async def verify_and_complete_donation(
 
     await db.flush()
     await db.refresh(donation)
+
+    # 11. Bildirimler gönder
+    # Bağışçıya DONATION_COMPLETE bildirimi
+    await create_notification(
+        db=db,
+        user_id=str(donor.id),
+        notification_type=NotificationType.DONATION_COMPLETE.value,
+        context={"points": str(hero_points_earned)},
+        donation_id=str(donation.id),
+        fcm_token=donor.fcm_token,
+    )
+
+    # Talep FULFILLED ise talep sahibine bildir
+    if blood_request.status == RequestStatus.FULFILLED.value:
+        requester_result = await db.execute(
+            select(User).where(User.id == blood_request.requester_id)
+        )
+        requester = requester_result.scalar_one_or_none()
+        if requester:
+            await create_notification(
+                db=db,
+                user_id=str(requester.id),
+                notification_type=NotificationType.REQUEST_FULFILLED.value,
+                context={"request_code": blood_request.request_code},
+                request_id=str(blood_request.id),
+                fcm_token=requester.fcm_token,
+            )
 
     return donation
 

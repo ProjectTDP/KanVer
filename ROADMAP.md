@@ -2015,37 +2015,40 @@ Phase 6 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
-**Yapılacaklar:**
-- [ ] Mevcut servislere notification gönderimini entegre et:
-  - [ ] `blood_request_service.create_request` → yakındaki bağışçılara NEW_REQUEST bildirimi
-  - [ ] `donation_service.create_commitment` → talep sahibine DONOR_FOUND bildirimi
-  - [ ] `donation_service.update_commitment_status(ARRIVED)` → talep sahibine DONOR_ARRIVED
-  - [ ] `donation_service.verify_and_complete` → bağışçıya DONATION_COMPLETE + talep sahibine REQUEST_FULFILLED
-  - [ ] `donation_service.check_timeouts` → bağışçıya NO_SHOW
-  - [ ] `donation_service.redirect_excess_donors` → fazla bağışçılara REDIRECT_TO_BANK
-- [ ] Tüm notification'ların hem in-app hem push olarak gönderildiğini doğrula
-- [ ] Integration test yaz (`tests/test_notification_integration.py`):
-  - [ ] test_create_request_triggers_new_request_notification
-  - [ ] test_create_commitment_triggers_donor_found_notification
-  - [ ] test_arrived_triggers_donor_arrived_notification
-  - [ ] test_donation_complete_triggers_notification (bağışçı + talep sahibi)
-  - [ ] test_timeout_triggers_no_show_notification
-  - [ ] test_redirect_triggers_redirect_to_bank_notification
-  - [ ] test_request_fulfilled_triggers_notification
-  - [ ] test_notifications_include_push_when_fcm_token_exists
+**Yapılanlar:**
+- [x] Mevcut servislere notification gönderimini entegre et:
+  - [x] `blood_request_service.create_request` → yakındaki bağışçılara NEW_REQUEST bildirimi
+  - [x] `donation_service.create_commitment` → talep sahibine DONOR_FOUND bildirimi
+  - [x] `donation_service.update_commitment_status(ARRIVED)` → talep sahibine DONOR_ARRIVED
+  - [x] `donation_service.verify_and_complete` → bağışçıya DONATION_COMPLETE + talep sahibine REQUEST_FULFILLED
+  - [x] `donation_service.check_timeouts` → bağışçıya NO_SHOW
+  - [x] `donation_service.redirect_excess_donors` → fazla bağışçılara REDIRECT_TO_BANK
+- [x] Tüm notification'ların hem in-app hem push olarak gönderildiğini doğrula
+- [x] Integration test yaz (`tests/test_notification_integration.py`):
+  - [x] test_create_request_sends_new_request_notification
+  - [x] test_create_commitment_sends_donor_found_notification
+  - [x] test_arrived_sends_donor_arrived_notification
+  - [x] test_donation_complete_sends_notification_to_donor
+  - [x] test_request_fulfilled_sends_notification_to_requester
+  - [x] test_timeout_sends_no_show_notification
+  - [x] test_redirect_sends_redirect_to_bank_notification
+  - [x] test_notifications_include_push_when_fcm_token_exists
+  - [x] test_notifications_without_fcm_token_still_created
+- [x] **9 integration test geçiyor**
+- [x] **Toplam: 764 test geçiyor**
 
 ---
 
 ### 📊 Phase 6 Success Metrics
 
-- [ ] In-app notification CRUD çalışıyor
-- [ ] FCM push notification gönderimi çalışıyor (veya graceful skip)
-- [ ] Doğru event'lerde doğru bildirimler oluşuyor
-- [ ] Hero Points doğru hesaplanıyor
-- [ ] Trust Score no-show'da düşüyor
-- [ ] Leaderboard sıralaması doğru
+- [x] In-app notification CRUD çalışıyor
+- [x] FCM push notification gönderimi çalışıyor (veya graceful skip)
+- [x] Doğru event'lerde doğru bildirimler oluşuyor
+- [x] Hero Points doğru hesaplanıyor
+- [x] Trust Score no-show'da düşüyor
+- [x] Leaderboard sıralaması doğru
 
 ---
 
