@@ -2090,49 +2090,54 @@ Phase 7 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 3 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/admin.py` oluştur
-- [ ] `GET /api/admin/stats` — Genel istatistikler:
-  - [ ] Requires: ADMIN role
-  - [ ] Toplam kullanıcı sayısı
-  - [ ] Aktif talep sayısı
-  - [ ] Bugünkü bağış sayısı
-  - [ ] Toplam bağış sayısı
-  - [ ] Ortalama trust score
-  - [ ] Kan grubuna göre bağışçı dağılımı
-- [ ] `GET /api/admin/users` — Kullanıcı listesi:
-  - [ ] Requires: ADMIN role
-  - [ ] Filtreleme: role, blood_type, is_verified
-  - [ ] Arama: full_name, phone_number
-  - [ ] Pagination
-- [ ] `PATCH /api/admin/users/{id}` — Kullanıcı güncelle:
-  - [ ] Requires: ADMIN role
-  - [ ] Rol değiştirme
-  - [ ] is_verified güncelleme
-  - [ ] Trust score reset
-- [ ] `GET /api/admin/requests` — Tüm talepler:
-  - [ ] Requires: ADMIN role
-  - [ ] Tüm status'lar dahil
-  - [ ] Detaylı filtreleme
-- [ ] `GET /api/admin/donations` — Tüm bağışlar:
-  - [ ] Requires: ADMIN role
-  - [ ] Tarih aralığı filtresi
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/admin`)
-- [ ] Unit test yaz (`tests/test_admin.py`):
-  - [ ] test_admin_stats_admin_only
-  - [ ] test_admin_stats_non_admin_rejected (403)
-  - [ ] test_admin_stats_correct_counts
-  - [ ] test_admin_list_users_with_filters
-  - [ ] test_admin_list_users_search
-  - [ ] test_admin_list_users_pagination
-  - [ ] test_admin_update_user_role
-  - [ ] test_admin_update_user_verified
-  - [ ] test_admin_reset_trust_score
-  - [ ] test_admin_list_requests_all_statuses
-  - [ ] test_admin_list_donations_date_filter
-  - [ ] test_admin_user_role_required (USER → 403)
+- [x] `backend/app/routers/admin.py` oluştur
+- [x] `GET /api/admin/stats` — Genel istatistikler:
+  - [x] Requires: ADMIN role
+  - [x] Toplam kullanıcı sayısı
+  - [x] Aktif talep sayısı
+  - [x] Bugünkü bağış sayısı
+  - [x] Toplam bağış sayısı
+  - [x] Ortalama trust score
+  - [x] Kan grubuna göre bağışçı dağılımı
+- [x] `GET /api/admin/users` — Kullanıcı listesi:
+  - [x] Requires: ADMIN role
+  - [x] Filtreleme: role, blood_type, is_verified
+  - [x] Arama: full_name, phone_number
+  - [x] Pagination
+- [x] `PATCH /api/admin/users/{id}` — Kullanıcı güncelle:
+  - [x] Requires: ADMIN role
+  - [x] Rol değiştirme
+  - [x] is_verified güncelleme
+  - [x] Trust score reset
+- [x] `GET /api/admin/requests` — Tüm talepler:
+  - [x] Requires: ADMIN role
+  - [x] Tüm status'lar dahil
+  - [x] Detaylı filtreleme
+- [x] `GET /api/admin/donations` — Tüm bağışlar:
+  - [x] Requires: ADMIN role
+  - [x] Tarih aralığı filtresi
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/admin`)
+- [x] Unit test yaz (`tests/test_admin.py`):
+  - [x] test_admin_stats_admin_only
+  - [x] test_admin_stats_non_admin_rejected (403)
+  - [x] test_admin_stats_correct_counts
+  - [x] test_admin_list_users_with_filters
+  - [x] test_admin_list_users_search
+  - [x] test_admin_list_users_pagination
+  - [x] test_admin_update_user_role
+  - [x] test_admin_update_user_verified
+  - [x] test_admin_reset_trust_score
+  - [x] test_admin_list_requests_all_statuses
+  - [x] test_admin_list_donations_date_filter
+  - [x] test_admin_user_role_required (USER → 403)
+- [x] Migration: `is_verified` alanı eklendi (20260315_1100)
+- [x] Model: User modeline `is_verified` field eklendi
+- [x] Schemas: 8 yeni admin schema eklendi
+- [x] Service: `admin_service.py` oluşturuldu (5 fonksiyon)
+- [x] Tests: 15 test yazıldı (hepsi geçiyor)
 
 ---
 

@@ -881,3 +881,132 @@ class NotificationMarkReadRequest(BaseSchema):
     Bir veya daha fazla bildirimi okundu olarak işaretlemek için kullanılır.
     """
     notification_ids: List[str] = Field(..., min_length=1, description="Okundu işaretlenecek bildirim ID'leri")
+
+
+# =============================================================================
+# ADMIN SCHEMAS
+# =============================================================================
+
+class AdminStatsResponse(BaseSchema):
+    """
+    Admin sistem istatistikleri response şeması.
+
+    Sistem genelindeki temel metrikleri içerir.
+    """
+    total_users: int = Field(..., description="Toplam kullanıcı sayısı (soft delete haric)")
+    active_requests: int = Field(..., description="Aktif kan talebi sayısı")
+    today_donations: int = Field(..., description="Bugün oluşturulan bağış sayısı")
+    total_donations: int = Field(..., description="Toplam bağış sayısı")
+    avg_trust_score: float = Field(..., description="Ortalama güven skoru")
+    blood_type_distribution: dict[str, int] = Field(..., description="Kan grubuna göre kullanıcı dağılımı")
+
+
+class AdminUserInfo(BaseSchema):
+    """
+    Admin kullanıcı listesindeki tek bir kullanıcı bilgisi.
+    """
+    id: str = Field(..., description="Kullanıcı ID'si")
+    phone_number: str = Field(..., description="Telefon numarası")
+    email: Optional[str] = Field(None, description="E-posta adresi")
+    full_name: str = Field(..., description="Ad Soyad")
+    role: str = Field(..., description="Kullanıcı rolü")
+    blood_type: Optional[str] = Field(None, description="Kan grubu")
+    hero_points: int = Field(..., description="Kahramanlık puanı")
+    trust_score: int = Field(..., description="Güven skoru")
+    total_donations: int = Field(..., description="Toplam bağış sayısı")
+    is_active: bool = Field(..., description="Hesap aktif mi?")
+    is_verified: bool = Field(..., description="Doğrulanmış mı?")
+    created_at: datetime = Field(..., description="Kayıt tarihi")
+
+
+class AdminUserListResponse(BaseSchema):
+    """
+    Admin kullanıcı listesi response şeması.
+
+    Pagination metadata ile birlikte kullanıcı listesi döner.
+    """
+    items: List[AdminUserInfo] = Field(..., description="Kullanıcı listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Mevcut sayfa numarası")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")
+
+
+class AdminUserUpdateRequest(BaseSchema):
+    """
+    Admin tarafından kullanıcı güncelleme request şeması.
+
+    Sadece role, is_verified ve trust_score alanları güncellenebilir.
+    """
+    role: Optional[str] = Field(None, description="Yeni rol (USER, NURSE, ADMIN)")
+    is_verified: Optional[bool] = Field(None, description="Doğrulama durumu")
+    trust_score: Optional[int] = Field(None, ge=0, le=100, description="Güven skoru (0-100)")
+
+    @field_validator('role')
+    @classmethod
+    def validate_role(cls, v: Optional[str]) -> Optional[str]:
+        """Rol doğrulaması."""
+        if v is None:
+            return v
+        from app.constants.roles import UserRole
+        if not UserRole.is_valid(v):
+            raise ValueError(f'Geçersiz rol. Geçerli değerler: {", ".join(UserRole.all_values())}')
+        return v.upper()
+
+
+class AdminRequestInfo(BaseSchema):
+    """
+    Admin talep listesindeki tek bir talep bilgisi.
+    """
+    id: str = Field(..., description="Talep ID'si")
+    request_code: str = Field(..., description="Talep kodu (#KAN-XXX)")
+    requester_name: str = Field(..., description="Talep sahibi adı")
+    hospital_name: str = Field(..., description="Hastane adı")
+    blood_type: str = Field(..., description="İhtiyaç duyulan kan grubu")
+    request_type: str = Field(..., description="Bağış türü")
+    priority: str = Field(..., description="Aciliyet seviyesi")
+    units_needed: int = Field(..., description="İhtiyaç duyulan ünite")
+    units_collected: int = Field(..., description="Toplanan ünite")
+    status: str = Field(..., description="Talep durumu")
+    created_at: datetime = Field(..., description="Oluşturulma tarihi")
+
+
+class AdminRequestListResponse(BaseSchema):
+    """
+    Admin talep listesi response şeması.
+
+    Pagination metadata ile birlikte tüm talepleri döner.
+    """
+    items: List[AdminRequestInfo] = Field(..., description="Talep listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Mevcut sayfa numarası")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")
+
+
+class AdminDonationInfo(BaseSchema):
+    """
+    Admin bağış listesindeki tek bir bağış bilgisi.
+    """
+    id: str = Field(..., description="Bağış ID'si")
+    donor_name: str = Field(..., description="Bağışçı adı")
+    hospital_name: str = Field(..., description="Hastane adı")
+    donation_type: str = Field(..., description="Bağış türü")
+    blood_type: str = Field(..., description="Kan grubu")
+    hero_points_earned: int = Field(..., description="Kazanılan puan")
+    status: str = Field(..., description="Bağış durumu")
+    verified_at: Optional[datetime] = Field(None, description="Doğrulama tarihi")
+    created_at: datetime = Field(..., description="Oluşturulma tarihi")
+
+
+class AdminDonationListResponse(BaseSchema):
+    """
+    Admin bağış listesi response şeması.
+
+    Pagination metadata ile birlikte tüm bağışları döner.
+    """
+    items: List[AdminDonationInfo] = Field(..., description="Bağış listesi")
+    total: int = Field(..., description="Toplam kayıt sayısı")
+    page: int = Field(..., description="Mevcut sayfa numarası")
+    size: int = Field(..., description="Sayfa başına kayıt sayısı")
+    pages: int = Field(..., description="Toplam sayfa sayısı")
