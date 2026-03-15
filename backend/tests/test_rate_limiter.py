@@ -10,6 +10,7 @@ Tests verify:
 """
 import pytest
 import time
+import os
 from unittest.mock import MagicMock, patch
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
@@ -17,6 +18,14 @@ from starlette.responses import JSONResponse
 
 from app.middleware.rate_limiter import RateLimiterMiddleware
 from app.core.exceptions import RateLimitException
+
+
+# Enable rate limiting for these tests
+@pytest.fixture(autouse=True, scope="module")
+def enable_rate_limiting():
+    """Enable rate limiting for rate limiter tests."""
+    with patch("app.middleware.rate_limiter.settings.RATE_LIMIT_ENABLED", True):
+        yield
 
 
 class TestRateLimiterMiddleware:

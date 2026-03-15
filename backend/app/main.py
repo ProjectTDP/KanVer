@@ -11,6 +11,7 @@ from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import KanVerException
 from app.middleware.logging_middleware import LoggingMiddleware
 from app.middleware.rate_limiter import RateLimiterMiddleware
+from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.middleware.error_handler import (
     kanver_exception_handler,
     validation_exception_handler,
@@ -81,7 +82,10 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
 )
 
-# Rate limiter middleware (after CORS, before logging)
+# Security headers middleware (after CORS)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Rate limiter middleware (after security headers, before logging)
 app.add_middleware(
     RateLimiterMiddleware,
     requests_per_minute=settings.RATE_LIMIT_REQUESTS,

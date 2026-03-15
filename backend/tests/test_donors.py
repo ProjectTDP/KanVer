@@ -506,7 +506,7 @@ async def test_accept_commitment_cooldown_active(client: AsyncClient, db_session
     )
 
     assert response.status_code == 400
-    assert "bağışlık" in response.json()["error"].lower()
+    assert "bağışlık" in response.json()["error"]["message"].lower()
 
 
 @pytest.mark.asyncio
@@ -594,7 +594,7 @@ async def test_accept_commitment_duplicate(client: AsyncClient, db_session):
     )
 
     assert response.status_code == 409
-    assert "aktif" in response.json()["error"].lower()
+    assert "aktif" in response.json()["error"]["message"].lower()
 
 
 @pytest.mark.asyncio
@@ -693,7 +693,7 @@ async def test_accept_commitment_slot_full(client: AsyncClient, db_session):
     )
 
     assert response.status_code == 409
-    assert "slot" in response.json()["error"].lower()
+    assert "slot" in response.json()["error"]["message"].lower()
 
 
 @pytest.mark.asyncio
@@ -1059,7 +1059,7 @@ async def test_update_commitment_not_owner(client: AsyncClient, db_session):
     )
 
     assert response.status_code == 403
-    assert "ait" in response.json()["error"].lower()
+    assert "ait" in response.json()["error"]["message"].lower()
 
 
 @pytest.mark.asyncio

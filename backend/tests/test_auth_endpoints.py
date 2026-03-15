@@ -110,7 +110,7 @@ class TestAuthEndpoints:
         assert response.status_code == 409
         data = response.json()
         assert "error" in data
-        assert data["status_code"] == 409
+        assert data["error"]["code"] == "CONFLICT"
 
     async def test_register_duplicate_email(self, client: AsyncClient):
         """Aynı emaille tekrar kayıt → 409 Conflict."""
@@ -138,7 +138,7 @@ class TestAuthEndpoints:
         assert response.status_code == 409
         data = response.json()
         assert "error" in data
-        assert data["status_code"] == 409
+        assert data["error"]["code"] == "CONFLICT"
 
     # ==========================================================================
     # VALIDATION TESTS
@@ -179,7 +179,7 @@ class TestAuthEndpoints:
         assert response.status_code == 400
         data = response.json()
         assert "error" in data
-        assert data["status_code"] == 400
+        assert data["error"]["code"] == "BAD_REQUEST"
 
     # ==========================================================================
     # NORMALIZATION TESTS

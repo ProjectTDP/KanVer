@@ -295,7 +295,7 @@ async def test_verify_invalid_qr_token(
     )
 
     assert response.status_code == 404
-    assert "QR kod bulunamadı" in response.json()["error"]
+    assert "QR kod bulunamadı" in response.json()["error"]["message"]
 
 
 # =============================================================================
@@ -326,7 +326,7 @@ async def test_verify_expired_qr(
     )
 
     assert response.status_code == 400
-    assert "süresi dolmuş" in response.json()["error"]
+    assert "süresi dolmuş" in response.json()["error"]["message"]
 
 
 # =============================================================================
@@ -357,7 +357,7 @@ async def test_verify_used_qr(
     )
 
     assert response.status_code == 400
-    assert "zaten kullanılmış" in response.json()["error"]
+    assert "zaten kullanılmış" in response.json()["error"]["message"]
 
 
 # =============================================================================
@@ -381,7 +381,7 @@ async def test_verify_non_nurse_role(
     )
 
     assert response.status_code == 403
-    assert "yetkiniz yok" in response.json()["error"]
+    assert "yetkiniz yok" in response.json()["error"]["message"]
 
 
 # =============================================================================
@@ -406,7 +406,7 @@ async def test_verify_nurse_wrong_hospital(
     )
 
     assert response.status_code == 403
-    assert "hastanede çalışma yetkiniz yok" in response.json()["error"]
+    assert "hastanede çalışma yetkiniz yok" in response.json()["error"]["message"]
 
 
 # =============================================================================

@@ -10,6 +10,38 @@ from sqlalchemy.pool import NullPool
 from sqlalchemy import text, event
 
 
+# ============================================================================
+# CRITICAL: Set environment variables BEFORE any imports from app.*
+# This ensures Settings is created with test values, not .env values
+# ============================================================================
+def _setup_test_environment():
+    """Set up test environment variables before any app imports."""
+    # These MUST be set before importing app.config which creates settings singleton
+    os.environ["DATABASE_URL"] = os.environ.get("DATABASE_URL", "postgresql+asyncpg://kanver_user:kanver_pass_2024@localhost:5432/kanver_db")
+    os.environ["SECRET_KEY"] = "test-secret-key-min-32-chars-for-testing-purposes-only"
+    os.environ["ALGORITHM"] = "HS256"
+    os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
+    os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
+    os.environ["DEBUG"] = "false"
+    os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
+    os.environ["MAX_SEARCH_RADIUS_KM"] = "10"
+    os.environ["DEFAULT_SEARCH_RADIUS_KM"] = "5"
+    os.environ["WHOLE_BLOOD_COOLDOWN_DAYS"] = "90"
+    os.environ["APHERESIS_COOLDOWN_HOURS"] = "48"
+    os.environ["COMMITMENT_TIMEOUT_MINUTES"] = "60"
+    os.environ["HERO_POINTS_WHOLE_BLOOD"] = "50"
+    os.environ["HERO_POINTS_APHERESIS"] = "100"
+    os.environ["NO_SHOW_PENALTY"] = "-10"
+    os.environ["LOG_LEVEL"] = "WARNING"
+    os.environ["FIREBASE_CREDENTIALS"] = "/app/firebase-credentials.json"
+    os.environ["RATE_LIMIT_ENABLED"] = "false"
+    os.environ["ENVIRONMENT"] = "development"
+
+
+# Call setup immediately at module import time
+_setup_test_environment()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def mock_settings():
     """Environment ayarlarını ayarlar ve gerçek Settings instance kullanır."""
@@ -39,6 +71,8 @@ def mock_settings():
     os.environ["NO_SHOW_PENALTY"] = "-10"
     os.environ["LOG_LEVEL"] = "WARNING"
     os.environ["FIREBASE_CREDENTIALS"] = "/app/firebase-credentials.json"
+    os.environ["RATE_LIMIT_ENABLED"] = "false"
+    os.environ["ENVIRONMENT"] = "development"
 
     # GERÇEK Settings instance oluştur (property'ler çalışır)
     from app.config import Settings

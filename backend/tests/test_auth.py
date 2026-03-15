@@ -32,9 +32,9 @@ class TestLoginEndpoint:
         })
         assert response.status_code == 401
         data = response.json()
-        # Error response format: {"error": "...", "detail": None, "status_code": 401}
+        # Error response format: {"error": {"code": "...", "message": "...", "details": {...}}}
         assert "error" in data
-        assert data["status_code"] == 401
+        assert data["error"]["code"] == "UNAUTHORIZED"
 
     async def test_login_deleted_user(self, client: AsyncClient, db_session):
         """Silinmiş kullanıcı ile login → 403 Forbidden."""
@@ -64,7 +64,7 @@ class TestLoginEndpoint:
         assert response.status_code == 403
         data = response.json()
         assert "error" in data
-        assert data["status_code"] == 403
+        assert data["error"]["code"] == "FORBIDDEN"
 
     async def test_login_phone_normalization_0_prefix(self, client: AsyncClient):
         """05xxx formatı ile login çalışmalı."""
