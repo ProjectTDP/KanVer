@@ -25,6 +25,7 @@ from app.models import DonationCommitment, BloodRequest, User, QRCode, Donation,
 from app.utils.cooldown import is_in_cooldown, set_cooldown
 from app.utils.validators import can_donate_to
 from app.utils.qr_code import create_qr_data, validate_qr
+from app.services.gamification_service import award_hero_points, penalize_no_show
 
 
 # =============================================================================
@@ -390,12 +391,8 @@ async def check_timeouts(db: AsyncSession) -> int:
         donor = donor_result.scalar_one_or_none()
 
         if donor:
-            # no_show_count artır
-            donor.no_show_count = (donor.no_show_count or 0) + 1
-
-            # trust_score düşür (minimum 0)
-            new_trust_score = max(0, donor.trust_score + settings.NO_SHOW_PENALTY)
-            donor.trust_score = new_trust_score
+            # No-show cezası uygula (gamification service)
+            await penalize_no_show(db, str(donor.id))
 
         timeout_count += 1
 
@@ -587,7 +584,8 @@ async def verify_and_complete_donation(
 
     # 9. Bağışçı bilgilerini güncelle
     donor.total_donations += 1
-    donor.hero_points += hero_points_earned
+    # Hero points ver (gamification service)
+    await award_hero_points(db, str(donor.id), donation_type)
     donor.last_donation_date = datetime.now(timezone.utc)
 
     # 10. Cooldown başlat

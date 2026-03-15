@@ -1966,46 +1966,48 @@ Phase 6 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 2 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/services/gamification_service.py` oluştur:
-  - [ ] `award_hero_points(db, user_id, donation_type) -> int`:
-    - [ ] WHOLE_BLOOD: +50 points
-    - [ ] APHERESIS: +100 points
-    - [ ] Return: yeni toplam hero_points
-  - [ ] `penalize_no_show(db, user_id) -> int`:
-    - [ ] trust_score -10
-    - [ ] no_show_count +1
-    - [ ] Minimum trust_score: 0
-    - [ ] Return: yeni trust_score
-  - [ ] `get_user_rank(db, user_id) -> dict`:
-    - [ ] hero_points'e göre sıralama
-    - [ ] Rank badge:
-      - [ ] 0-49: "Yeni Kahraman"
-      - [ ] 50-199: "Bronz Kahraman"
-      - [ ] 200-499: "Gümüş Kahraman"
-      - [ ] 500-999: "Altın Kahraman"
-      - [ ] 1000+: "Platin Kahraman"
-  - [ ] `get_leaderboard(db, limit=10) -> list[dict]`:
-    - [ ] Hero points'e göre top N kullanıcı
-    - [ ] Response: user_id, full_name, hero_points, rank, total_donations
-- [ ] Mevcut servislere gamification çağrıları entegre et:
-  - [ ] donation_service → verify_and_complete → award_hero_points
-  - [ ] donation_service → check_timeouts → penalize_no_show
-- [ ] Unit test yaz (`tests/test_gamification.py`):
-  - [ ] test_award_hero_points_whole_blood (+50)
-  - [ ] test_award_hero_points_apheresis (+100)
-  - [ ] test_penalize_no_show_decreases_trust_score (-10)
-  - [ ] test_penalize_no_show_minimum_zero
-  - [ ] test_penalize_no_show_increments_count
-  - [ ] test_get_user_rank_yeni_kahraman (0-49)
-  - [ ] test_get_user_rank_bronz_kahraman (50-199)
-  - [ ] test_get_user_rank_gumus_kahraman (200-499)
-  - [ ] test_get_user_rank_altin_kahraman (500-999)
-  - [ ] test_get_user_rank_platin_kahraman (1000+)
-  - [ ] test_get_leaderboard_ordering
-  - [ ] test_get_leaderboard_limit
+- [x] `backend/app/services/gamification_service.py` oluştur:
+  - [x] `award_hero_points(db, user_id, donation_type) -> int`:
+    - [x] WHOLE_BLOOD: +50 points
+    - [x] APHERESIS: +100 points
+    - [x] Return: yeni toplam hero_points
+  - [x] `penalize_no_show(db, user_id) -> int`:
+    - [x] trust_score -10
+    - [x] no_show_count +1
+    - [x] Minimum trust_score: 0
+    - [x] Return: yeni trust_score
+  - [x] `get_user_rank(db, user_id) -> dict`:
+    - [x] hero_points'e göre sıralama
+    - [x] Rank badge:
+      - [x] 0-49: "Yeni Kahraman"
+      - [x] 50-199: "Bronz Kahraman"
+      - [x] 200-499: "Gümüş Kahraman"
+      - [x] 500-999: "Altın Kahraman"
+      - [x] 1000+: "Platin Kahraman"
+  - [x] `get_leaderboard(db, limit=10) -> list[dict]`:
+    - [x] Hero points'e göre top N kullanıcı
+    - [x] Response: user_id, full_name, hero_points, rank, total_donations
+  - [x] `get_rank_badge(hero_points) -> str` helper fonksiyonu
+- [x] Mevcut servislere gamification çağrıları entegre et:
+  - [x] donation_service → verify_and_complete → award_hero_points
+  - [x] donation_service → check_timeouts → penalize_no_show
+- [x] Unit test yaz (`tests/test_gamification.py`):
+  - [x] test_get_rank_badge_yeni_kahraman (0-49)
+  - [x] test_get_rank_badge_bronz_kahraman (50-199)
+  - [x] test_get_rank_badge_gumus_kahraman (200-499)
+  - [x] test_get_rank_badge_altin_kahraman (500-999)
+  - [x] test_get_rank_badge_platin_kahraman (1000+)
+  - [x] test_award_hero_points_whole_blood (+50)
+  - [x] test_award_hero_points_apheresis (+100)
+  - [x] test_penalize_no_show_decreases_trust_score (-10)
+  - [x] test_penalize_no_show_minimum_zero
+  - [x] test_penalize_no_show_increments_count
+  - [x] test_get_user_rank
+  - [x] test_get_leaderboard_ordering
+  - [x] test_get_leaderboard_limit
 
 ---
 
