@@ -8,7 +8,7 @@ from app.database import test_db_connection, verify_postgis_extension, engine
 from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import KanVerException
 from app.middleware.logging_middleware import LoggingMiddleware
-from app.routers import auth, users, hospitals, requests, donors, donations
+from app.routers import auth, users, hospitals, requests, donors, donations, notifications
 from app.background.timeout_checker import run_timeout_checker, stop_timeout_checker
 import logging
 
@@ -147,3 +147,6 @@ app.include_router(donors.router, prefix="/api/donors")
 
 # Donations router - /api/donations/*
 app.include_router(donations.router, prefix="/api/donations")
+
+# Notifications router - /api/notifications/*
+app.include_router(notifications.router, prefix="/api/notifications")

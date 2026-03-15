@@ -1932,33 +1932,33 @@ Phase 6 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/routers/notifications.py` oluştur
-- [ ] `GET /api/notifications` — Bildirimlerimi listele:
-  - [ ] Requires: authenticated user
-  - [ ] Query params: page, size, unread_only
-  - [ ] Response: NotificationListResponse (unread_count dahil)
-- [ ] `PATCH /api/notifications/read` — Okundu işaretle:
-  - [ ] Requires: authenticated user
-  - [ ] Request: NotificationMarkReadRequest
-  - [ ] Response: `{ "marked_count": int }`
-- [ ] `PATCH /api/notifications/read-all` — Tümünü okundu işaretle:
-  - [ ] Requires: authenticated user
-- [ ] `GET /api/notifications/unread-count` — Okunmamış sayısı:
-  - [ ] Requires: authenticated user
-  - [ ] Response: `{ "count": int }`
-- [ ] Router'ı `main.py`'ye include et (prefix: `/api/notifications`)
-- [ ] Unit test yaz (`tests/test_notifications.py`):
-  - [ ] test_list_notifications_authenticated
-  - [ ] test_list_notifications_unauthenticated (401)
-  - [ ] test_list_notifications_unread_only_filter
-  - [ ] test_list_notifications_pagination
-  - [ ] test_mark_notifications_read
-  - [ ] test_mark_all_notifications_read
-  - [ ] test_get_unread_count_endpoint
-  - [ ] test_unread_count_decreases_after_read
+- [x] `backend/app/routers/notifications.py` oluştur
+- [x] `GET /api/notifications` — Bildirimlerimi listele:
+  - [x] Requires: authenticated user
+  - [x] Query params: page, size, unread_only
+  - [x] Response: NotificationListResponse (unread_count dahil)
+- [x] `PATCH /api/notifications/read` — Okundu işaretle:
+  - [x] Requires: authenticated user
+  - [x] Request: NotificationMarkReadRequest
+  - [x] Response: `{ "marked_count": int }`
+- [x] `PATCH /api/notifications/read-all` — Tümünü okundu işaretle:
+  - [x] Requires: authenticated user
+- [x] `GET /api/notifications/unread-count` — Okunmamış sayısı:
+  - [x] Requires: authenticated user
+  - [x] Response: `{ "count": int }`
+- [x] Router'ı `main.py`'ye include et (prefix: `/api/notifications`)
+- [x] Unit test yaz (`tests/test_notifications.py`):
+  - [x] test_list_notifications_authenticated
+  - [x] test_list_notifications_unauthenticated (401)
+  - [x] test_list_notifications_unread_only_filter
+  - [x] test_list_notifications_pagination
+  - [x] test_mark_notifications_read
+  - [x] test_mark_all_notifications_read
+  - [x] test_get_unread_count_endpoint
+  - [x] test_unread_count_decreases_after_read
 
 ---
 
