@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REQUESTS: int = 100  # requests per minute
+    RATE_LIMIT_PERIOD_SECONDS: int = 60
+    RATE_LIMIT_AUTH_REQUESTS: int = 10  # stricter for auth endpoints
+
     @property
     def allowed_origins_list(self) -> List[str]:
         """Parse ALLOWED_ORIGINS string into a list."""

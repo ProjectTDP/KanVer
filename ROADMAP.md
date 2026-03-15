@@ -2145,22 +2145,22 @@ Phase 7 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/middleware/logging_middleware.py` oluştur:
-  - [ ] Request logla: method, path, client IP, user-agent
-  - [ ] Response logla: status_code, response_time_ms
-  - [ ] Hassas data'yı maskele (Authorization header, password fields)
-  - [ ] Access log dosyasına yaz (logs/access.log)
-- [ ] Middleware'i `main.py`'ye ekle
-- [ ] Unit test yaz (`tests/test_logging_middleware.py`):
-  - [ ] test_request_logged_method_and_path
-  - [ ] test_response_logged_status_code
-  - [ ] test_response_time_logged
-  - [ ] test_sensitive_data_masked_authorization
-  - [ ] test_password_field_masked_in_logs
-  - [ ] test_access_log_file_written
+- [x] `backend/app/middleware/logging_middleware.py` oluştur:
+  - [x] Request logla: method, path, client IP, user-agent
+  - [x] Response logla: status_code, response_time_ms
+  - [x] Hassas data'yı maskele (Authorization header, password fields)
+  - [x] Access log dosyasına yaz (logs/access.log)
+- [x] Middleware'i `main.py`'ye ekle
+- [x] Unit test yaz (`tests/test_logging_middleware.py`):
+  - [x] test_request_logged_method_and_path
+  - [x] test_response_logged_status_code
+  - [x] test_response_time_logged
+  - [x] test_sensitive_data_masked_authorization
+  - [x] test_password_field_masked_in_logs
+  - [x] test_access_log_file_written
 
 ---
 
@@ -2168,24 +2168,24 @@ Phase 7 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1.5 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/middleware/error_handler.py` oluştur:
-  - [ ] KanVerException handler:
-    - [ ] NotFoundException → 404
-    - [ ] ForbiddenException → 403
-    - [ ] BadRequestException → 400
-    - [ ] ConflictException → 409
-    - [ ] CooldownActiveException → 400 (cooldown bitiş tarihi ile)
-    - [ ] GeofenceException → 403
-  - [ ] Generic Exception handler → 500:
-    - [ ] Error logla
-    - [ ] Kullanıcıya generic mesaj dön
-    - [ ] Stack trace'i logla ama response'ta gönderme
-  - [ ] Validation Error handler → 422:
-    - [ ] Pydantic hata mesajlarını düzenle
-  - [ ] Consistent error response format:
+- [x] `backend/app/middleware/error_handler.py` oluştur:
+  - [x] KanVerException handler:
+    - [x] NotFoundException → 404
+    - [x] ForbiddenException → 403
+    - [x] BadRequestException → 400
+    - [x] ConflictException → 409
+    - [x] CooldownActiveException → 400 (cooldown bitiş tarihi ile)
+    - [x] GeofenceException → 403
+  - [x] Generic Exception handler → 500:
+    - [x] Error logla
+    - [x] Kullanıcıya generic mesaj dön
+    - [x] Stack trace'i logla ama response'ta gönderme
+  - [x] Validation Error handler → 422:
+    - [x] Pydantic hata mesajlarını düzenle
+  - [x] Consistent error response format:
     ```json
     {
       "error": {
@@ -2195,18 +2195,18 @@ Phase 7 tamamlanmış sayılır eğer:
       }
     }
     ```
-- [ ] Middleware'i `main.py`'ye ekle
-- [ ] Unit test yaz (`tests/test_error_handler.py`):
-  - [ ] test_not_found_exception_returns_404
-  - [ ] test_forbidden_exception_returns_403
-  - [ ] test_bad_request_exception_returns_400
-  - [ ] test_conflict_exception_returns_409
-  - [ ] test_cooldown_exception_includes_date
-  - [ ] test_geofence_exception_returns_403
-  - [ ] test_generic_exception_returns_500
-  - [ ] test_error_response_format_consistent (error.code, error.message)
-  - [ ] test_validation_error_returns_422
-  - [ ] test_stack_trace_hidden_in_production
+- [x] Middleware'i `main.py`'ye ekle
+- [x] Unit test yaz (`tests/test_error_handler.py`):
+  - [x] test_not_found_exception_returns_404
+  - [x] test_forbidden_exception_returns_403
+  - [x] test_bad_request_exception_returns_400
+  - [x] test_conflict_exception_returns_409
+  - [x] test_cooldown_exception_includes_date
+  - [x] test_geofence_exception_returns_403
+  - [x] test_generic_exception_returns_500
+  - [x] test_error_response_format_consistent (error.code, error.message)
+  - [x] test_validation_error_returns_422
+  - [x] test_stack_trace_hidden_in_production
 
 ---
 
@@ -2214,24 +2214,24 @@ Phase 7 tamamlanmış sayılır eğer:
 
 **Tahmini Süre:** 1 saat
 
-**Durum:** ⬜ BEKLEMEDE
+**Durum:** ✅ TAMAMLANDI
 
 **Yapılacaklar:**
-- [ ] `backend/app/middleware/rate_limiter.py` oluştur:
-  - [ ] In-memory rate limiter (MVP için yeterli):
-    - [ ] IP bazlı rate limiting
-    - [ ] Default: 100 request/dakika
-    - [ ] Auth endpoint'leri: 10 request/dakika (brute-force koruması)
-  - [ ] 429 Too Many Requests response
-  - [ ] Retry-After header
-- [ ] Middleware'i `main.py`'ye ekle
-- [ ] Unit test yaz (`tests/test_rate_limiter.py`):
-  - [ ] test_rate_limit_under_threshold_allowed
-  - [ ] test_rate_limit_exceeded_returns_429
-  - [ ] test_rate_limit_retry_after_header
-  - [ ] test_auth_endpoint_stricter_limit (10/dk)
-  - [ ] test_rate_limit_ip_based_isolation
-  - [ ] test_rate_limit_resets_after_window
+- [x] `backend/app/middleware/rate_limiter.py` oluştur:
+  - [x] In-memory rate limiter (MVP için yeterli):
+    - [x] IP bazlı rate limiting
+    - [x] Default: 100 request/dakika
+    - [x] Auth endpoint'leri: 10 request/dakika (brute-force koruması)
+  - [x] 429 Too Many Requests response
+  - [x] Retry-After header
+- [x] Middleware'i `main.py`'ye ekle
+- [x] Unit test yaz (`tests/test_rate_limiter.py`):
+  - [x] test_rate_limit_under_threshold_allowed
+  - [x] test_rate_limit_exceeded_returns_429
+  - [x] test_rate_limit_retry_after_header
+  - [x] test_auth_endpoint_stricter_limit (10/dk)
+  - [x] test_rate_limit_ip_based_isolation
+  - [x] test_rate_limit_resets_after_window
 
 ---
 
