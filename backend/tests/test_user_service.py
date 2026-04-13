@@ -439,6 +439,18 @@ async def test_get_user_stats_is_in_cooldown_false(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_get_user_stats_returns_last_donation_date(db_session, test_user):
+    """Son bağış tarihi varsa stats içinde dönmeli."""
+    expected = datetime.now(timezone.utc) - timedelta(days=5)
+    test_user.last_donation_date = expected
+    await db_session.flush()
+
+    stats = await get_user_stats(db_session, test_user)
+
+    assert stats["last_donation_date"] == expected
+
+
+@pytest.mark.asyncio
 async def test_get_user_stats_rank_badge_new_hero(db_session):
     """0-49 puan arası için Yeni Kahraman rozeti."""
     user = User(

@@ -222,7 +222,7 @@ async def get_user_stats(db: AsyncSession, user: User) -> dict:
     - total_donations: Toplam bağış sayısı
     - no_show_count: No-show sayısı
     - next_available_date: Bir sonraki bağış tarihi
-    - last_donation_date: Son bağış tarihi (model'de yok, None)
+    - last_donation_date: Son bağış tarihi
     - is_in_cooldown: Cooldown'da mı?
     - cooldown_remaining_days: Kalan gün sayısı
     - rank_badge: Rozet
@@ -260,7 +260,7 @@ async def get_user_stats(db: AsyncSession, user: User) -> dict:
         "total_donations": user.total_donations,
         "no_show_count": user.no_show_count,
         "next_available_date": user.next_available_date,
-        "last_donation_date": None,  # Model'de bu alan yok
+        "last_donation_date": user.last_donation_date,
         "is_in_cooldown": is_in_cooldown,
         "cooldown_remaining_days": cooldown_remaining_days,
         "rank_badge": rank_badge,

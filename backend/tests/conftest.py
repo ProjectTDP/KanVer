@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 import asyncio
 import os
+from datetime import datetime, timezone
 from httpx import AsyncClient, ASGITransport
 from unittest.mock import MagicMock, patch
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -9,11 +10,14 @@ from sqlalchemy.pool import NullPool
 from sqlalchemy import text, event
 
 
-@pytest.fixture(scope="session", autouse=True)
-def mock_settings():
-    """Environment ayarlarını ayarlar ve gerçek Settings instance kullanır."""
-    # Required field'lar için environment variables set et
-    os.environ["DATABASE_URL"] = "postgresql+asyncpg://kanver_user:kanver_pass_2024@db:5432/kanver_db"
+# ============================================================================
+# CRITICAL: Set environment variables BEFORE any imports from app.*
+# This ensures Settings is created with test values, not .env values
+# ============================================================================
+def _setup_test_environment():
+    """Set up test environment variables before any app imports."""
+    # These MUST be set before importing app.config which creates settings singleton
+    os.environ["DATABASE_URL"] = os.environ.get("DATABASE_URL", "postgresql+asyncpg://kanver_user:kanver_pass_2024@localhost:5432/kanver_db")
     os.environ["SECRET_KEY"] = "test-secret-key-min-32-chars-for-testing-purposes-only"
     os.environ["ALGORITHM"] = "HS256"
     os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
@@ -30,12 +34,70 @@ def mock_settings():
     os.environ["NO_SHOW_PENALTY"] = "-10"
     os.environ["LOG_LEVEL"] = "WARNING"
     os.environ["FIREBASE_CREDENTIALS"] = "/app/firebase-credentials.json"
+    os.environ["RATE_LIMIT_ENABLED"] = "false"
+    os.environ["ENVIRONMENT"] = "development"
+
+
+# Call setup immediately at module import time
+_setup_test_environment()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_settings():
+    """Environment ayarlarını ayarlar ve gerçek Settings instance kullanır."""
+    # TEST_DATABASE_URL zaten set edilmişse (Docker içinden) onu kullan,
+    # yoksa DATABASE_URL'i (Docker Compose'dan gelir) dene,
+    # en son local geliştirici için localhost fallback'ini kullan.
+    _db_url = (
+        os.environ.get("TEST_DATABASE_URL")
+        or os.environ.get("DATABASE_URL")
+        or "postgresql+asyncpg://kanver_user:kanver_pass_2024@localhost:5432/kanver_db"
+    )
+    os.environ["DATABASE_URL"] = _db_url
+    os.environ["TEST_DATABASE_URL"] = _db_url
+    os.environ["SECRET_KEY"] = "test-secret-key-min-32-chars-for-testing-purposes-only"
+    os.environ["ALGORITHM"] = "HS256"
+    os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
+    os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
+    os.environ["DEBUG"] = "false"
+    os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
+    os.environ["MAX_SEARCH_RADIUS_KM"] = "10"
+    os.environ["DEFAULT_SEARCH_RADIUS_KM"] = "5"
+    os.environ["WHOLE_BLOOD_COOLDOWN_DAYS"] = "90"
+    os.environ["APHERESIS_COOLDOWN_HOURS"] = "48"
+    os.environ["COMMITMENT_TIMEOUT_MINUTES"] = "60"
+    os.environ["HERO_POINTS_WHOLE_BLOOD"] = "50"
+    os.environ["HERO_POINTS_APHERESIS"] = "100"
+    os.environ["NO_SHOW_PENALTY"] = "-10"
+    os.environ["LOG_LEVEL"] = "WARNING"
+    os.environ["FIREBASE_CREDENTIALS"] = "/app/firebase-credentials.json"
+    os.environ["RATE_LIMIT_ENABLED"] = "false"
+    os.environ["ENVIRONMENT"] = "development"
 
     # GERÇEK Settings instance oluştur (property'ler çalışır)
     from app.config import Settings
     real_settings = Settings()
 
-    with patch("app.config.settings", real_settings):
+    # database.py modül-level engine'ini de localhost URL ile override et
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.pool import NullPool
+    from sqlalchemy.ext.asyncio import AsyncSession
+    import app.database as db_module
+
+    test_local_engine = create_async_engine(
+        _db_url,
+        echo=False,
+        poolclass=NullPool,
+    )
+    test_local_session = async_sessionmaker(
+        test_local_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    with patch("app.config.settings", real_settings), \
+         patch.object(db_module, "engine", test_local_engine), \
+         patch.object(db_module, "AsyncSessionLocal", test_local_session):
         yield real_settings
 
 
@@ -43,8 +105,9 @@ def mock_settings():
 async def test_engine():
     """Tüm session için tek bir engine."""
     from app.config import settings
+    db_url = settings.TEST_DATABASE_URL or settings.DATABASE_URL
     engine = create_async_engine(
-        settings.DATABASE_URL,
+        db_url,
         echo=False,
         poolclass=NullPool,
     )
@@ -110,6 +173,7 @@ async def test_user(db_session: AsyncSession):
         phone_number="+905551234567",
         password_hash=hash_password("Test1234!"),
         full_name="Test User",
+        date_of_birth=datetime(1995, 1, 1, tzinfo=timezone.utc),
         blood_type="A+",
         role=UserRole.USER.value,
         is_active=True

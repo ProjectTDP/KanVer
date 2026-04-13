@@ -1,13 +1,25 @@
 from contextlib import asynccontextmanager
+import asyncio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.config import settings
 from app.database import test_db_connection, verify_postgis_extension, engine
 from app.core.logging import setup_logging, get_logger
 from app.core.exceptions import KanVerException
 from app.middleware.logging_middleware import LoggingMiddleware
-from app.routers import auth, users
+from app.middleware.rate_limiter import RateLimiterMiddleware
+from app.middleware.security_headers import SecurityHeadersMiddleware
+from app.middleware.error_handler import (
+    kanver_exception_handler,
+    validation_exception_handler,
+    http_exception_handler,
+    generic_exception_handler,
+)
+from app.routers import auth, users, hospitals, requests, donors, donations, notifications, admin
+from app.background.timeout_checker import run_timeout_checker, stop_timeout_checker
 import logging
 
 # Setup application logging
@@ -33,9 +45,19 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("Database connection failed")
 
+    # Start background tasks
+    timeout_task = asyncio.create_task(run_timeout_checker())
+    logger.info("Background timeout checker task started")
+
     yield
 
     # Shutdown
+    stop_timeout_checker()
+    timeout_task.cancel()
+    try:
+        await timeout_task
+    except asyncio.CancelledError:
+        pass
     logger.info("KanVer API shutting down...")
     # Dispose database engine
     await engine.dispose()
@@ -51,7 +73,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware (must be first)
+# CORS middleware (must be first - outermost)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
@@ -60,26 +82,25 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
 )
 
-# Logging middleware (after CORS)
+# Security headers middleware (after CORS)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Rate limiter middleware (after security headers, before logging)
+app.add_middleware(
+    RateLimiterMiddleware,
+    requests_per_minute=settings.RATE_LIMIT_REQUESTS,
+    auth_requests_per_minute=settings.RATE_LIMIT_AUTH_REQUESTS
+)
+
+# Logging middleware (innermost middleware)
 app.add_middleware(LoggingMiddleware)
 
 
-# Global exception handler for KanVerException
-@app.exception_handler(KanVerException)
-async def kanver_exception_handler(request: Request, exc: KanVerException):
-    """
-    KanVer özel exception'larını yakalayıp JSON döndür.
-
-    Provides consistent error response format for all custom exceptions.
-    """
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": exc.message,
-            "detail": exc.detail,
-            "status_code": exc.status_code
-        }
-    )
+# Register exception handlers
+app.add_exception_handler(KanVerException, kanver_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 # Root endpoint
@@ -123,3 +144,21 @@ app.include_router(auth.router, prefix="/api/auth")
 
 # Users router - /api/users/*
 app.include_router(users.router, prefix="/api/users")
+
+# Hospitals router - /api/hospitals/*
+app.include_router(hospitals.router, prefix="/api/hospitals")
+
+# Requests router - /api/requests/*
+app.include_router(requests.router, prefix="/api/requests")
+
+# Donors router - /api/donors/*
+app.include_router(donors.router, prefix="/api/donors")
+
+# Donations router - /api/donations/*
+app.include_router(donations.router, prefix="/api/donations")
+
+# Notifications router - /api/notifications/*
+app.include_router(notifications.router, prefix="/api/notifications")
+
+# Admin router - /api/admin/*
+app.include_router(admin.router, prefix="/api/admin")

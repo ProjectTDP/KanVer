@@ -4,7 +4,7 @@ Custom exceptions for KanVer API.
 All exceptions inherit from KanVerException base class,
 which provides consistent error response structure.
 """
-from typing import Optional
+from typing import Optional, Dict, Any
 
 
 class KanVerException(Exception):
@@ -14,14 +14,14 @@ class KanVerException(Exception):
     Attributes:
         message: Human-readable error message
         status_code: HTTP status code to return
-        detail: Optional additional error details
+        detail: Optional additional error details (dict for structured data)
     """
 
     def __init__(
         self,
         message: str,
         status_code: int = 500,
-        detail: Optional[str] = None
+        detail: Optional[Dict[str, Any]] = None
     ):
         self.message = message
         self.status_code = status_code
@@ -32,35 +32,35 @@ class KanVerException(Exception):
 class NotFoundException(KanVerException):
     """Resource not found (404)."""
 
-    def __init__(self, message: str = "Resource not found", detail: Optional[str] = None):
+    def __init__(self, message: str = "Resource not found", detail: Optional[Dict[str, Any]] = None):
         super().__init__(message, status_code=404, detail=detail)
 
 
 class ForbiddenException(KanVerException):
     """Access forbidden (403)."""
 
-    def __init__(self, message: str = "Access forbidden", detail: Optional[str] = None):
+    def __init__(self, message: str = "Access forbidden", detail: Optional[Dict[str, Any]] = None):
         super().__init__(message, status_code=403, detail=detail)
 
 
 class BadRequestException(KanVerException):
     """Bad request (400)."""
 
-    def __init__(self, message: str = "Bad request", detail: Optional[str] = None):
+    def __init__(self, message: str = "Bad request", detail: Optional[Dict[str, Any]] = None):
         super().__init__(message, status_code=400, detail=detail)
 
 
 class ConflictException(KanVerException):
     """Resource conflict (409)."""
 
-    def __init__(self, message: str = "Resource conflict", detail: Optional[str] = None):
+    def __init__(self, message: str = "Resource conflict", detail: Optional[Dict[str, Any]] = None):
         super().__init__(message, status_code=409, detail=detail)
 
 
 class UnauthorizedException(KanVerException):
     """Unauthorized access (401)."""
 
-    def __init__(self, message: str = "Unauthorized", detail: Optional[str] = None):
+    def __init__(self, message: str = "Unauthorized", detail: Optional[Dict[str, Any]] = None):
         super().__init__(message, status_code=401, detail=detail)
 
 
@@ -73,7 +73,7 @@ class CooldownActiveException(KanVerException):
 
     def __init__(self, next_available_date: str):
         message = f"Bağışlık oldunuz, bir sonraki bağış tarihiniz: {next_available_date}"
-        super().__init__(message, status_code=400)
+        super().__init__(message, status_code=400, detail={"next_available_date": next_available_date})
 
 
 class GeofenceException(KanVerException):
@@ -83,8 +83,8 @@ class GeofenceException(KanVerException):
     Raised when trying to create a blood request outside hospital boundaries.
     """
 
-    def __init__(self, message: str = "Hastane sınırları dışındasınız"):
-        super().__init__(message, status_code=400)
+    def __init__(self, message: str = "Hastane sınırları dışındasınız", detail: Optional[Dict[str, Any]] = None):
+        super().__init__(message, status_code=400, detail=detail)
 
 
 class ActiveCommitmentExistsException(KanVerException):
@@ -95,8 +95,8 @@ class ActiveCommitmentExistsException(KanVerException):
     an active one (ON_THE_WAY or ARRIVED status).
     """
 
-    def __init__(self, message: str = "Zaten aktif bir taahhüdünüz var"):
-        super().__init__(message, status_code=409)
+    def __init__(self, message: str = "Zaten aktif bir taahhüdünüz var", detail: Optional[Dict[str, Any]] = None):
+        super().__init__(message, status_code=409, detail=detail)
 
 
 class SlotFullException(KanVerException):
@@ -107,5 +107,22 @@ class SlotFullException(KanVerException):
     (N+1 rule: units_needed + 1 maximum).
     """
 
-    def __init__(self, message: str = "Tüm slotlar doldu, daha sonra tekrar deneyin"):
-        super().__init__(message, status_code=409)
+    def __init__(self, message: str = "Tüm slotlar doldu, daha sonra tekrar deneyin", detail: Optional[Dict[str, Any]] = None):
+        super().__init__(message, status_code=409, detail=detail)
+
+
+class RateLimitException(KanVerException):
+    """
+    Rate limit exceeded (429).
+
+    Raised when a client exceeds the allowed number of requests
+    within a time window.
+    """
+
+    def __init__(self, retry_after: int):
+        message = f"Rate limit exceeded. Try again in {retry_after} seconds."
+        super().__init__(
+            message,
+            status_code=429,
+            detail={"retry_after": retry_after}
+        )

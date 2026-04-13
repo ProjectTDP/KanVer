@@ -111,6 +111,10 @@ class User(Base, TimestampMixin):
     trust_score: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
 
     # Cooldown (biyolojik kısıtlama)
+    last_donation_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     next_available_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -135,6 +139,7 @@ class User(Base, TimestampMixin):
 
     # Soft delete
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Check constraints
@@ -697,7 +702,7 @@ class Notification(Base, TimestampMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "notification_type IN ('NEW_REQUEST', 'DONOR_FOUND', 'DONOR_ON_WAY', 'DONATION_COMPLETE', 'TIMEOUT_WARNING', 'NO_SHOW')",
+            "notification_type IN ('NEW_REQUEST', 'DONOR_FOUND', 'DONOR_ON_WAY', 'DONOR_ARRIVED', 'DONATION_COMPLETE', 'REQUEST_FULFILLED', 'TIMEOUT_WARNING', 'NO_SHOW', 'REDIRECT_TO_BANK')",
             name="check_notification_type_valid"
         ),
         Index("idx_notifications_user", user_id),

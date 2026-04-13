@@ -16,6 +16,7 @@ from app.core.exceptions import (
     GeofenceException,
     ActiveCommitmentExistsException,
     SlotFullException,
+    RateLimitException,
 )
 
 
@@ -35,11 +36,11 @@ class TestKanVerException:
         exc = KanVerException(
             message="Test error",
             status_code=400,
-            detail="Additional details"
+            detail={"field": "value"}
         )
         assert exc.message == "Test error"
         assert exc.status_code == 400
-        assert exc.detail == "Additional details"
+        assert exc.detail == {"field": "value"}
 
 
 class TestNotFoundException:
@@ -131,6 +132,12 @@ class TestCooldownActiveException:
         assert "2024-12-31" in exc.message
         assert "Bağışlık oldunuz" in exc.message
 
+    def test_cooldown_active_exception_detail(self):
+        """CooldownActiveException detail should contain next_available_date."""
+        exc = CooldownActiveException("2024-12-31")
+        assert exc.detail is not None
+        assert exc.detail.get("next_available_date") == "2024-12-31"
+
 
 class TestGeofenceException:
     """Test GeofenceException class."""
@@ -183,3 +190,24 @@ class TestSlotFullException:
         """SlotFullException özel mesaj alabilmeli."""
         exc = SlotFullException("Bu talep için tüm bağışçı slotları dolu")
         assert exc.message == "Bu talep için tüm bağışçı slotları dolu"
+
+
+class TestRateLimitException:
+    """Test RateLimitException class."""
+
+    def test_rate_limit_exception_status_code(self):
+        """RateLimitException 429 status koduna sahip olmalı."""
+        exc = RateLimitException(retry_after=60)
+        assert exc.status_code == 429
+
+    def test_rate_limit_exception_message(self):
+        """RateLimitException should have retry_after in message."""
+        exc = RateLimitException(retry_after=60)
+        assert "Rate limit exceeded" in exc.message
+        assert "60" in exc.message
+
+    def test_rate_limit_exception_detail(self):
+        """RateLimitException detail should contain retry_after."""
+        exc = RateLimitException(retry_after=60)
+        assert exc.detail is not None
+        assert exc.detail.get("retry_after") == 60

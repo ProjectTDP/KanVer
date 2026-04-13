@@ -4,6 +4,11 @@ Logging configuration module for KanVer API.
 Provides hybrid logging format:
 - Development: Human-readable text format
 - Production: JSON format for log aggregation
+
+Log Files:
+- app.log: All logs (DEBUG+ in dev, INFO+ in prod)
+- error.log: Errors only (ERROR+)
+- access.log: HTTP access logs (INFO+)
 """
 import logging
 import sys
@@ -67,6 +72,42 @@ def setup_logging() -> None:
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(formatter)
     root_logger.addHandler(error_handler)
+
+
+def get_access_logger() -> logging.Logger:
+    """
+    Get a dedicated access logger for HTTP request logging.
+
+    Access logs are written to a separate file (access.log) with INFO+ level.
+    Uses the same formatter as the root logger.
+
+    Returns:
+        Configured access logger instance
+    """
+    access_logger = logging.getLogger("access")
+    access_logger.setLevel(logging.INFO)
+    access_logger.handlers.clear()
+    access_logger.propagate = False  # Don't propagate to root logger
+
+    # Choose formatter based on environment
+    if settings.DEBUG:
+        formatter = logging.Formatter(
+            "[%(asctime)s] %(levelname)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+    else:
+        formatter = JsonFormatter(
+            "%(asctime)s %(levelname)s %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+
+    # Access file handler (INFO+ only, separate file)
+    access_handler = logging.FileHandler(LOG_DIR / "access.log")
+    access_handler.setLevel(logging.INFO)
+    access_handler.setFormatter(formatter)
+    access_logger.addHandler(access_handler)
+
+    return access_logger
 
 
 def get_logger(name: str) -> logging.Logger:

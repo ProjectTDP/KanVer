@@ -443,14 +443,17 @@ class TestNotificationType:
     """NotificationType enum testleri."""
 
     def test_notification_type_enum_values(self):
-        """NotificationType enum'ı 6 değere sahip olmalı."""
+        """NotificationType enum'ı 9 değere sahip olmalı."""
         expected_values = {
             "NEW_REQUEST",
             "DONOR_FOUND",
             "DONOR_ON_WAY",
+            "DONOR_ARRIVED",
             "DONATION_COMPLETE",
+            "REQUEST_FULFILLED",
             "TIMEOUT_WARNING",
             "NO_SHOW",
+            "REDIRECT_TO_BANK",
         }
         actual_values = {nt.value for nt in NotificationType}
         assert actual_values == expected_values
