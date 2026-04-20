@@ -131,7 +131,7 @@ frontend/lib/
 ---
 
 ## 🚀 Faz 0 — Kurulum & Altyapı
-
+- [x] Tamamlandı
 **Süre:** Hafta 1  
 **Bağımlılık:** Yok — buradan başla
 
@@ -208,7 +208,7 @@ _dio.interceptors.add(InterceptorsWrapper(
 ---
 
 ## 🔐 Faz 1 — Auth Akışı
-
+- [x] Tamamlandı
 **Süre:** Hafta 2  
 **Bağımlılık:** Faz 0 tamamlanmış (api_service + routes hazır)
 
@@ -245,7 +245,7 @@ _dio.interceptors.add(InterceptorsWrapper(
 ---
 
 ## 🩸 Faz 2 — Bağışçı Akışı
-
+- [x] Tamamlandı
 **Süre:** Hafta 3–4  
 **Bağımlılık:** Faz 1 tamamlanmış (JWT token & kullanıcı profili mevcut)
 
@@ -305,21 +305,6 @@ _dio.interceptors.add(InterceptorsWrapper(
 - [ ] Talep geçmişi özeti
 
 #### `create_request_screen.dart`
-- [ ] **GPS Geofence kontrolü** — kullanıcı hastane sınırları içinde mi?
-
-```dart
-// Geofence ön kontrol (Geolocator)
-final pos = await Geolocator.getCurrentPosition();
-final dist = Geolocator.distanceBetween(
-  pos.latitude, pos.longitude,
-  hospital.lat, hospital.lng,
-);
-if (dist > hospital.geofenceRadiusMeters) {
-  showError('Talep oluşturmak için hastanede olmanız gerekmektedir.');
-  return;
-}
-```
-
 - [ ] Kan tipi seçimi (dropdown)
 - [ ] İhtiyaç adedi (1–5 ünite)
 - [ ] Talep türü: Tam Kan / Aferez (açıklama ile)

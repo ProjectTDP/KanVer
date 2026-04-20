@@ -249,6 +249,10 @@ GEMINI.md
 *.sublime-project
 *.sublime-workspace
 
+# Allow tracking frontend/lib even though generic `lib/` is ignored
+!frontend/lib/
+!frontend/lib/**
+
 
 
 *.exe

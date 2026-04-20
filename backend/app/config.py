@@ -33,8 +33,8 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
 
     # Location
-    MAX_SEARCH_RADIUS_KM: int = 10
-    DEFAULT_SEARCH_RADIUS_KM: int = 5
+    MAX_SEARCH_RADIUS_KM: int = 100
+    DEFAULT_SEARCH_RADIUS_KM: int = 100
 
     # Cooldown
     WHOLE_BLOOD_COOLDOWN_DAYS: int = 90

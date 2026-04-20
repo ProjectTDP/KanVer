@@ -45,5 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Location permissions for geolocator -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>KanVer, yakınındaki kan bağışı taleplerini göstermek için konumunuza erişim istiyor.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>KanVer, arka planda da yakınındaki acil kan taleplerinden haberdar etmek için konumunuza erişim istiyor.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>KanVer, arka planda da yakınındaki acil kan taleplerinden haberdar etmek için konumunuza erişim istiyor.</string>
 </dict>
 </plist>
