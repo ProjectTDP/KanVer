@@ -9,10 +9,12 @@ class BloodTypeBadge extends StatelessWidget {
     super.key,
     required this.bloodType,
     this.size = BloodTypeBadgeSize.medium,
+    this.color,
   });
 
   final String bloodType;
   final BloodTypeBadgeSize size;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class BloodTypeBadge extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: color ?? AppColors.primary,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

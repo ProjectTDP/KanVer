@@ -10,6 +10,8 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.readOnly = false,
     this.onTap,
+    this.hintText,
+    this.maxLines = 1,
   });
 
   final String label;
@@ -19,6 +21,8 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final bool readOnly;
   final VoidCallback? onTap;
+  final String? hintText;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +33,10 @@ class CustomTextField extends StatelessWidget {
       obscureText: obscureText,
       readOnly: readOnly,
       onTap: onTap,
+      maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
         border: const OutlineInputBorder(),
       ),
     );

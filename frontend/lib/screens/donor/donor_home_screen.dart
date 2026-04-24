@@ -241,7 +241,7 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
             onPressed: () => setState(() => _currentIndex = 1),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: _ActionButton(
             label: 'QR Kodu\nGöster',
@@ -251,6 +251,15 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
             onPressed: hasActiveCommitment
                 ? () => context.push('/donor/qr')
                 : () => _showNoCommitmentSnack(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ActionButton(
+            label: 'Benim\nTaleplerim',
+            icon: Icons.bloodtype_outlined,
+            isPrimary: false,
+            onPressed: () => context.push('/patient'),
           ),
         ),
       ],

@@ -14,6 +14,9 @@ import '../screens/donor/nearby_requests_screen.dart';
 import '../screens/donor/qr_display_screen.dart';
 import '../screens/hospital/hospital_home_screen.dart';
 import '../screens/patient/patient_home_screen.dart';
+import '../screens/patient/create_request_screen.dart';
+import '../screens/patient/request_status_screen.dart';
+import '../screens/patient/share_request_screen.dart';
 import '../screens/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -70,6 +73,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/patient',
         builder: (context, state) => const PatientHomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'create',
+            builder: (context, state) => const CreateRequestScreen(),
+          ),
+          GoRoute(
+            path: 'status/:id',
+            builder: (context, state) => RequestStatusScreen(
+              requestId: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
+            path: 'share/:id',
+            builder: (context, state) => ShareRequestScreen(
+              requestId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
       ),
 
       // ── Hospital / Nurse ─────────────────────
