@@ -804,6 +804,34 @@ class TestRequestEndpoints:
         assert "items" in data
         assert "total" in data
 
+    async def test_list_my_requests_only_returns_current_user_requests(self, client: AsyncClient, db_session):
+        """GET /api/requests/me sadece oturumdaki kullanÄ±cÄ±nÄ±n taleplerini dÃ¶nmeli."""
+        hospital = await self.create_hospital(db_session)
+        owner_phone = self.get_test_phone()
+        other_phone = self.get_test_phone()
+        owner_token = await self.register_and_login(client, owner_phone)
+        await self.register_and_login(client, other_phone)
+
+        owner = (
+            await db_session.execute(select(User).where(User.phone_number == owner_phone))
+        ).scalar_one()
+        other = (
+            await db_session.execute(select(User).where(User.phone_number == other_phone))
+        ).scalar_one()
+        owner_request = await self.create_owner_request(db_session, owner, hospital)
+        await self.create_owner_request(db_session, other, hospital)
+        await db_session.commit()
+
+        response = await client.get(
+            "/api/requests/me",
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        assert [item["id"] for item in data["items"]] == [str(owner_request.id)]
+
     async def test_list_requests_total_and_pages_metadata(self, client: AsyncClient, db_session):
         """Ek güvenlik testi: total/pages metadata doğru dönmeli.
 

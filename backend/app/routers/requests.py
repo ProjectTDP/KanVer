@@ -172,6 +172,57 @@ async def list_requests_endpoint(
 
 
 @router.get(
+	"/me",
+	response_model=BloodRequestListResponse,
+	status_code=status.HTTP_200_OK,
+	summary="Kendi taleplerimi listele",
+)
+async def list_my_requests_endpoint(
+	status_filter: Optional[str] = Query(None, alias="status"),
+	page: int = Query(1, ge=1),
+	size: int = Query(20, ge=1, le=100),
+	db: AsyncSession = Depends(get_db),
+	current_user: User = Depends(get_current_active_user),
+):
+	items = await list_requests(
+		db,
+		status=status_filter,
+		requester_id=current_user.id,
+		page=page,
+		size=size,
+	)
+
+	conditions = [BloodRequest.requester_id == current_user.id]
+	if status_filter:
+		conditions.append(BloodRequest.status == status_filter.upper())
+	else:
+		now = func.now()
+		conditions.append(BloodRequest.status != RequestStatus.EXPIRED.value)
+		conditions.append(
+			or_(
+				BloodRequest.expires_at.is_(None),
+				BloodRequest.expires_at >= now,
+			)
+		)
+
+	total_result = await db.execute(
+		select(func.count(BloodRequest.id)).where(and_(*conditions))
+	)
+	total = total_result.scalar() or 0
+	pages = math.ceil(total / size) if total > 0 else 0
+	response_items = [await _build_response(db, item) for item in items]
+
+	return BloodRequestListResponse(
+		items=response_items,
+		total=total,
+		page=page,
+		size=size,
+		pages=pages,
+		filtered_by_status=status_filter,
+	)
+
+
+@router.get(
 	"/{request_id}",
 	status_code=status.HTTP_200_OK,
 	summary="Talep detayı",

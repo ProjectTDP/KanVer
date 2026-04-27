@@ -7,11 +7,7 @@ import 'blood_type_badge.dart';
 ///
 /// [onTap] karta tıklandığında çağrılır (genellikle detail bottom sheet açar).
 class RequestCard extends StatelessWidget {
-  const RequestCard({
-    super.key,
-    required this.request,
-    this.onTap,
-  });
+  const RequestCard({super.key, required this.request, this.onTap});
 
   final BloodRequestModel request;
   final VoidCallback? onTap;
@@ -29,7 +25,9 @@ class RequestCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: request.isUrgent ? priorityColor.withValues(alpha: 0.3) : const Color(0xFFF0F0F0),
+            color: request.isUrgent
+                ? priorityColor.withValues(alpha: 0.3)
+                : const Color(0xFFF0F0F0),
           ),
           boxShadow: [
             BoxShadow(
@@ -83,18 +81,24 @@ class RequestCard extends StatelessWidget {
                             color: AppColors.textMuted,
                           ),
                           const SizedBox(width: 2),
-                          Text(
-                            request.hospital.shortAddress,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textMuted,
+                          Expanded(
+                            child: Text(
+                              request.hospital.shortAddress,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
                             ),
                           ),
                           if (request.distanceKm != null) ...[
                             const Text(
                               ' · ',
                               style: TextStyle(
-                                  fontSize: 11, color: AppColors.textMuted),
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
                             ),
                             Text(
                               request.distanceLabel,
@@ -122,7 +126,9 @@ class RequestCard extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Info row
-            Row(
+            Wrap(
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _InfoChip(
                   icon: Icons.water_drop_outlined,
@@ -135,10 +141,13 @@ class RequestCard extends StatelessWidget {
                   label: '${request.unitsNeeded} ünite',
                   color: AppColors.textMuted,
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 // Priority badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: priorityBg,
                     borderRadius: BorderRadius.circular(8),
@@ -202,9 +211,9 @@ class RequestCard extends StatelessWidget {
   Color _priorityColor(String priority) {
     return switch (priority) {
       'CRITICAL' => const Color(0xFFB71C1C),
-      'URGENT'   => AppColors.urgent,
-      'LOW'      => const Color(0xFF78909C),
-      _          => AppColors.textMuted,
+      'URGENT' => AppColors.urgent,
+      'LOW' => const Color(0xFF78909C),
+      _ => AppColors.textMuted,
     };
   }
 }

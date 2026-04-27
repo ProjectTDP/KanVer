@@ -28,6 +28,7 @@ class ApiConstants {
 
   // ── Requests ─────────────────────────────
   static const requestsBase = '/api/requests';
+  static const myRequests = '$requestsBase/me';
 
   // ── Hospitals ────────────────────────────
   static const hospitalsBase = '/api/hospitals';

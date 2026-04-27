@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/blood_request_model.dart';
 import '../../providers/donor_provider.dart';
-import '../../providers/location_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_skeleton.dart';
 import '../../widgets/request_card.dart';
@@ -22,53 +20,17 @@ class NearbyRequestsScreen extends ConsumerStatefulWidget {
 class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
   String? _bloodTypeFilter;
   String? _priorityFilter;
-  bool _locationRequested = false;
 
-  static const _bloodTypes = [
-    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-',
-  ];
+  static const _bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-  @override
-  void initState() {
-    super.initState();
-    _requestLocationAndRefresh(isInit: true);
-  }
-
-  Future<void> _requestLocationAndRefresh({bool isInit = false}) async {
-    if (isInit && _locationRequested) return;
-    _locationRequested = true;
-
-    final granted = await ref
-        .read(locationPermissionNotifierProvider.notifier)
-        .requestPermission();
-
-    if (granted && mounted) {
-      _updateLocation();
-    }
-  }
-
-  Future<void> _updateLocation() async {
-    try {
-      final position = await ref.read(currentPositionProvider.future);
-      final donorService = await ref.read(donorServiceProvider.future);
-      await donorService.updateLocation(
-          position.latitude, position.longitude);
-      // Sonra talepleri yenile
-      ref.invalidate(nearbyRequestsProvider);
-    } catch (e) {
-      debugPrint('Location update error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Konum hatası: $e')),
-        );
-      }
-    }
+  Future<void> _refreshRequests() async {
+    ref.invalidate(nearbyRequestsProvider);
   }
 
   NearbyRequestsParams get _params => NearbyRequestsParams(
-        bloodTypeFilter: _bloodTypeFilter,
-        priorityFilter: _priorityFilter,
-      );
+    bloodTypeFilter: _bloodTypeFilter,
+    priorityFilter: _priorityFilter,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +43,7 @@ class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Text(
-          'Yakındaki Talepler',
+          'Talepler',
           style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -91,9 +53,7 @@ class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.textMuted),
-            onPressed: () async {
-              await _updateLocation();
-            },
+            onPressed: _refreshRequests,
           ),
         ],
       ),
@@ -131,9 +91,8 @@ class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
               icon: Icons.warning_amber_rounded,
               color: AppColors.urgent,
               selected: _priorityFilter == 'URGENT',
-              onSelected: (v) => setState(
-                () => _priorityFilter = v ? 'URGENT' : null,
-              ),
+              onSelected: (v) =>
+                  setState(() => _priorityFilter = v ? 'URGENT' : null),
             ),
             const SizedBox(width: 8),
             _FilterChip(
@@ -141,9 +100,8 @@ class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
               icon: Icons.emergency_rounded,
               color: AppColors.primary,
               selected: _priorityFilter == 'CRITICAL',
-              onSelected: (v) => setState(
-                () => _priorityFilter = v ? 'CRITICAL' : null,
-              ),
+              onSelected: (v) =>
+                  setState(() => _priorityFilter = v ? 'CRITICAL' : null),
             ),
             const SizedBox(width: 16),
             // Blood type filters
@@ -169,19 +127,19 @@ class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
     if (response.items.isEmpty) {
       return EmptyState(
         icon: Icons.water_drop_outlined,
-        title: 'Yakında talep bulunamadı',
+        title: 'Aktif talep bulunamadı',
         subtitle: _bloodTypeFilter != null || _priorityFilter != null
             ? 'Seçili filtrelerle eşleşen talep yok. Filtreyi kaldırarak tekrar deneyin.'
-            : 'Çevrenizde şu an aktif kan talebi bulunmuyor. Konum güncel mi?',
-        actionLabel: 'Konumu Güncelle',
-        onAction: _updateLocation,
+            : 'Şu an aktif kan talebi bulunmuyor.',
+        actionLabel: 'Yenile',
+        onAction: _refreshRequests,
       );
     }
 
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
-        await _updateLocation();
+        await _refreshRequests();
       },
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -199,18 +157,14 @@ class _NearbyRequestsScreenState extends ConsumerState<NearbyRequestsScreen> {
   }
 
   Widget _buildError(Object error) {
-    final msg = error.toString().contains('konum')
-        ? 'Yakındaki talepleri görmek için konum izni gerekli.'
-        : 'Talepler yüklenemedi.';
+    const msg = 'Talepler yüklenemedi.';
 
     return EmptyState(
-      icon: error.toString().contains('konum')
-          ? Icons.location_off_rounded
-          : Icons.cloud_off_rounded,
+      icon: Icons.cloud_off_rounded,
       title: 'Bir sorun oluştu',
       subtitle: msg,
       actionLabel: 'Tekrar Dene',
-      onAction: _requestLocationAndRefresh,
+      onAction: _refreshRequests,
     );
   }
 

@@ -5,7 +5,9 @@ import '../models/commitment_model.dart';
 import '../models/donation_model.dart';
 import '../models/user_stats_model.dart';
 import '../services/donor_service.dart';
+import '../services/request_service.dart';
 import 'auth_provider.dart';
+import 'request_provider.dart';
 
 // ─────────────────────────────────────────────
 // Service Provider
@@ -52,7 +54,7 @@ final activeCommitmentProvider = FutureProvider<CommitmentModel?>((ref) async {
 class NearbyRequestsParams {
   const NearbyRequestsParams({
     this.page = 1,
-    this.size = 20,
+    this.size = 100,
     this.radiusKm,
     this.bloodTypeFilter,
     this.priorityFilter,
@@ -79,13 +81,8 @@ class NearbyRequestsParams {
           priorityFilter == other.priorityFilter;
 
   @override
-  int get hashCode => Object.hash(
-        page,
-        size,
-        radiusKm,
-        bloodTypeFilter,
-        priorityFilter,
-      );
+  int get hashCode =>
+      Object.hash(page, size, radiusKm, bloodTypeFilter, priorityFilter);
 }
 
 /// Yakındaki kan taleplerini listeler.
@@ -93,37 +90,36 @@ class NearbyRequestsParams {
 /// Filtreler client-side uygulanır — backend zaten kan grubu uyumluluğunu filtreler,
 /// UI'daki ek filtreleme (aciliyet, kan grubu) local yapılır.
 final nearbyRequestsProvider =
-    FutureProvider.family<BloodRequestListResponse, NearbyRequestsParams>(
-  (ref, params) async {
-    final service = await ref.watch(donorServiceProvider.future);
-    final response = await service.getNearbyRequests(
-      page: params.page,
-      size: params.size,
-      radiusKm: params.radiusKm,
-    );
+    FutureProvider.family<BloodRequestListResponse, NearbyRequestsParams>((
+      ref,
+      params,
+    ) async {
+      final RequestService service = await ref.watch(
+        requestServiceProvider.future,
+      );
+      final response = await service.getRequests(
+        status: 'ACTIVE',
+        bloodType: params.bloodTypeFilter,
+        page: params.page,
+        size: params.size,
+      );
 
-    // Client-side filtreler
-    var items = response.items;
-    if (params.bloodTypeFilter != null) {
-      items = items
-          .where((r) => r.bloodType == params.bloodTypeFilter)
-          .toList();
-    }
-    if (params.priorityFilter != null) {
-      items = items
-          .where((r) => r.priority == params.priorityFilter)
-          .toList();
-    }
+      // Client-side filtreler
+      var items = response.items;
+      if (params.priorityFilter != null) {
+        items = items
+            .where((r) => r.priority == params.priorityFilter)
+            .toList();
+      }
 
-    return BloodRequestListResponse(
-      items: items,
-      total: response.total,
-      page: response.page,
-      size: response.size,
-      pages: response.pages,
-    );
-  },
-);
+      return BloodRequestListResponse(
+        items: items,
+        total: params.priorityFilter == null ? response.total : items.length,
+        page: response.page,
+        size: response.size,
+        pages: response.pages,
+      );
+    });
 
 // ─────────────────────────────────────────────
 // Commitment Actions Notifier
@@ -137,8 +133,8 @@ final nearbyRequestsProvider =
 ///   await ref.read(commitmentActionsProvider.notifier).cancel(commitmentId, reason);
 final commitmentActionsProvider =
     AsyncNotifierProvider<CommitmentActionsNotifier, CommitmentModel?>(
-  CommitmentActionsNotifier.new,
-);
+      CommitmentActionsNotifier.new,
+    );
 
 class CommitmentActionsNotifier extends AsyncNotifier<CommitmentModel?> {
   @override
@@ -206,9 +202,7 @@ class PaginationParams {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PaginationParams &&
-          page == other.page &&
-          size == other.size;
+      other is PaginationParams && page == other.page && size == other.size;
 
   @override
   int get hashCode => Object.hash(page, size);
@@ -220,12 +214,13 @@ class PaginationParams {
 
 /// Doğrulanmış bağış geçmişi (pagination destekli).
 final donationHistoryProvider =
-    FutureProvider.family<DonationListResponse, PaginationParams>(
-  (ref, params) async {
-    final service = await ref.watch(donorServiceProvider.future);
-    return service.getDonationHistory(page: params.page, size: params.size);
-  },
-);
+    FutureProvider.family<DonationListResponse, PaginationParams>((
+      ref,
+      params,
+    ) async {
+      final service = await ref.watch(donorServiceProvider.future);
+      return service.getDonationHistory(page: params.page, size: params.size);
+    });
 
 // ─────────────────────────────────────────────
 // Donor Commitment History
@@ -233,9 +228,10 @@ final donationHistoryProvider =
 
 /// Taahhüt geçmişi — tüm durumlar dahil (COMPLETED, CANCELLED, TIMEOUT).
 final donorCommitmentHistoryProvider =
-    FutureProvider.family<CommitmentListResponse, PaginationParams>(
-  (ref, params) async {
-    final service = await ref.watch(donorServiceProvider.future);
-    return service.getDonorHistory(page: params.page, size: params.size);
-  },
-);
+    FutureProvider.family<CommitmentListResponse, PaginationParams>((
+      ref,
+      params,
+    ) async {
+      final service = await ref.watch(donorServiceProvider.future);
+      return service.getDonorHistory(page: params.page, size: params.size);
+    });

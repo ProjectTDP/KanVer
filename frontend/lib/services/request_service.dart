@@ -58,6 +58,27 @@ class RequestService {
   }
 
   /// Tek bir kan talebinin detaylarını döner.
+  Future<BloodRequestListResponse> getMyRequests({
+    String? status,
+    int page = 1,
+    int size = 20,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{'page': page, 'size': size};
+      if (status != null) queryParams['status'] = status;
+
+      final response = await _dio.get(
+        ApiConstants.myRequests,
+        queryParameters: queryParams,
+      );
+      return BloodRequestListResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      throw Exception(ApiService.parseBackendError(e));
+    }
+  }
+
   Future<BloodRequestModel> getRequest(String requestId) async {
     try {
       final response = await _dio.get(

@@ -125,6 +125,7 @@ async def list_requests(
 	request_type: Optional[str] = None,
 	hospital_id: Optional[str] = None,
 	city: Optional[str] = None,
+	requester_id: Optional[str] = None,
 	page: int = 1,
 	size: int = 20,
 ) -> list[BloodRequest]:
@@ -153,6 +154,8 @@ async def list_requests(
 		conditions.append(BloodRequest.request_type == request_type.upper())
 	if hospital_id:
 		conditions.append(BloodRequest.hospital_id == hospital_id)
+	if requester_id:
+		conditions.append(BloodRequest.requester_id == requester_id)
 
 	stmt = select(BloodRequest)
 	if city:
