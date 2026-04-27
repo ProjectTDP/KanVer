@@ -18,10 +18,10 @@ class TokenResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'access_token': accessToken,
-        'refresh_token': refreshToken,
-        'token_type': tokenType,
-      };
+    'access_token': accessToken,
+    'refresh_token': refreshToken,
+    'token_type': tokenType,
+  };
 }
 
 class UserModel {
@@ -53,13 +53,13 @@ class UserModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'phone_number': phoneNumber,
-        'full_name': fullName,
-        'role': role,
-        'email': email,
-        'blood_type': bloodType,
-      };
+    'id': id,
+    'phone_number': phoneNumber,
+    'full_name': fullName,
+    'role': role,
+    'email': email,
+    'blood_type': bloodType,
+  };
 }
 
 class RegisterResponse {
@@ -102,5 +102,6 @@ class AuthState {
     );
   }
 
-  factory AuthState.unauthenticated() => const AuthState(isAuthenticated: false);
+  factory AuthState.unauthenticated() =>
+      const AuthState(isAuthenticated: false);
 }

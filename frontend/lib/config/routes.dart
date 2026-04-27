@@ -17,6 +17,7 @@ import '../screens/patient/patient_home_screen.dart';
 import '../screens/patient/create_request_screen.dart';
 import '../screens/patient/request_status_screen.dart';
 import '../screens/patient/share_request_screen.dart';
+import '../screens/profile_screen.dart';
 import '../screens/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -30,10 +31,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -41,6 +39,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/role-selection',
         builder: (context, state) => const RoleSelectionScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
 
       // ── Donor ───────────────────────────────
@@ -66,6 +68,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'history',
             builder: (context, state) => const DonationHistoryScreen(),
           ),
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
         ],
       ),
 
@@ -80,15 +86,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: 'status/:id',
-            builder: (context, state) => RequestStatusScreen(
-              requestId: state.pathParameters['id']!,
-            ),
+            builder: (context, state) =>
+                RequestStatusScreen(requestId: state.pathParameters['id']!),
           ),
           GoRoute(
             path: 'share/:id',
-            builder: (context, state) => ShareRequestScreen(
-              requestId: state.pathParameters['id']!,
-            ),
+            builder: (context, state) =>
+                ShareRequestScreen(requestId: state.pathParameters['id']!),
           ),
         ],
       ),
@@ -107,8 +111,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final auth = authAsync.valueOrNull ?? AuthState.unauthenticated();
       final location = state.matchedLocation;
-      final isPublicAuthPage =
-          location == '/login' || location == '/register';
+      final isPublicAuthPage = location == '/login' || location == '/register';
 
       // Splash sadece auth yüklenirken görünür
       if (location == '/splash') {
@@ -126,6 +129,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Rol guard: hemşire sadece /hospital'a girebilir
       if (auth.user?.role == 'NURSE' &&
           !location.startsWith('/hospital') &&
+          location != '/profile' &&
           location != '/role-selection') {
         return '/hospital';
       }
@@ -137,8 +141,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 String _roleHome(String? role) {
   return switch (role) {
-    'NURSE'   => '/hospital',
+    'NURSE' => '/hospital',
     'PATIENT' => '/patient',
-    _         => '/donor',
+    _ => '/donor',
   };
 }

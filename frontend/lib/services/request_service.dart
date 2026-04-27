@@ -38,10 +38,7 @@ class RequestService {
     int size = 20,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'size': size,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'size': size};
       if (status != null) queryParams['status'] = status;
       if (bloodType != null) queryParams['blood_type'] = bloodType;
       if (requestType != null) queryParams['request_type'] = requestType;
@@ -63,7 +60,9 @@ class RequestService {
   /// Tek bir kan talebinin detaylarını döner.
   Future<BloodRequestModel> getRequest(String requestId) async {
     try {
-      final response = await _dio.get('${ApiConstants.requestsBase}/$requestId');
+      final response = await _dio.get(
+        '${ApiConstants.requestsBase}/$requestId',
+      );
       return BloodRequestModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw Exception(ApiService.parseBackendError(e));
@@ -84,10 +83,7 @@ class RequestService {
   ///   - notes (String, optional)
   Future<BloodRequestModel> createRequest(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post(
-        ApiConstants.requestsBase,
-        data: data,
-      );
+      final response = await _dio.post(ApiConstants.requestsBase, data: data);
       return BloodRequestModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw Exception(ApiService.parseBackendError(e));
@@ -124,10 +120,10 @@ class RequestService {
   // ─────────────────────────────────────────────
 
   /// Yakındaki hastaneleri listeler. Talep oluştururken hastane seçimi için kullanılır.
-  Future<List<dynamic>> getNearbyHospitals({
+  Future<List<Map<String, dynamic>>> getNearbyHospitals({
     required double latitude,
     required double longitude,
-    double radiusKm = 10,
+    double radiusKm = 100,
   }) async {
     try {
       final response = await _dio.get(
@@ -138,7 +134,19 @@ class RequestService {
           'radius_km': radiusKm,
         },
       );
-      return response.data as List<dynamic>;
+      final payload = response.data;
+      if (payload is! List) {
+        throw Exception('Geçersiz hastane listesi yanıtı');
+      }
+
+      return payload.whereType<Map>().map((item) {
+        final hospital = Map<String, dynamic>.from(item);
+        return {
+          ...hospital,
+          'hospital_id': hospital['hospital_id'] ?? hospital['id'],
+          'hospital_name': hospital['hospital_name'] ?? hospital['name'],
+        };
+      }).toList();
     } on DioException catch (e) {
       throw Exception(ApiService.parseBackendError(e));
     }

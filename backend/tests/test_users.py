@@ -112,6 +112,18 @@ class TestUserEndpoints:
         assert response.status_code == 200
         assert response.json()["fcm_token"] == "new_fcm_token_123"
 
+    async def test_update_profile_blood_type(self, client: AsyncClient):
+        """blood_type gÃ¼ncellenebilmeli."""
+        phone = self.get_test_phone()
+        token = await self.register_and_login(client, phone)
+        response = await client.patch(
+            "/api/users/me",
+            json={"blood_type": "O-"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        assert response.json()["blood_type"] == "O-"
+
     async def test_update_profile_multiple_fields(self, client: AsyncClient):
         """Birden fazla alan aynı anda güncellenebilmeli."""
         phone = self.get_test_phone()
@@ -121,6 +133,7 @@ class TestUserEndpoints:
             json={
                 "full_name": "Multi Update",
                 "email": "multi@example.com",
+                "blood_type": "AB+",
                 "fcm_token": "multi_fcm"
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -129,7 +142,19 @@ class TestUserEndpoints:
         data = response.json()
         assert data["full_name"] == "Multi Update"
         assert data["email"] == "multi@example.com"
+        assert data["blood_type"] == "AB+"
         assert data["fcm_token"] == "multi_fcm"
+
+    async def test_update_profile_invalid_blood_type(self, client: AsyncClient):
+        """GeÃ§ersiz kan grubu 422 dÃ¶nmeli."""
+        phone = self.get_test_phone()
+        token = await self.register_and_login(client, phone)
+        response = await client.patch(
+            "/api/users/me",
+            json={"blood_type": "XYZ"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 422
 
     async def test_update_profile_invalid_email(self, client: AsyncClient):
         """Geçersiz email formatı 422 dönmeli."""

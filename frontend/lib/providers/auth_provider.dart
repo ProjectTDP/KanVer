@@ -26,7 +26,9 @@ final authServiceProvider = FutureProvider<AuthService>((ref) async {
   return AuthService(apiService: api, storage: storage);
 });
 
-final authProvider = AsyncNotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+final authProvider = AsyncNotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
 class AuthNotifier extends AsyncNotifier<AuthState> {
   @override
@@ -35,7 +37,10 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     return authService.restoreSession();
   }
 
-  Future<void> login({required String phoneNumber, required String password}) async {
+  Future<void> login({
+    required String phoneNumber,
+    required String password,
+  }) async {
     final authService = await ref.read(authServiceProvider.future);
     state = const AsyncLoading();
     state = await AsyncValue.guard(
@@ -67,5 +72,57 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     final authService = await ref.read(authServiceProvider.future);
     await authService.logout();
     state = AsyncData(AuthState.unauthenticated());
+  }
+
+  Future<void> updateProfile({
+    required String fullName,
+    required String? email,
+    required String? bloodType,
+  }) async {
+    final previous = state.valueOrNull;
+    final authService = await ref.read(authServiceProvider.future);
+    final user = await authService.updateProfile(
+      fullName: fullName,
+      email: email,
+      bloodType: bloodType,
+    );
+
+    if (previous == null) {
+      state = AsyncData(AuthState.unauthenticated());
+      return;
+    }
+
+    state = AsyncData(
+      AuthState.authenticated(
+        user: user,
+        accessToken: previous.accessToken ?? '',
+        refreshToken: previous.refreshToken ?? '',
+      ),
+    );
+  }
+
+  Future<void> updateLocation({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final previous = state.valueOrNull;
+    final authService = await ref.read(authServiceProvider.future);
+    final user = await authService.updateLocation(
+      latitude: latitude,
+      longitude: longitude,
+    );
+
+    if (previous == null) {
+      state = AsyncData(AuthState.unauthenticated());
+      return;
+    }
+
+    state = AsyncData(
+      AuthState.authenticated(
+        user: user,
+        accessToken: previous.accessToken ?? '',
+        refreshToken: previous.refreshToken ?? '',
+      ),
+    );
   }
 }

@@ -8,8 +8,8 @@ import 'storage_service.dart';
 
 class AuthService {
   AuthService({required ApiService apiService, required StorageService storage})
-      : _apiService = apiService,
-        _storage = storage {
+    : _apiService = apiService,
+      _storage = storage {
     _apiService.setRefreshTokenHandler(refreshAccessToken);
   }
 
@@ -18,7 +18,10 @@ class AuthService {
 
   Dio get _dio => _apiService.client;
 
-  Future<AuthState> login({required String phoneNumber, required String password}) async {
+  Future<AuthState> login({
+    required String phoneNumber,
+    required String password,
+  }) async {
     try {
       final response = await _dio.post(
         ApiConstants.login,
@@ -28,7 +31,9 @@ class AuthService {
         },
       );
 
-      final tokens = TokenResponse.fromJson(response.data as Map<String, dynamic>);
+      final tokens = TokenResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
       await _storage.saveTokens(
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
@@ -66,7 +71,9 @@ class AuthService {
         },
       );
 
-      final registerResponse = RegisterResponse.fromJson(response.data as Map<String, dynamic>);
+      final registerResponse = RegisterResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
       await _storage.saveTokens(
         accessToken: registerResponse.tokens.accessToken,
         refreshToken: registerResponse.tokens.refreshToken,
@@ -95,7 +102,9 @@ class AuthService {
         data: {'refresh_token': refreshToken},
       );
 
-      final tokens = TokenResponse.fromJson(response.data as Map<String, dynamic>);
+      final tokens = TokenResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
       await _storage.saveTokens(
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
@@ -110,6 +119,47 @@ class AuthService {
   Future<UserModel> fetchCurrentUser() async {
     final response = await _dio.get(ApiConstants.me);
     return UserModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<UserModel> updateProfile({
+    required String fullName,
+    required String? email,
+    required String? bloodType,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        ApiConstants.profile,
+        data: {
+          'full_name': fullName.trim(),
+          'email': email?.trim().isEmpty == true ? null : email?.trim(),
+          'blood_type': bloodType,
+        },
+      );
+
+      final user = UserModel.fromJson(response.data as Map<String, dynamic>);
+      await _storage.saveUser(user);
+      return user;
+    } on DioException catch (e) {
+      throw Exception(ApiService.parseBackendError(e));
+    }
+  }
+
+  Future<UserModel> updateLocation({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        ApiConstants.userLocation,
+        data: {'latitude': latitude, 'longitude': longitude},
+      );
+
+      final user = UserModel.fromJson(response.data as Map<String, dynamic>);
+      await _storage.saveUser(user);
+      return user;
+    } on DioException catch (e) {
+      throw Exception(ApiService.parseBackendError(e));
+    }
   }
 
   Future<AuthState> restoreSession() async {

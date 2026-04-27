@@ -10,6 +10,7 @@ class ApiConstants {
   // ── Users ────────────────────────────────
   static const usersBase = '/api/users';
   static const me = '$usersBase/me';
+  static const profile = '$usersBase/me';
   static const userLocation = '$usersBase/me/location';
   static const userStats = '$usersBase/me/stats';
 

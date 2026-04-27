@@ -110,7 +110,7 @@ async def update_user_profile(
         ... )
     """
     # Güncellenebilir alanlar
-    updatable_fields = {"full_name", "email", "fcm_token"}
+    updatable_fields = {"full_name", "email", "blood_type", "fcm_token"}
 
     # Sadece geçerli alanları güncelle
     for field, value in update_data.items():

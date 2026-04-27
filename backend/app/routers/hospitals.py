@@ -86,7 +86,7 @@ async def list_hospitals_endpoint(
 async def list_nearby_hospitals(
     latitude: float = Query(..., ge=-90, le=90, description="Kullanıcı enlemi"),
     longitude: float = Query(..., ge=-180, le=180, description="Kullanıcı boylamı"),
-    radius_km: float = Query(5.0, gt=0, le=50.0, description="Arama yarıçapı (km), maks 50"),
+    radius_km: float = Query(100.0, gt=0, le=100.0, description="Arama yarıçapı (km), maks 100"),
     db: AsyncSession = Depends(get_db),
 ):
     """Kullanıcı konumuna yakın aktif hastaneleri döndürür.

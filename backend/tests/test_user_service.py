@@ -186,6 +186,18 @@ async def test_update_user_profile_fcm_token(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_update_user_profile_blood_type(db_session, test_user):
+    """KullanÄ±cÄ±nÄ±n kan grubunu gÃ¼nceller."""
+    updated_user = await update_user_profile(
+        db_session,
+        test_user,
+        {"blood_type": "O-"}
+    )
+
+    assert updated_user.blood_type == "O-"
+
+
+@pytest.mark.asyncio
 async def test_update_user_profile_multiple_fields(db_session, test_user):
     """Birden fazla alanı aynı anda günceller."""
     updated_user = await update_user_profile(
@@ -194,12 +206,14 @@ async def test_update_user_profile_multiple_fields(db_session, test_user):
         {
             "full_name": "Multi Update",
             "email": "multi@example.com",
+            "blood_type": "AB+",
             "fcm_token": "token123"
         }
     )
 
     assert updated_user.full_name == "Multi Update"
     assert updated_user.email == "multi@example.com"
+    assert updated_user.blood_type == "AB+"
     assert updated_user.fcm_token == "token123"
 
 
@@ -241,7 +255,6 @@ async def test_update_user_profile_ignores_invalid_fields(db_session, test_user)
         {
             "invalid_field": "should_be_ignored",
             "phone_number": "+905999999999",  # Güncellenemez
-            "blood_type": "O-",  # Güncellenemez
         }
     )
 
@@ -249,7 +262,6 @@ async def test_update_user_profile_ignores_invalid_fields(db_session, test_user)
     assert updated_user.full_name == original_name
     assert updated_user.email == original_email
     assert updated_user.phone_number == test_user.phone_number
-    assert updated_user.blood_type == test_user.blood_type
 
 
 @pytest.mark.asyncio

@@ -10,6 +10,7 @@ import '../../widgets/blood_type_badge.dart';
 import '../../widgets/cooldown_badge.dart';
 import '../../widgets/hero_points_chip.dart';
 import '../../widgets/loading_skeleton.dart';
+import '../profile_screen.dart';
 import 'donation_history_screen.dart';
 import 'nearby_requests_screen.dart';
 
@@ -33,9 +34,7 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
           _buildHomeTab(context),
           const NearbyRequestsScreen(),
           const DonationHistoryScreen(),
-          const Scaffold(
-            body: Center(child: Text('Profil Çok Yakında')),
-          ),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: _buildBottomNav(),
@@ -97,14 +96,15 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
 
               // Active commitment banner
               commitmentAsync.whenData((commitment) {
-                if (commitment != null && commitment.isActive) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _ActiveCommitmentBanner(commitment: commitment),
-                  );
-                }
-                return const SizedBox.shrink();
-              }).valueOrNull ?? const SizedBox.shrink(),
+                    if (commitment != null && commitment.isActive) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _ActiveCommitmentBanner(commitment: commitment),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }).valueOrNull ??
+                  const SizedBox.shrink(),
 
               // Section: nearby requests CTA
               _buildNearbySection(),
@@ -134,8 +134,11 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_rounded,
-              color: AppColors.textPrimary, size: 26),
+          icon: const Icon(
+            Icons.notifications_none_rounded,
+            color: AppColors.textPrimary,
+            size: 26,
+          ),
           onPressed: () {},
         ),
       ],
@@ -158,7 +161,11 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
               color: Color(0xFF2C3E50),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 28),
+            child: const Icon(
+              Icons.person_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -190,12 +197,18 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
           ),
           Column(
             children: [
-              BloodTypeBadge(bloodType: bloodType, size: BloodTypeBadgeSize.medium),
+              BloodTypeBadge(
+                bloodType: bloodType,
+                size: BloodTypeBadgeSize.medium,
+              ),
               const SizedBox(height: 4),
               const Text(
                 'KAN GRUBU',
                 style: TextStyle(
-                    fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black38),
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black38,
+                ),
               ),
             ],
           ),
@@ -213,8 +226,11 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: AppColors.primary, size: 20),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AppColors.primary,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -228,8 +244,7 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
   }
 
   Widget _buildActionButtons(AsyncValue commitmentAsync) {
-    final hasActiveCommitment =
-        commitmentAsync.valueOrNull?.isActive == true;
+    final hasActiveCommitment = commitmentAsync.valueOrNull?.isActive == true;
 
     return Row(
       children: [
@@ -269,8 +284,7 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
   void _showNoCommitmentSnack() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content:
-            Text('QR kodu görmek için önce bir talebe "Geliyorum" deyin.'),
+        content: Text('QR kodu görmek için önce bir talebe "Geliyorum" deyin.'),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -360,19 +374,31 @@ class _DonorHomeScreenState extends ConsumerState<DonorHomeScreen> {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: Colors.black45,
-      selectedLabelStyle:
-          const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-      unselectedLabelStyle:
-          const TextStyle(fontWeight: FontWeight.w600, fontSize: 10),
+      selectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 10,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.w600,
+        fontSize: 10,
+      ),
       items: const [
         BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded), label: 'Ana Sayfa'),
+          icon: Icon(Icons.home_rounded),
+          label: 'Ana Sayfa',
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.water_drop_outlined), label: 'Talepler'),
+          icon: Icon(Icons.water_drop_outlined),
+          label: 'Talepler',
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.history_rounded), label: 'Geçmiş'),
+          icon: Icon(Icons.history_rounded),
+          label: 'Geçmiş',
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline_rounded), label: 'Profil'),
+          icon: Icon(Icons.person_outline_rounded),
+          label: 'Profil',
+        ),
       ],
     );
   }
@@ -428,7 +454,10 @@ class _ActionButton extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 13, height: 1.3),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                height: 1.3,
+              ),
             ),
           ],
         ),
@@ -453,8 +482,11 @@ class _ActiveCommitmentBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.directions_run_rounded,
-              color: AppColors.success, size: 22),
+          const Icon(
+            Icons.directions_run_rounded,
+            color: AppColors.success,
+            size: 22,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -471,15 +503,19 @@ class _ActiveCommitmentBanner extends StatelessWidget {
                 Text(
                   commitment.bloodRequest.hospitalName,
                   style: const TextStyle(
-                      fontSize: 12, color: AppColors.textMuted),
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ],
             ),
           ),
           TextButton(
             onPressed: () => context.push('/donor/qr'),
-            child: const Text('QR Göster',
-                style: TextStyle(color: AppColors.success, fontSize: 12)),
+            child: const Text(
+              'QR Göster',
+              style: TextStyle(color: AppColors.success, fontSize: 12),
+            ),
           ),
         ],
       ),

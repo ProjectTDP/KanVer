@@ -164,6 +164,7 @@ class UserUpdateRequest(BaseSchema):
     """
     full_name: Optional[str] = Field(None, min_length=2, max_length=255)
     email: Optional[str] = Field(None, max_length=255)
+    blood_type: Optional[str] = Field(None, min_length=1, max_length=5)
     fcm_token: Optional[str] = Field(None, max_length=500)
 
     @field_validator('email')
@@ -179,6 +180,18 @@ class UserUpdateRequest(BaseSchema):
         if not re.match(email_regex, v):
             raise ValueError('Geçersiz e-posta formatı')
         return v.lower() if v else v
+
+    @field_validator('blood_type')
+    @classmethod
+    def validate_blood_type(cls, v: Optional[str]) -> Optional[str]:
+        """Kan grubunu doğrular (eğer sağlanmışsa)."""
+        if v is None:
+            return v
+
+        v_upper = v.upper()
+        if not BloodType.is_valid(v_upper):
+            raise ValueError(f'Geçersiz kan grubu. Geçerli değerler: {", ".join(BloodType.all_values())}')
+        return v_upper
 
 
 class LocationUpdateRequest(BaseSchema):
